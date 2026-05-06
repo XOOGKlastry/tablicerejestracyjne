@@ -339,6 +339,9 @@
 
     .plate-stars svg {
       filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.2));
+      width: 24px;
+      /* Zmniejszenie dla lepszego dopasowania */
+      height: 24px;
     }
 
     .plate-pl {
@@ -421,6 +424,10 @@
     input.guess:focus {
       border-color: var(--zolty);
       box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.15);
+    }
+
+    input.guess:focus::placeholder {
+      color: transparent;
     }
 
     input.guess::placeholder {
@@ -1017,7 +1024,8 @@
     }
 
     .flash.bad {
-      color: var(--czerwony)
+      color: var(--czerwony);
+      text-shadow: 0 0 30px var(--czerwony), 0 0 60px rgba(255, 59, 59, 0.5);
     }
 
     @keyframes flash-anim {
@@ -1042,62 +1050,155 @@
       }
     }
 
-    /* ============ RESPONSIVE ============ */
-    @media (max-width:900px) {
+    /* ============ RESPONSIVE & MOBILE OPTIMIZATION ============ */
+    @media (max-width: 900px) {
+
+      html,
+      body {
+        overflow: hidden;
+        /* Zapobiega "pływaniu" strony przy otwartej klawiaturze */
+        height: 100%;
+      }
+
       .app {
         grid-template-columns: 1fr;
-        grid-template-rows: 60px 1fr 1fr;
-      }
-
-      aside.game {
-        padding: 14px
-      }
-
-      .plate {
-        font-size: 38px;
-        padding: 0 8px 0 44px
-      }
-
-      .plate-eu {
-        width: 32px
-      }
-
-      .plate-pl {
-        font-size: 14px
-      }
-
-      .plate-rest {
-        font-size: 30px
+        grid-template-rows: auto 1fr;
+        /* Tylko nagłówek i panel gry */
+        height: 100vh;
       }
 
       header.top {
-        padding: 0 12px
+        padding: 8px 12px;
+        height: 56px;
+      }
+
+      .brand-mark {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
       }
 
       .brand-title {
-        font-size: 18px;
-        letter-spacing: 2px
+        font-size: 16px;
+        letter-spacing: 1px;
       }
 
       .brand-sub {
-        font-size: 9px
+        display: none;
+      }
+
+      .hud {
+        gap: 4px;
       }
 
       .hud-stat {
-        padding: 4px 10px;
-        min-width: auto
-      }
-
-      .hud-stat .label {
-        font-size: 8px
+        min-width: 60px;
+        padding: 4px 8px;
       }
 
       .hud-stat .value {
-        font-size: 14px
+        font-size: 14px;
+      }
+
+      .hud-icon-btn {
+        padding: 6px;
+      }
+
+      aside.game {
+        padding: 12px;
+        gap: 12px;
+        border-right: none;
+        overflow-y: auto;
+      }
+
+      /* MAPA: Ukryta na urządzeniach mobilnych, aby nie zasłaniała interfejsu */
+      main.map-section {
+        display: none !important;
+      }
+
+      /* Optymalizacja tablicy na małe ekrany */
+      .plate-wrap {
+        margin: 0;
+      }
+
+      .plate {
+        font-size: 36px;
+        padding: 0 10px 0 46px;
+        border-width: 2px;
+      }
+
+      .plate-eu {
+        width: 38px;
+        padding: 6px 0;
+      }
+
+      .plate-pl {
+        font-size: 14px;
+      }
+
+      .plate-rest {
+        font-size: 28px;
+      }
+
+      .plate-stars svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .question-line {
+        font-size: 11px;
+        margin: 0;
+      }
+
+      input.guess {
+        padding: 12px;
+        font-size: 16px;
+        /* Zapobiega auto-zoomowi w iOS */
+      }
+
+      .hints {
+        gap: 4px;
+      }
+
+      .hint-btn {
+        flex: 1;
+        padding: 8px 4px;
+        font-size: 9px;
+        min-width: 0;
+      }
+
+      .hint-btn .cost {
+        display: block;
+        font-size: 8px;
+        margin: 0;
+      }
+
+      .actions {
+        gap: 6px;
+      }
+
+      .btn {
+        padding: 10px;
+        font-size: 11px;
+      }
+
+      .stats-mini {
+        padding-top: 8px;
+      }
+
+      .stat-mini .v {
+        font-size: 14px;
+      }
+
+      /* Podpowiedzi: Przeniesione NAD input, by klawiatura ich nie zasłoniła */
+      .suggestions {
+        bottom: 100%;
+        top: auto;
+        max-height: 200px;
       }
 
       .flash {
-        font-size: 60px
+        font-size: 50px;
       }
     }
   </style>
@@ -1123,9 +1224,9 @@
           <div class="label">Seria</div>
           <div class="value" id="hudSeria">0</div>
         </div>
-        <div class="hud-stat">
+        <div class="hud-stat" style="border-bottom: 2px solid var(--niebieski-eu);">
           <div class="label">Trafność</div>
-          <div class="value" id="hudTraf">—</div>
+          <div class="value" id="hudTraf" style="color: var(--niebieski-eu);">—</div>
         </div>
         <button class="hud-icon-btn" id="btnStats" title="Statystyki">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2127,11 +2228,16 @@
     let map, currentMarker, currentPopup;
 
     function initMap() {
+      const mapContainer = $('map');
+      // Jeśli mapa jest ukryta w CSS (na mobile), nie inicjalizuj jej
+      if (!mapContainer || window.getComputedStyle(mapContainer).display === 'none') return;
+
       map = L.map('map', {
         center: [52.0, 19.4],   // ~centrum Polski
         zoom: 6,
         minZoom: 5,
         maxZoom: 14,
+        tap: false,
         zoomControl: true,
         attributionControl: true,
       });
