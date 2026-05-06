@@ -49,7 +49,6 @@
       position: relative;
     }
 
-    /* Tekstura asfaltu - subtle noise */
     body::before {
       content: "";
       position: fixed;
@@ -264,7 +263,7 @@
       font-weight: 700;
     }
 
-    /* TABLICA - centralny element */
+    /* TABLICA */
     .plate-wrap {
       margin: 8px 0;
       perspective: 1000px;
@@ -303,14 +302,11 @@
         transform: translateX(180px) rotateY(20deg);
         opacity: 0
       }
-
       100% {
         transform: translateX(0) rotateY(0);
         opacity: 1
       }
     }
-
-    /* Zaktualizuj te klasy w sekcji <style> */
 
     .plate-eu {
       position: absolute;
@@ -319,12 +315,10 @@
       bottom: 0;
       width: 42px;
       background: #003399;
-      /* Niebieski EU (var(--niebieski-eu)) */
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      /* Zmienione na góra, by zrobić miejsce na PL */
       padding: 12px 0;
       gap: 4px;
     }
@@ -340,7 +334,6 @@
     .plate-stars svg {
       filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.2));
       width: 24px;
-      /* Zmniejszenie dla lepszego dopasowania */
       height: 24px;
     }
 
@@ -402,7 +395,7 @@
       font-weight: 600
     }
 
-    /* Input z autouzupełnianiem */
+    /* Input */
     .input-wrap {
       position: relative;
     }
@@ -436,6 +429,17 @@
 
     input.guess:disabled {
       opacity: .5
+    }
+
+    /* FIX: Pulsowanie inputu na mobile gdy czeka na odpowiedź */
+    input.guess.ready-pulse {
+      animation: pulse-border .6s ease-out 2;
+    }
+
+    @keyframes pulse-border {
+      0%   { border-color: var(--line); box-shadow: none; }
+      50%  { border-color: var(--zolty); box-shadow: 0 0 0 3px rgba(255,204,0,0.25); }
+      100% { border-color: var(--line); box-shadow: none; }
     }
 
     .suggestions {
@@ -585,7 +589,7 @@
       margin-left: 4px;
     }
 
-    /* Panel feedbacku/info */
+    /* Panel feedbacku */
     .feedback {
       padding: 14px 16px;
       border: 1px solid var(--line);
@@ -618,7 +622,6 @@
         opacity: 0;
         transform: translateY(-4px)
       }
-
       to {
         opacity: 1;
         transform: translateY(0)
@@ -683,7 +686,7 @@
       text-decoration: underline
     }
 
-    /* Sekcja statystyk - mini */
+    /* Mini statystyki */
     .stats-mini {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -714,7 +717,7 @@
       margin-top: 2px;
     }
 
-    /* ============ MAPA (prawy) ============ */
+    /* ============ MAPA ============ */
     main.map-section {
       position: relative;
       background: var(--asfalt-2);
@@ -774,9 +777,7 @@
       padding: 8px !important;
     }
 
-    .popup {
-      padding: 0
-    }
+    .popup { padding: 0 }
 
     .popup-head {
       background: var(--zolty);
@@ -1003,7 +1004,7 @@
       margin: 0 2px;
     }
 
-    /* ============ KOMUNIKAT W ŚRODKU EKRANU ============ */
+    /* ============ FLASH ============ */
     .flash {
       position: fixed;
       top: 50%;
@@ -1029,47 +1030,34 @@
     }
 
     @keyframes flash-anim {
-      0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(.7)
-      }
-
-      20% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.1)
-      }
-
-      80% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1)
-      }
-
-      100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(1.4)
-      }
+      0%   { opacity: 0; transform: translate(-50%, -50%) scale(.7) }
+      20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1) }
+      80%  { opacity: 1; transform: translate(-50%, -50%) scale(1) }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.4) }
     }
 
-    /* ============ RESPONSIVE & MOBILE OPTIMIZATION ============ */
+    /* ============ MOBILE ============ */
     @media (max-width: 900px) {
 
-      html,
-      body {
+      /* FIX: dvh uwzględnia pasek przeglądarki i klawiaturę */
+      html, body {
         overflow: hidden;
-        /* Zapobiega "pływaniu" strony przy otwartej klawiaturze */
         height: 100%;
+        height: -webkit-fill-available;
       }
 
       .app {
         grid-template-columns: 1fr;
         grid-template-rows: auto 1fr;
-        /* Tylko nagłówek i panel gry */
         height: 100vh;
+        height: 100dvh; /* dynamic viewport height — kluczowa poprawka */
+        min-height: -webkit-fill-available;
       }
 
       header.top {
         padding: 8px 12px;
         height: 56px;
+        flex-shrink: 0; /* nie kurczy się przy klawiaturze */
       }
 
       .brand-mark {
@@ -1109,14 +1097,16 @@
         gap: 12px;
         border-right: none;
         overflow-y: auto;
+        /* FIX: zapobiega "skaczącemu" layoutowi gdy klawiatura pojawia się/znika */
+        min-height: 0;
+        flex: 1;
       }
 
-      /* MAPA: Ukryta na urządzeniach mobilnych, aby nie zasłaniała interfejsu */
+      /* Mapa ukryta na mobile */
       main.map-section {
         display: none !important;
       }
 
-      /* Optymalizacja tablicy na małe ekrany */
       .plate-wrap {
         margin: 0;
       }
@@ -1152,8 +1142,7 @@
 
       input.guess {
         padding: 12px;
-        font-size: 16px;
-        /* Zapobiega auto-zoomowi w iOS */
+        font-size: 16px; /* zapobiega auto-zoomowi w iOS */
       }
 
       .hints {
@@ -1190,7 +1179,7 @@
         font-size: 14px;
       }
 
-      /* Podpowiedzi: Przeniesione NAD input, by klawiatura ich nie zasłoniła */
+      /* Podpowiedzi nad inputem na mobile */
       .suggestions {
         bottom: 100%;
         top: auto;
@@ -1247,7 +1236,6 @@
     </header>
 
     <aside class="game">
-      <!-- Tryby gry -->
       <div class="modes">
         <button class="mode-btn active" data-mode="classic">Klasyk</button>
         <button class="mode-btn" data-mode="reverse">Odwrotny</button>
@@ -1255,11 +1243,9 @@
         <button class="mode-btn" data-mode="region">Region</button>
       </div>
 
-      <!-- Tablica -->
       <div class="plate-wrap">
         <div class="plate" id="plate">
           <div class="plate-eu">
-            <!-- Zamień obecną zawartość .plate-stars na to: -->
             <div class="plate-stars">
               <svg viewBox="0 0 120 120" width="30" height="30">
                 <defs>
@@ -1295,14 +1281,12 @@
         Jaki to <strong>powiat</strong>? Wpisz nazwę.
       </div>
 
-      <!-- Input + autouzupełnianie -->
       <div class="input-wrap">
         <input class="guess" id="guessInput" type="text" autocomplete="off" placeholder="np. Kraków, Wałbrzych..."
           spellcheck="false">
         <div class="suggestions" id="suggestions"></div>
       </div>
 
-      <!-- Hinty -->
       <div class="hints">
         <button class="hint-btn" id="hintWoj" data-hint="woj">
           Województwo<span class="cost">−5 pkt</span>
@@ -1315,16 +1299,13 @@
         </button>
       </div>
 
-      <!-- Przyciski akcji -->
       <div class="actions">
         <button class="btn" id="btnSubmit">Sprawdź</button>
         <button class="btn ghost" id="btnSkip">Pomiń</button>
       </div>
 
-      <!-- Panel zwrotny -->
       <div class="feedback" id="feedback"></div>
 
-      <!-- Mini statystyki -->
       <div class="stats-mini">
         <div class="stat-mini">
           <div class="l">Pytania</div>
@@ -1349,7 +1330,6 @@
     </main>
   </div>
 
-  <!-- Flash komunikat -->
   <div class="flash" id="flash"></div>
 
   <!-- Modal pomocy -->
@@ -1361,15 +1341,13 @@
       </div>
       <div class="modal-body">
         <h3>Tryby</h3>
-        <p><b>Klasyk:</b> widzisz 2-3 literowy prefiks tablicy (np. <span class="kbd">KLI</span>) — wpisz nazwę powiatu.
-        </p>
+        <p><b>Klasyk:</b> widzisz 2-3 literowy prefiks tablicy (np. <span class="kbd">KLI</span>) — wpisz nazwę powiatu.</p>
         <p><b>Odwrotny:</b> dostajesz nazwę powiatu — wpisz prefiks (np. <span class="kbd">Limanowa</span> → KLI).</p>
         <p><b>Na czas:</b> 90 sekund, ile zdążysz.</p>
         <p><b>Region:</b> tylko jedno wybrane województwo.</p>
 
         <h3>Punktacja</h3>
-        <p>Bazowo +10 pkt za poprawną odpowiedź. Mnożnik za serię: każda poprawna z rzędu daje +2 dodatkowe punkty (max
-          +30).</p>
+        <p>Bazowo +10 pkt za poprawną odpowiedź. Mnożnik za serię: każda poprawna z rzędu daje +2 dodatkowe punkty (max +30).</p>
 
         <h3>Skróty klawiaturowe</h3>
         <p><span class="kbd">Enter</span> — sprawdź / zatwierdź podpowiedź<br>
@@ -1379,8 +1357,7 @@
         </p>
 
         <h3>Adaptive learning</h3>
-        <p>Powiaty, które mylisz, pojawiają się <b>częściej</b>. Te które dobrze znasz — rzadziej. Postęp zapisuje się w
-          przeglądarce.</p>
+        <p>Powiaty, które mylisz, pojawiają się <b>częściej</b>. Te które dobrze znasz — rzadziej. Postęp zapisuje się w przeglądarce.</p>
 
         <h3>Hinty</h3>
         <p>Możesz odsłonić wskazówkę kosztem punktów. Hinty nie zerują serii.</p>
@@ -1428,8 +1405,7 @@
 
   <script>
     /* ============================================================
-       BAZA POLSKICH KODÓW REJESTRACYJNYCH (393 wpisów, stan: 2026)
-       Aby dodać brakujące powiaty: dopisz wpisy do tablicy POWIATY.
+       BAZA POLSKICH KODÓW REJESTRACYJNYCH
        ============================================================ */
     const POWIATY = [
       // ========== DOLNOŚLĄSKIE (D) ==========
@@ -1651,6 +1627,7 @@
       { kod: "OPO", nazwa: "Opole (powiat)", typ: "ziemski", woj: "opolskie", lat: 50.6500, lng: 17.9000, wiki: "Powiat_opolski_(województwo_opolskie)" },
       { kod: "OPR", nazwa: "Prudnik", typ: "ziemski", woj: "opolskie", lat: 50.3236, lng: 17.5786, wiki: "Prudnik" },
       { kod: "OST", nazwa: "Strzelce Opolskie", typ: "ziemski", woj: "opolskie", lat: 50.5125, lng: 18.3050, wiki: "Strzelce_Opolskie" },
+
       // ========== PODKARPACKIE (R) ==========
       { kod: "RZ", nazwa: "Rzeszów", typ: "miasto", woj: "podkarpackie", lat: 50.0413, lng: 21.9990, wiki: "Rzeszów" },
       { kod: "RK", nazwa: "Krosno", typ: "miasto", woj: "podkarpackie", lat: 49.6883, lng: 21.7706, wiki: "Krosno" },
@@ -1855,18 +1832,16 @@
       { kod: "ZST", nazwa: "Stargard", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.3367, lng: 15.0500, wiki: "Stargard" },
       { kod: "ZSD", nazwa: "Świdwin", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.7733, lng: 15.7728, wiki: "Świdwin" },
       { kod: "ZWA", nazwa: "Wałcz", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.2722, lng: 16.4711, wiki: "Wałcz" },
-
     ];
-
 
     /* ============================================================
        STAN GRY
        ============================================================ */
     const STORAGE_KEY = 'mistrzTablic_v1';
     const state = {
-      mode: 'classic',         // classic | reverse | time | region
+      mode: 'classic',
       regionWoj: null,
-      current: null,           // aktualny powiat
+      current: null,
       punkty: 0,
       seria: 0,
       najlSeria: 0,
@@ -1874,13 +1849,12 @@
       pytania: 0,
       trafione: 0,
       hintsUsed: { woj: false, letter: false, type: false },
-      history: [],             // ostatnie 5 wyników
-      perPowiat: {},           // {kod: {good:N, bad:N, weight:1.0}}
+      history: [],
+      perPowiat: {},
       timer: null,
       timeLeft: 0,
     };
 
-    // Wczytaj z localStorage
     function loadState() {
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -1907,7 +1881,7 @@
     }
 
     /* ============================================================
-       POMOCNICZE: normalizacja, fuzzy matching
+       POMOCNICZE
        ============================================================ */
     function normalize(s) {
       return s.toLowerCase()
@@ -1917,7 +1891,6 @@
         .trim();
     }
 
-    // Levenshtein distance (krótki)
     function levenshtein(a, b) {
       if (a.length === 0) return b.length;
       if (b.length === 0) return a.length;
@@ -1932,31 +1905,25 @@
       return m[a.length][b.length];
     }
 
-    // Czy odpowiedź pasuje do powiatu (z tolerancją literówek)
     function matches(input, powiat) {
       const ni = normalize(input);
       const nn = normalize(powiat.nazwa);
       if (ni === nn) return 'exact';
-      // odetnij dopisek "(powiat)" / "(miasto)" itp.
       const nnBase = normalize(powiat.nazwa.replace(/\s*\([^)]*\)/g, ''));
       if (ni === nnBase) return 'exact';
-      // dla Warszawy: "Warszawa" pasuje do każdej dzielnicy
       if (powiat.nazwa.startsWith('Warszawa') && ni === 'warszawa') return 'exact';
-      // tolerancja literówek - distance <= 2 dla dłuższych słów
       const dist = levenshtein(ni, nnBase);
       if (dist <= 1) return 'fuzzy';
       if (nnBase.length > 8 && dist <= 2) return 'fuzzy';
       return null;
     }
 
-    // Wyszukiwanie podpowiedzi
     function findSuggestions(query, limit = 8) {
       const nq = normalize(query);
       if (nq.length < 1) return [];
       const pool = state.mode === 'region' && state.regionWoj
         ? POWIATY.filter(p => p.woj === state.regionWoj)
         : POWIATY;
-      // Unikalne nazwy bazowe (Warszawa-X dzieli się na osobne dzielnice)
       const seen = new Set();
       const results = [];
       for (const p of pool) {
@@ -1974,16 +1941,14 @@
     }
 
     /* ============================================================
-       LOSOWANIE - z adaptive learning
+       LOSOWANIE
        ============================================================ */
     function getWeight(kod) {
       const stat = state.perPowiat[kod];
-      if (!stat) return 1.0;          // niewidziane
+      if (!stat) return 1.0;
       const total = stat.good + stat.bad;
       if (total === 0) return 1.0;
       const accuracy = stat.good / total;
-      // im niższa trafność, tym wyższa waga (do x4)
-      // niewidziane ostatnio = +trochę
       return Math.max(0.25, 1 + (1 - accuracy) * 3);
     }
 
@@ -1991,8 +1956,6 @@
       const pool = state.mode === 'region' && state.regionWoj
         ? POWIATY.filter(p => p.woj === state.regionWoj)
         : POWIATY;
-
-      // Rouletta wagowa
       const weights = pool.map(p => getWeight(p.kod));
       const sum = weights.reduce((a, b) => a + b, 0);
       let r = Math.random() * sum;
@@ -2004,9 +1967,12 @@
     }
 
     /* ============================================================
-       UI - aktualizacja pól
+       UI
        ============================================================ */
     const $ = id => document.getElementById(id);
+
+    // FIX: wykryj urządzenie dotykowe (mobile)
+    const isMobile = () => window.innerWidth <= 900 || ('ontouchstart' in window);
 
     function updateHud() {
       $('hudPunkty').textContent = state.punkty;
@@ -2020,9 +1986,8 @@
       $('hudTraf').textContent = traf;
     }
 
-    function setPlateContent(prefix, dimRest = true) {
+    function setPlateContent(prefix) {
       $('platePrefix').textContent = prefix;
-      // animacja "wjazdu"
       const plate = $('plate');
       plate.classList.remove('rolling');
       void plate.offsetWidth;
@@ -2050,21 +2015,34 @@
     }
 
     /* ============================================================
-       PYTANIE - nowe / sprawdzanie
+       PYTANIE
        ============================================================ */
     function nextQuestion() {
       state.current = pickRandom();
       state.hintsUsed = { woj: false, letter: false, type: false };
-      // resetuj UI hintów
       document.querySelectorAll('.hint-btn').forEach(b => b.disabled = false);
 
       const inp = $('guessInput');
       inp.value = '';
       inp.disabled = false;
-      inp.focus();
+
+      // *** FIX GŁÓWNY: NIE wywołuj focus() na mobile ***
+      // Na mobile focus() otwiera klawiaturę programmatycznie z setTimeout,
+      // co powoduje resize viewportu i "zacięcie" layoutu.
+      // Użytkownik mobilny sam tapnie w pole gdy będzie gotowy.
+      if (!isMobile()) {
+        inp.focus();
+      } else {
+        // Na mobile: delikatna animacja pulsowania inputu jako sygnał "wpisz tutaj"
+        inp.classList.remove('ready-pulse');
+        void inp.offsetWidth; // reflow
+        inp.classList.add('ready-pulse');
+        // Przewiń panel gry na górę, żeby tablica była widoczna
+        const gamePanel = document.querySelector('aside.game');
+        if (gamePanel) gamePanel.scrollTop = 0;
+      }
 
       if (state.mode === 'reverse') {
-        // pokaż NAZWĘ POWIATU - ukryj prefiks
         $('platePrefix').textContent = '???';
         $('questionLine').innerHTML = `Powiat: <strong>${state.current.nazwa}</strong> — wpisz <strong>kod tablicy</strong>`;
         inp.placeholder = 'np. KR, WPI, KLI...';
@@ -2093,7 +2071,6 @@
       let correct = false, kind = null;
 
       if (state.mode === 'reverse') {
-        // sprawdź kod
         const valU = val.toUpperCase().replace(/\s+/g, '');
         if (valU === state.current.kod) { correct = true; kind = 'exact'; }
       } else {
@@ -2103,6 +2080,7 @@
 
       state.pytania++;
       inp.disabled = true;
+      hideSuggestions();
 
       if (correct) {
         recordResult(state.current.kod, true);
@@ -2117,14 +2095,15 @@
         flash('+' + gain, false);
         showCorrectFeedback(state.current, gain, kind === 'fuzzy');
         flyToOnMap(state.current);
-        setTimeout(nextQuestion, 2200);
+        // FIX: krótszy czas na mobile dla lepszego UX
+        setTimeout(nextQuestion, isMobile() ? 1800 : 2200);
       } else {
         recordResult(state.current.kod, false);
         state.seria = 0;
         flash('BŁĄD', true);
         showWrongFeedback(state.current, val);
         flyToOnMap(state.current, true);
-        setTimeout(nextQuestion, 3500);
+        setTimeout(nextQuestion, isMobile() ? 2800 : 3500);
       }
 
       saveState();
@@ -2136,50 +2115,52 @@
       state.pytania++;
       state.seria = 0;
       recordResult(state.current.kod, false);
-      $('guessInput').disabled = true;
+      const inp = $('guessInput');
+      inp.disabled = true;
+      hideSuggestions();
       showWrongFeedback(state.current, null, true);
       flyToOnMap(state.current, true);
       saveState();
       updateHud();
-      setTimeout(nextQuestion, 2500);
+      setTimeout(nextQuestion, isMobile() ? 2000 : 2500);
     }
 
     function showCorrectFeedback(p, gain, fuzzy) {
       const wikiUrl = `https://pl.wikipedia.org/wiki/${encodeURIComponent(p.wiki)}`;
       const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
       showFeedback(`
-    <div class="feedback-head">✓ Brawo${fuzzy ? ' (z literówką)' : ''}!</div>
-    <div class="feedback-body">
-      <strong>${p.kod}</strong> = <strong>${p.nazwa}</strong> — woj. ${p.woj}.
-      Zdobyte: <strong>+${gain} pkt</strong>.
-    </div>
-    <div class="feedback-meta">
-      <span class="chip">Typ: ${p.typ === 'miasto' ? 'miasto na prawach powiatu' : 'powiat ziemski'}</span>
-      <span class="chip"><a href="${wikiUrl}" target="_blank" rel="noopener">Wikipedia ↗</a></span>
-      <span class="chip"><a href="${mapsUrl}" target="_blank" rel="noopener">Google Maps ↗</a></span>
-    </div>
-  `, 'correct');
+        <div class="feedback-head">✓ Brawo${fuzzy ? ' (z literówką)' : ''}!</div>
+        <div class="feedback-body">
+          <strong>${p.kod}</strong> = <strong>${p.nazwa}</strong> — woj. ${p.woj}.
+          Zdobyte: <strong>+${gain} pkt</strong>.
+        </div>
+        <div class="feedback-meta">
+          <span class="chip">Typ: ${p.typ === 'miasto' ? 'miasto na prawach powiatu' : 'powiat ziemski'}</span>
+          <span class="chip"><a href="${wikiUrl}" target="_blank" rel="noopener">Wikipedia ↗</a></span>
+          <span class="chip"><a href="${mapsUrl}" target="_blank" rel="noopener">Google Maps ↗</a></span>
+        </div>
+      `, 'correct');
     }
 
     function showWrongFeedback(p, given, skipped = false) {
       const wikiUrl = `https://pl.wikipedia.org/wiki/${encodeURIComponent(p.wiki)}`;
       showFeedback(`
-    <div class="feedback-head">${skipped ? '↷ Pominięte' : '✗ Błąd'}</div>
-    <div class="feedback-body">
-      ${state.mode === 'reverse'
-          ? `Prawidłowy kod dla <strong>${p.nazwa}</strong> to <strong>${p.kod}</strong>.`
-          : `Kod <strong>${p.kod}</strong> oznacza <strong>${p.nazwa}</strong> (woj. ${p.woj}).`
-        }
-      ${given ? `<br><span style="color:var(--tekst-mute)">Twoja odpowiedź: "${given}"</span>` : ''}
-    </div>
-    <div class="feedback-meta">
-      <span class="chip"><a href="${wikiUrl}" target="_blank" rel="noopener">Sprawdź na Wiki ↗</a></span>
-    </div>
-  `, 'wrong');
+        <div class="feedback-head">${skipped ? '↷ Pominięte' : '✗ Błąd'}</div>
+        <div class="feedback-body">
+          ${state.mode === 'reverse'
+            ? `Prawidłowy kod dla <strong>${p.nazwa}</strong> to <strong>${p.kod}</strong>.`
+            : `Kod <strong>${p.kod}</strong> oznacza <strong>${p.nazwa}</strong> (woj. ${p.woj}).`
+          }
+          ${given ? `<br><span style="color:var(--tekst-mute)">Twoja odpowiedź: "${given}"</span>` : ''}
+        </div>
+        <div class="feedback-meta">
+          <span class="chip"><a href="${wikiUrl}" target="_blank" rel="noopener">Sprawdź na Wiki ↗</a></span>
+        </div>
+      `, 'wrong');
     }
 
     /* ============================================================
-       PODPOWIEDZI (autocomplete)
+       AUTOCOMPLETE
        ============================================================ */
     let suggHl = -1;
     let currentSugg = [];
@@ -2194,17 +2175,13 @@
         const ix = nn.indexOf(nq);
         let nazwaHtml = p.nazwa;
         if (ix >= 0 && nq.length > 0) {
-          // znajdź te same indeksy w oryginale (przybliżenie)
-          const start = ix;
           const end = ix + nq.length;
-          // bezpośrednia wersja: bold pierwsze N znaków jeśli pasują
           nazwaHtml = `<b>${p.nazwa.slice(0, end)}</b>${p.nazwa.slice(end)}`;
         }
-        // NOWY KOD (tylko województwo):
         return `<div class="suggestion ${i === suggHl ? 'hl' : ''}" data-idx="${i}">
-  <span class="nazwa">${nazwaHtml}</span>
-  <span class="meta">${p.woj}</span>
-</div>`;
+          <span class="nazwa">${nazwaHtml}</span>
+          <span class="meta">${p.woj}</span>
+        </div>`;
       }).join('');
       $('suggestions').innerHTML = html;
       $('suggestions').classList.add('open');
@@ -2225,15 +2202,14 @@
     /* ============================================================
        MAPA
        ============================================================ */
-    let map, currentMarker, currentPopup;
+    let map, currentMarker;
 
     function initMap() {
       const mapContainer = $('map');
-      // Jeśli mapa jest ukryta w CSS (na mobile), nie inicjalizuj jej
       if (!mapContainer || window.getComputedStyle(mapContainer).display === 'none') return;
 
       map = L.map('map', {
-        center: [52.0, 19.4],   // ~centrum Polski
+        center: [52.0, 19.4],
         zoom: 6,
         minZoom: 5,
         maxZoom: 14,
@@ -2242,7 +2218,6 @@
         attributionControl: true,
       });
 
-      // Dark map tiles - CartoDB Dark Matter
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap, © CARTO',
         subdomains: 'abcd',
@@ -2266,28 +2241,26 @@
 
       const wikiUrl = `https://pl.wikipedia.org/wiki/${encodeURIComponent(p.wiki)}`;
       const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
-
       const stat = state.perPowiat[p.kod] || { good: 0, bad: 0 };
       const total = stat.good + stat.bad;
       const acc = total > 0 ? Math.round((stat.good / total) * 100) + '%' : '—';
 
       const popupHtml = `
-    <div class="popup">
-      <div class="popup-head"><span class="kod">${p.kod}</span>${p.nazwa}</div>
-      <div class="popup-body">
-        <div class="popup-row"><span class="l">Województwo</span><span class="v">${p.woj}</span></div>
-        <div class="popup-row"><span class="l">Typ</span><span class="v">${p.typ === 'miasto' ? 'miasto na prawach powiatu' : 'powiat ziemski'}</span></div>
-        <div class="popup-row"><span class="l">Twoja trafność</span><span class="v">${acc} (${stat.good}/${total})</span></div>
-        <div class="popup-row"><span class="l">Współrzędne</span><span class="v">${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}</span></div>
-        <div class="popup-links">
-          <a class="popup-link" href="${wikiUrl}" target="_blank" rel="noopener">Wikipedia</a>
-          <a class="popup-link" href="${mapsUrl}" target="_blank" rel="noopener">Maps</a>
+        <div class="popup">
+          <div class="popup-head"><span class="kod">${p.kod}</span>${p.nazwa}</div>
+          <div class="popup-body">
+            <div class="popup-row"><span class="l">Województwo</span><span class="v">${p.woj}</span></div>
+            <div class="popup-row"><span class="l">Typ</span><span class="v">${p.typ === 'miasto' ? 'miasto na prawach powiatu' : 'powiat ziemski'}</span></div>
+            <div class="popup-row"><span class="l">Twoja trafność</span><span class="v">${acc} (${stat.good}/${total})</span></div>
+            <div class="popup-row"><span class="l">Współrzędne</span><span class="v">${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}</span></div>
+            <div class="popup-links">
+              <a class="popup-link" href="${wikiUrl}" target="_blank" rel="noopener">Wikipedia</a>
+              <a class="popup-link" href="${mapsUrl}" target="_blank" rel="noopener">Maps</a>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  `;
+      `;
       currentMarker.bindPopup(popupHtml, { maxWidth: 320, closeButton: true }).openPopup();
-
       map.flyTo([p.lat, p.lng], 10, { duration: 1.2, easeLinearity: 0.4 });
     }
 
@@ -2315,9 +2288,9 @@
 
       state.punkty = Math.max(0, state.punkty - cost);
       showFeedback(`
-    <div class="feedback-head">💡 Podpowiedź</div>
-    <div class="feedback-body">${msg} <span style="color:var(--tekst-mute)">(−${cost} pkt)</span></div>
-  `, 'hint');
+        <div class="feedback-head">💡 Podpowiedź</div>
+        <div class="feedback-body">${msg} <span style="color:var(--tekst-mute)">(−${cost} pkt)</span></div>
+      `, 'hint');
       document.querySelector(`.hint-btn[data-hint="${type}"]`).disabled = true;
       updateHud();
       saveState();
@@ -2348,19 +2321,18 @@
       document.title = 'MISTRZ TABLIC';
       $('guessInput').disabled = true;
       showFeedback(`
-    <div class="feedback-head">⏱ Koniec czasu!</div>
-    <div class="feedback-body">
-      Odpowiedzi: <strong>${state.pytania}</strong>, trafionych: <strong>${state.trafione}</strong>.
-      Wynik: <strong>${state.punkty} pkt</strong>.
-    </div>
-  `, 'correct');
+        <div class="feedback-head">⏱ Koniec czasu!</div>
+        <div class="feedback-body">
+          Odpowiedzi: <strong>${state.pytania}</strong>, trafionych: <strong>${state.trafione}</strong>.
+          Wynik: <strong>${state.punkty} pkt</strong>.
+        </div>
+      `, 'correct');
     }
 
     /* ============================================================
-       STATYSTYKI - modal
+       STATYSTYKI
        ============================================================ */
     function buildStatsModal() {
-      // Per województwo
       const perWoj = {};
       for (const p of POWIATY) {
         if (!perWoj[p.woj]) perWoj[p.woj] = { good: 0, bad: 0 };
@@ -2378,16 +2350,15 @@
         if (total === 0) continue;
         const pct = Math.round((s.good / total) * 100);
         html += `
-      <div class="woj-bar">
-        <div class="name">${woj}</div>
-        <div class="track"><div class="fill" style="width:${pct}%;background-position:${100 - pct}% 0"></div></div>
-        <div class="pct">${pct}% (${s.good}/${total})</div>
-      </div>
-    `;
+          <div class="woj-bar">
+            <div class="name">${woj}</div>
+            <div class="track"><div class="fill" style="width:${pct}%;background-position:${100 - pct}% 0"></div></div>
+            <div class="pct">${pct}% (${s.good}/${total})</div>
+          </div>
+        `;
       }
       $('wojStatsList').innerHTML = html || '<div style="color:var(--tekst-mute);font-size:13px">Brak danych — zagraj kilka rund.</div>';
 
-      // Top 5 mylonych
       const mistakes = Object.entries(state.perPowiat)
         .map(([kod, s]) => ({ kod, ...s, total: s.good + s.bad, accuracy: s.good / (s.good + s.bad || 1) }))
         .filter(x => x.bad > 0)
@@ -2400,15 +2371,15 @@
           const p = POWIATY.find(x => x.kod === m.kod);
           if (!p) return '';
           return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)">
-        <span><b style="color:var(--zolty);font-family:'DM Mono'">${m.kod}</b> ${p.nazwa}</span>
-        <span style="color:var(--czerwony)">${m.bad}× pomyłka</span>
-      </div>`;
+            <span><b style="color:var(--zolty);font-family:'DM Mono'">${m.kod}</b> ${p.nazwa}</span>
+            <span style="color:var(--czerwony)">${m.bad}× pomyłka</span>
+          </div>`;
         }).join('');
       }
     }
 
     /* ============================================================
-       REGION - modal
+       REGION
        ============================================================ */
     function buildRegionModal() {
       const wojs = [...new Set(POWIATY.map(p => p.woj))].sort((a, b) => a.localeCompare(b, 'pl'));
@@ -2426,7 +2397,7 @@
     }
 
     /* ============================================================
-       MODE SWITCHING
+       TRYBY GRY
        ============================================================ */
     function setMode(mode) {
       if (state.timer) { clearInterval(state.timer); state.timer = null; document.title = 'MISTRZ TABLIC'; }
@@ -2454,12 +2425,10 @@
       initMap();
       updateHud();
 
-      // Tryby
       document.querySelectorAll('.mode-btn').forEach(b => {
         b.addEventListener('click', () => setMode(b.dataset.mode));
       });
 
-      // Input
       const inp = $('guessInput');
       inp.addEventListener('input', e => {
         suggHl = -1;
@@ -2488,27 +2457,22 @@
         }
       });
 
-      // Klik na podpowiedź (event delegation)
       $('suggestions').addEventListener('click', e => {
         const s = e.target.closest('.suggestion');
         if (s) { pickSuggestion(parseInt(s.dataset.idx)); }
       });
 
-      // Klik poza inputem zamyka podpowiedzi
       document.addEventListener('click', e => {
         if (!e.target.closest('.input-wrap')) hideSuggestions();
       });
 
-      // Akcje
       $('btnSubmit').addEventListener('click', submitAnswer);
       $('btnSkip').addEventListener('click', skipQuestion);
 
-      // Hinty
       document.querySelectorAll('.hint-btn').forEach(b => {
         b.addEventListener('click', () => useHint(b.dataset.hint));
       });
 
-      // Modały
       $('btnHelp').addEventListener('click', () => $('helpModal').classList.add('open'));
       $('btnStats').addEventListener('click', () => {
         buildStatsModal();
@@ -2534,7 +2498,6 @@
         buildStatsModal();
       });
 
-      // START
       nextQuestion();
     });
   </script>
