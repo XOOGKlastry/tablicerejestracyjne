@@ -1700,10 +1700,10 @@ function renderSuggestions(query){
       // bezpośrednia wersja: bold pierwsze N znaków jeśli pasują
       nazwaHtml = `<b>${p.nazwa.slice(0,end)}</b>${p.nazwa.slice(end)}`;
     }
-    return `<div class="suggestion ${i===suggHl?'hl':''}" data-idx="${i}">
-      <span class="nazwa">${nazwaHtml}</span>
-      <span class="meta">${p.kod} • ${p.woj}</span>
-    </div>`;
+        return `<div class="suggestion ${i === suggHl ? 'hl' : ''}" data-idx="${i}">
+  <span class="nazwa">${nazwaHtml}</span>
+  <span class="meta">${p.woj}</span>
+</div>`;
   }).join('');
   $('suggestions').innerHTML = html;
   $('suggestions').classList.add('open');
