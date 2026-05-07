@@ -78,10 +78,15 @@
       z-index: 2;
       display: grid;
       grid-template-columns: 420px 1fr;
-      grid-template-rows: 64px 1fr;
+      grid-template-rows: auto 64px 1fr;
       height: 100vh;
       gap: 0;
     }
+    /* Timer bar spans full width above header */
+    .time-bar { grid-column: 1 / -1; grid-row: 1; }
+    header.top { grid-column: 1 / -1; grid-row: 2; }
+    aside.game { grid-row: 3; }
+    main.map-section { grid-row: 3; }
 
     header.top {
       grid-column: 1/-1;
@@ -1005,6 +1010,65 @@
       margin: 0 2px;
     }
 
+    /* ============ TIMER NA CZAS ============ */
+    .time-bar {
+      display: none;
+      grid-column: 1 / -1;
+      background: var(--asfalt-2);
+      border-bottom: 1px solid var(--line);
+      padding: 0 24px;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      height: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .time-bar.active { display: flex; }
+
+    /* Pasek postępu w tle */
+    .time-bar__progress {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: var(--time-pct, 100%);
+      background: linear-gradient(90deg, rgba(255,59,59,0.25), rgba(255,138,26,0.15));
+      transition: width 1s linear;
+      pointer-events: none;
+    }
+
+    .time-bar__label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--tekst-mute);
+      text-transform: uppercase;
+      position: relative;
+    }
+    .time-bar__count {
+      font-family: 'Anton', sans-serif;
+      font-size: 28px;
+      letter-spacing: 4px;
+      color: var(--zolty);
+      position: relative;
+      min-width: 60px;
+      text-align: center;
+    }
+    .time-bar__count.urgent { color: var(--czerwony); animation: tick .5s ease-in-out infinite alternate; }
+    @keyframes tick { from { transform: scale(1); } to { transform: scale(1.08); } }
+
+    .time-bar__pts {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--tekst-dim);
+      position: relative;
+    }
+    .time-bar__pts span { color: var(--czerwony); font-weight: 700; }
+
+    /* Na mobile timer bar zajmuje pełną szerokość nad grą */
+    @media (max-width: 900px) {
+      .time-bar { padding: 0 12px; }
+      .time-bar__count { font-size: 22px; }
+    }
+
     /* ============ PRZYCISK DALEJ — inline, zawsze widoczny po odpowiedzi ============ */
     #btnDalej {
       display: none;           /* ukryty domyślnie */
@@ -1081,9 +1145,9 @@
 
       .app {
         grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
+        grid-template-rows: auto auto 1fr;
         height: 100vh;
-        height: 100dvh; /* dynamic viewport height — kluczowa poprawka */
+        height: 100dvh;
         min-height: -webkit-fill-available;
       }
 
@@ -1228,12 +1292,113 @@
         font-size: 50px;
       }
     }
+    /* ============ NICK / RANKING ============ */
+
+    /* Gracz w HUD */
+    .hud-nick {
+      display: flex;
+      flex-direction: column;
+      padding: 6px 14px;
+      background: var(--panel);
+      border: 1px solid var(--zolty);
+      min-width: 80px;
+      max-width: 120px;
+    }
+    .hud-nick .label { font-size: 9px; letter-spacing: 2px; color: var(--zolty); text-transform: uppercase; }
+    .hud-nick .value {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--tekst);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Modal nicku — blokuje całość, bez możliwości zamknięcia */
+    #nickModal .modal-head { background: var(--asfalt); border-bottom: 3px solid var(--zolty); }
+    #nickModal .modal-head span { color: var(--zolty); }
+    .nick-input-wrap { position: relative; margin: 16px 0 8px; }
+    .nick-input-wrap input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--asfalt);
+      border: 2px solid var(--line);
+      color: var(--tekst);
+      font-family: 'Anton', sans-serif;
+      font-size: 22px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .nick-input-wrap input:focus { border-color: var(--zolty); }
+    .nick-input-wrap input.error { border-color: var(--czerwony); }
+    .nick-error {
+      font-size: 12px;
+      color: var(--czerwony);
+      letter-spacing: 1px;
+      min-height: 18px;
+      margin-bottom: 6px;
+    }
+
+    /* Ranking — wiersze */
+    .rank-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+    .rank-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 70px 60px;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--asfalt-2);
+      border: 1px solid var(--line);
+      font-size: 13px;
+      transition: border-color .15s;
+    }
+    .rank-row.me { border-color: var(--zolty); background: rgba(255,204,0,0.06); }
+    .rank-row.top1 { border-color: #ffd700; }
+    .rank-row.top2 { border-color: #c0c0c0; }
+    .rank-row.top3 { border-color: #cd7f32; }
+    .rank-pos {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      color: var(--tekst-mute);
+    }
+    .rank-row.top1 .rank-pos { color: #ffd700; }
+    .rank-row.top2 .rank-pos { color: #c0c0c0; }
+    .rank-row.top3 .rank-pos { color: #cd7f32; }
+    .rank-name { font-weight: 600; color: var(--tekst); font-family: 'Anton', sans-serif; letter-spacing: 1px; }
+    .rank-name.me-label::after { content: " (Ty)"; font-family: 'Outfit'; font-size: 10px; color: var(--zolty); font-weight: 400; }
+    .rank-pts {
+      font-family: 'DM Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--zolty);
+      text-align: right;
+    }
+    .rank-acc {
+      font-size: 11px;
+      color: var(--tekst-mute);
+      text-align: right;
+    }
+    .rank-empty { color: var(--tekst-mute); font-size: 13px; padding: 12px 0; }
+
   </style>
 </head>
 
 <body>
 
   <div class="app">
+    <!-- Timer bar — pojawia się tylko w trybie "na czas" -->
+    <div class="time-bar" id="timeBar">
+      <div class="time-bar__progress" id="timeProgress"></div>
+      <div class="time-bar__label">Czas</div>
+      <div class="time-bar__count" id="timeCount">—</div>
+      <div class="time-bar__pts">−5 pkt/<span>sek</span></div>
+    </div>
+
     <header class="top">
       <div class="brand">
         <div class="brand-mark"><span>JP</span></div>
@@ -1243,6 +1408,10 @@
         </div>
       </div>
       <div class="hud">
+        <div class="hud-nick">
+          <div class="label">Gracz</div>
+          <div class="value" id="hudNick">—</div>
+        </div>
         <div class="hud-stat hot">
           <div class="label">Punkty</div>
           <div class="value" id="hudPunkty">0</div>
@@ -1255,6 +1424,11 @@
           <div class="label">Trafność</div>
           <div class="value" id="hudTraf" style="color: var(--niebieski-eu);">—</div>
         </div>
+        <button class="hud-icon-btn" id="btnRanking" title="Ranking">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </button>
         <button class="hud-icon-btn" id="btnStats" title="Statystyki">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 3v18h18" />
@@ -1326,16 +1500,19 @@
       </div>
 
       <div class="hints">
-        <button class="hint-btn" id="hintWoj" data-hint="woj">
-          Województwo<span class="cost">−5 pkt</span>
+        <button class="hint-btn" id="hintL1" data-hint="l1">
+          1. litera<span class="cost">−5 pkt</span>
         </button>
-        <button class="hint-btn" id="hintLetter" data-hint="letter">
-          Pierwsza litera<span class="cost">−10 pkt</span>
+        <button class="hint-btn" id="hintL2" data-hint="l2">
+          2. litera<span class="cost">−10 pkt</span>
         </button>
-        <button class="hint-btn" id="hintType" data-hint="type">
-          Typ powiatu<span class="cost">−3 pkt</span>
+        <button class="hint-btn" id="hintL3" data-hint="l3">
+          3. litera<span class="cost">−15 pkt</span>
         </button>
       </div>
+
+      <!-- Podpowiedź literowa — wyświetla odkryte litery -->
+      <div id="hintLettersDisplay" style="display:none; font-family:'Anton',sans-serif; font-size:22px; letter-spacing:6px; color:var(--zolty); text-align:center; padding:4px 0;"></div>
 
       <!-- Przyciski gry — Sprawdź/Pomiń widoczne przy pytaniu, DALEJ po odpowiedzi -->
       <div class="actions" id="actionsGame">
@@ -1880,7 +2057,70 @@
     /* ============================================================
        STAN GRY
        ============================================================ */
-    const STORAGE_KEY = 'mistrzTablic_v1';
+    const STORAGE_KEY   = 'mistrzTablic_v1';
+    const USERS_KEY     = 'mistrzTablic_users_v1';   // obiekt { nick: { rekord, pytania, trafione, najlSeria, ts } }
+    const SESSION_KEY   = 'mistrzTablic_session_v1'; // nick bieżącej sesji (sessionStorage)
+
+    /* ---- Zarządzanie użytkownikami ---- */
+    function getUsers() {
+      try { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); } catch(e) { return {}; }
+    }
+    function saveUsers(users) {
+      try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch(e) {}
+    }
+    function getCurrentNick() {
+      return sessionStorage.getItem(SESSION_KEY) || '';
+    }
+    function registerNick(nick) {
+      nick = nick.trim().toUpperCase().replace(/[^A-Z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż _-]/gi, '').trim();
+      if (!nick) return 'Wpisz nick.';
+      if (nick.length < 2) return 'Minimum 2 znaki.';
+      const users = getUsers();
+      if (users[nick]) return 'Ten nick jest już zajęty!';
+      users[nick] = { rekord: 0, pytania: 0, trafione: 0, najlSeria: 0, ts: Date.now() };
+      saveUsers(users);
+      sessionStorage.setItem(SESSION_KEY, nick);
+      return null; // brak błędu
+    }
+    function saveRanking() {
+      const nick = getCurrentNick();
+      if (!nick) return;
+      const users = getUsers();
+      if (!users[nick]) users[nick] = { rekord: 0, pytania: 0, trafione: 0, najlSeria: 0, ts: Date.now() };
+      // aktualizuj tylko jeśli lepszy wynik
+      users[nick].rekord    = Math.max(users[nick].rekord,    state.rekord);
+      users[nick].najlSeria = Math.max(users[nick].najlSeria, state.najlSeria);
+      users[nick].pytania   = state.pytania;
+      users[nick].trafione  = state.trafione;
+      users[nick].ts        = Date.now();
+      saveUsers(users);
+    }
+    function buildRankingModal() {
+      const users = getUsers();
+      const nick  = getCurrentNick();
+      const sorted = Object.entries(users)
+        .map(([n, d]) => ({ nick: n, ...d }))
+        .filter(u => u.pytania > 0 || u.rekord > 0)
+        .sort((a, b) => b.rekord - a.rekord || b.pytania - a.pytania);
+
+      if (sorted.length === 0) {
+        $('rankList').innerHTML = '<div class="rank-empty">Brak wyników — zagraj kilka rund!</div>';
+        return;
+      }
+      const medalClass = ['top1','top2','top3'];
+      const medals = ['🥇','🥈','🥉'];
+      $('rankList').innerHTML = sorted.slice(0, 20).map((u, i) => {
+        const isMe = u.nick === nick;
+        const acc  = u.pytania > 0 ? Math.round(u.trafione / u.pytania * 100) + '%' : '—';
+        const posLabel = i < 3 ? medals[i] : (i + 1);
+        return `<div class="rank-row ${i < 3 ? medalClass[i] : ''} ${isMe ? 'me' : ''}">
+          <div class="rank-pos">${posLabel}</div>
+          <div class="rank-name ${isMe ? 'me-label' : ''}">${u.nick}</div>
+          <div class="rank-pts">${u.rekord} <span style="font-size:10px;color:var(--tekst-mute)">pkt</span></div>
+          <div class="rank-acc">${acc}</div>
+        </div>`;
+      }).join('');
+    }
     const state = {
       mode: 'classic',
       regionWoj: null,
@@ -1921,6 +2161,7 @@
           perPowiat: state.perPowiat,
         }));
       } catch (e) { }
+      saveRanking();
     }
 
     /* ============================================================
@@ -2015,6 +2256,7 @@
     const $ = id => document.getElementById(id);
 
     function updateHud() {
+      $('hudNick').textContent = getCurrentNick() || '—';
       $('hudPunkty').textContent = state.punkty;
       $('hudSeria').textContent = state.seria;
       $('miniQ').textContent = state.pytania;
@@ -2061,8 +2303,10 @@
       state.current = pickRandom();
 
       // Reset podpowiedzi
-      state.hintsUsed = { woj: false, letter: false, type: false };
+      state.hintsUsed = { l1: false, l2: false, l3: false };
       document.querySelectorAll('.hint-btn').forEach(b => b.disabled = false);
+      const hld = $('hintLettersDisplay');
+      if (hld) { hld.style.display = 'none'; hld.innerHTML = ''; }
 
       // Reset inputu
       const inp = $('guessInput');
@@ -2127,19 +2371,21 @@
         state.trafione++;
         state.seria++;
         if (state.seria > state.najlSeria) state.najlSeria = state.seria;
-        const bonus = Math.min(state.seria * 2, 30);
-        const gain = 10 + bonus + (kind === 'fuzzy' ? -2 : 0);
+        const gain = 25 + (kind === 'fuzzy' ? -5 : 0);
         state.punkty += gain;
         if (state.punkty > state.rekord) state.rekord = state.punkty;
         flash('+' + gain, false);
         showCorrectFeedback(state.current, gain, kind === 'fuzzy');
         flyToOnMap(state.current);
+        // Tryb na czas: start timera przy pierwszej odpowiedzi
+        if (state.mode === 'time' && !state.timer) startTimeTick();
       } else {
         recordResult(state.current.kod, false);
         state.seria = 0;
         flash('BŁĄD', true);
         showWrongFeedback(state.current, val);
         flyToOnMap(state.current, true);
+        if (state.mode === 'time' && !state.timer) startTimeTick();
       }
 
       saveState();
@@ -2309,63 +2555,104 @@
     function useHint(type) {
       if (!state.current) return;
       if (state.hintsUsed[type]) return;
-      state.hintsUsed[type] = true;
 
-      let cost = 0, msg = '';
-      if (type === 'woj') {
-        cost = 5;
-        msg = `Województwo: <strong>${state.current.woj}</strong>`;
-      } else if (type === 'letter') {
-        cost = 10;
-        msg = `Pierwsza litera: <strong>${state.current.nazwa[0].toUpperCase()}</strong>`;
-      } else if (type === 'type') {
-        cost = 3;
-        msg = state.current.typ === 'miasto'
-          ? 'To <strong>miasto na prawach powiatu</strong> (główny ośrodek)'
-          : 'To <strong>powiat ziemski</strong>';
+      // Blokada kolejności: l2 wymaga l1, l3 wymaga l2
+      if (type === 'l2' && !state.hintsUsed.l1) {
+        showFeedback('<div class="feedback-head" style="color:var(--tekst-mute)">Najpierw odkryj 1. literę</div>', 'hint');
+        return;
+      }
+      if (type === 'l3' && !state.hintsUsed.l2) {
+        showFeedback('<div class="feedback-head" style="color:var(--tekst-mute)">Najpierw odkryj 2. literę</div>', 'hint');
+        return;
       }
 
+      const costs = { l1: 5, l2: 10, l3: 15 };
+      const cost = costs[type];
+      state.hintsUsed[type] = true;
       state.punkty = Math.max(0, state.punkty - cost);
-      showFeedback(`
-        <div class="feedback-head">💡 Podpowiedź</div>
-        <div class="feedback-body">${msg} <span style="color:var(--tekst-mute)">(−${cost} pkt)</span></div>
-      `, 'hint');
-      document.querySelector(`.hint-btn[data-hint="${type}"]`).disabled = true;
+
+      // Odkryj litery — pokazuj _ dla nieodkrytych
+      const name = state.current.nazwa.toUpperCase();
+      const revealed = type === 'l1' ? 1 : type === 'l2' ? 2 : 3;
+      const display = name.split('').map((ch, i) => {
+        if (ch === ' ') return ' ';
+        return i < revealed ? `<span style="color:var(--zolty)">${ch}</span>` : '_';
+      }).join('');
+
+      const dispEl = $('hintLettersDisplay');
+      dispEl.style.display = 'block';
+      dispEl.innerHTML = display;
+
+      $('hintL' + type[1]).disabled = true;
       updateHud();
       saveState();
     }
 
     /* ============================================================
-       TRYB NA CZAS
+       TRYB NA CZAS — timer startuje przy pierwszej odpowiedzi
        ============================================================ */
+    const TIME_TOTAL = 60; // sekund
+
     function startTimeMode() {
-      state.timeLeft = 90;
-      state.punkty = 0;
-      state.seria = 0;
-      if (state.timer) clearInterval(state.timer);
+      // Reset stanu — timer NIE startuje od razu
+      if (state.timer) { clearInterval(state.timer); state.timer = null; }
+      state.timeLeft = TIME_TOTAL;
+      state.punkty   = 0;
+      state.seria    = 0;
+      // Pokaż bar ale z myślnikiem (czeka na pierwszą odpowiedź)
+      const bar = $('timeBar');
+      bar.classList.add('active');
+      $('timeCount').textContent = '—';
+      $('timeProgress').style.setProperty('--time-pct', '100%');
+      updateHud();
+      nextQuestion();
+    }
+
+    function startTimeTick() {
+      // Wywoływane przy pierwszej odpowiedzi w trybie na czas
+      state.timeLeft = TIME_TOTAL;
+      updateTimeBar();
       state.timer = setInterval(() => {
         state.timeLeft--;
-        document.title = `⏱ ${state.timeLeft}s — MISTRZ TABLIC`;
+        state.punkty = Math.max(0, state.punkty - 5); // -5 pkt/sek
+        updateHud();
+        updateTimeBar();
         if (state.timeLeft <= 0) {
           clearInterval(state.timer);
           state.timer = null;
           endTimeMode();
         }
       }, 1000);
-      updateHud();
-      nextQuestion();
+    }
+
+    function updateTimeBar() {
+      const el = $('timeCount');
+      el.textContent = state.timeLeft;
+      el.classList.toggle('urgent', state.timeLeft <= 10);
+      $('timeProgress').style.setProperty('--time-pct', (state.timeLeft / TIME_TOTAL * 100) + '%');
+      document.title = `⏱ ${state.timeLeft}s — MISTRZ TABLIC`;
     }
 
     function endTimeMode() {
       document.title = 'MISTRZ TABLIC';
       $('guessInput').disabled = true;
+      $('actionsGame').style.display = 'none';
+      $('btnDalej').style.display = 'none';
+      $('timeCount').textContent = '0';
+      $('timeCount').classList.add('urgent');
       showFeedback(`
         <div class="feedback-head">⏱ Koniec czasu!</div>
         <div class="feedback-body">
-          Odpowiedzi: <strong>${state.pytania}</strong>, trafionych: <strong>${state.trafione}</strong>.
-          Wynik: <strong>${state.punkty} pkt</strong>.
+          Odpowiedzi: <strong>${state.pytania}</strong>, trafionych: <strong>${state.trafione}</strong>.<br>
+          Wynik końcowy: <strong>${state.punkty} pkt</strong>.
         </div>
       `, 'correct');
+    }
+
+    function stopTimeModeUI() {
+      $('timeBar').classList.remove('active');
+      $('timeCount').classList.remove('urgent');
+      document.title = 'MISTRZ TABLIC';
     }
 
     /* ============================================================
@@ -2439,7 +2726,8 @@
        TRYBY GRY
        ============================================================ */
     function setMode(mode) {
-      if (state.timer) { clearInterval(state.timer); state.timer = null; document.title = 'MISTRZ TABLIC'; }
+      if (state.timer) { clearInterval(state.timer); state.timer = null; }
+      stopTimeModeUI();
       state.mode = mode;
       document.querySelectorAll('.mode-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.mode === mode);
@@ -2464,6 +2752,51 @@
       initMap();
       updateHud();
 
+      /* ---- Obsługa modalu nicku ---- */
+      const nickModal = $('nickModal');
+      const nickInput = $('nickInput');
+      const nickError = $('nickError');
+
+      function tryRegisterNick() {
+        const raw = nickInput.value.trim();
+        const err = registerNick(raw);
+        if (err) {
+          nickError.textContent = err;
+          nickInput.classList.add('error');
+          nickInput.focus();
+          return;
+        }
+        // Sukces — zamknij modal i zacznij grę
+        nickModal.classList.remove('open');
+        updateHud();
+        nextQuestion();
+      }
+
+      // Jeśli sesja już istnieje (odświeżenie strony), pomiń modal
+      if (getCurrentNick()) {
+        nickModal.classList.remove('open');
+        nextQuestion();
+      } else {
+        // Pokaż modal, ustaw focus
+        setTimeout(() => nickInput.focus(), 50);
+      }
+
+      nickInput.addEventListener('input', () => {
+        nickInput.classList.remove('error');
+        nickError.textContent = '';
+      });
+      nickInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') tryRegisterNick();
+      });
+      $('btnNickOk').addEventListener('click', tryRegisterNick);
+
+      /* ---- Ranking ---- */
+      $('btnRanking').addEventListener('click', () => {
+        buildRankingModal();
+        $('rankingModal').classList.add('open');
+      });
+
+      /* ---- Reszta obsługi ---- */
       document.querySelectorAll('.mode-btn').forEach(b => {
         b.addEventListener('click', () => setMode(b.dataset.mode));
       });
@@ -2509,6 +2842,14 @@
       $('btnSkip').addEventListener('click', skipQuestion);
       $('btnDalej').addEventListener('click', nextQuestion);
 
+      // Spacja = DALEJ (gdy przycisk DALEJ jest widoczny)
+      document.addEventListener('keydown', e => {
+        if (e.key === ' ' && $('btnDalej').style.display === 'block') {
+          e.preventDefault();
+          nextQuestion();
+        }
+      });
+
       document.querySelectorAll('.hint-btn').forEach(b => {
         b.addEventListener('click', () => useHint(b.dataset.hint));
       });
@@ -2522,6 +2863,8 @@
         b.addEventListener('click', e => e.target.closest('.modal-bg').classList.remove('open'));
       });
       document.querySelectorAll('.modal-bg').forEach(m => {
+        // Nie zamykaj modalu nicku klikając obok — jest obowiązkowy
+        if (m.id === 'nickModal') return;
         m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
       });
       $('btnReset').addEventListener('click', () => {
@@ -2537,10 +2880,41 @@
         updateHud();
         buildStatsModal();
       });
-
-      nextQuestion();
     });
   </script>
+  <!-- Modal wyboru nicku — blokuje grę do czasu wyboru -->
+  <div class="modal-bg open" id="nickModal" style="z-index:1100">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-head">
+        <span>Podaj swój nick</span>
+      </div>
+      <div class="modal-body">
+        <p>Wprowadź unikalną nazwę gracza. Będzie widoczna w rankingu.</p>
+        <div class="nick-input-wrap">
+          <input type="text" id="nickInput" maxlength="16" autocomplete="off" spellcheck="false" placeholder="TWÓJ NICK">
+        </div>
+        <div class="nick-error" id="nickError"></div>
+        <button class="btn" id="btnNickOk" style="width:100%">Zagraj →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal rankingu -->
+  <div class="modal-bg" id="rankingModal">
+    <div class="modal">
+      <div class="modal-head">
+        <span>🏆 Ranking graczy</span>
+        <button class="modal-close" data-close>×</button>
+      </div>
+      <div class="modal-body">
+        <div class="rank-list" id="rankList"></div>
+        <p style="margin-top:16px;font-size:11px;color:var(--tekst-mute)">
+          Ranking jest lokalny — przechowywany w tej przeglądarce na tym urządzeniu.
+        </p>
+      </div>
+    </div>
+  </div>
+
 </body>
 
 </html>
