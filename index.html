@@ -1136,7 +1136,6 @@
     /* ============ MOBILE ============ */
     @media (max-width: 900px) {
 
-      /* FIX: dvh uwzględnia pasek przeglądarki i klawiaturę */
       html, body {
         overflow: hidden;
         height: 100%;
@@ -1149,108 +1148,154 @@
         height: 100vh;
         height: 100dvh;
         min-height: -webkit-fill-available;
+        overflow-x: hidden;
+        width: 100%;
       }
 
+      /* ---- HEADER: 2-rzędowy layout ---- */
       header.top {
-        padding: 8px 12px;
-        height: 56px;
-        flex-shrink: 0; /* nie kurczy się przy klawiaturze */
+        padding: 0;
+        height: auto;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+      }
+
+      header.top .brand {
+        padding: 7px 10px;
+        gap: 8px;
+        overflow: hidden;
       }
 
       .brand-mark {
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+        flex-shrink: 0;
       }
 
       .brand-title {
-        font-size: 16px;
-        letter-spacing: 1px;
+        font-size: 12px;
+        letter-spacing: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
-      .brand-sub {
-        display: none;
-      }
+      .brand-sub { display: none; }
 
+      /* HUD: poziomy pasek pod logo */
       .hud {
-        gap: 4px;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 0;
+        border-top: 1px solid var(--line);
+        background: var(--asfalt-2);
+        overflow: hidden;
       }
+
+      .hud-nick {
+        flex: 1 1 80px;
+        min-width: 0;
+        max-width: 90px;
+        padding: 4px 8px;
+        border: none;
+        border-right: 1px solid var(--line);
+        background: transparent;
+      }
+
+      .hud-nick .label { font-size: 7px; letter-spacing: 1px; }
+      .hud-nick .value { font-size: 11px; letter-spacing: 0; }
 
       .hud-stat {
-        min-width: 60px;
-        padding: 4px 8px;
+        flex: 1 1 50px;
+        min-width: 0;
+        padding: 4px 6px;
+        border: none;
+        border-right: 1px solid var(--line);
+        background: transparent;
       }
 
-      .hud-stat .value {
-        font-size: 14px;
-      }
+      .hud-stat .label { font-size: 7px; letter-spacing: 1px; }
+      .hud-stat .value { font-size: 14px; margin-top: 1px; }
+
+      /* Ukryj Trafność — widoczna w statystykach */
+      .hud-stat:nth-child(4) { display: none; }
 
       .hud-icon-btn {
-        padding: 6px;
+        flex: 0 0 36px;
+        padding: 0;
+        width: 36px;
+        border: none;
+        border-left: 1px solid var(--line);
+        background: transparent;
       }
 
+      .hud-icon-btn svg { width: 15px; height: 15px; }
+
+      /* ---- GAME PANEL ---- */
       aside.game {
-        padding: 12px;
-        gap: 12px;
+        padding: 10px 10px;
+        gap: 10px;
         border-right: none;
         overflow-y: auto;
-        /* FIX: zapobiega "skaczącemu" layoutowi gdy klawiatura pojawia się/znika */
+        overflow-x: hidden;
         min-height: 0;
-        flex: 1;
       }
 
-      /* Mapa ukryta na mobile */
-      main.map-section {
-        display: none !important;
+      main.map-section { display: none !important; }
+
+      /* ---- TRYBY: 2x2 ---- */
+      .modes {
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
       }
 
-      .plate-wrap {
-        margin: 0;
+      .mode-btn {
+        font-size: 10px;
+        padding: 9px 4px;
+        letter-spacing: 0.8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
+
+      /* ---- TABLICA ---- */
+      .plate-wrap { margin: 0; }
 
       .plate {
-        font-size: 36px;
-        padding: 0 10px 0 46px;
+        font-size: 30px;
+        letter-spacing: 5px;
+        padding: 0 6px 0 42px;
         border-width: 2px;
       }
 
-      .plate-eu {
-        width: 38px;
-        padding: 6px 0;
-      }
+      .plate-eu { width: 34px; padding: 5px 0; }
+      .plate-pl { font-size: 12px; }
+      .plate-rest { font-size: 24px; letter-spacing: 4px; }
+      .plate-stars svg { width: 18px; height: 18px; }
 
-      .plate-pl {
-        font-size: 14px;
-      }
-
-      .plate-rest {
-        font-size: 28px;
-      }
-
-      .plate-stars svg {
-        width: 20px;
-        height: 20px;
-      }
-
-      .question-line {
-        font-size: 11px;
-        margin: 0;
-      }
+      /* ---- INPUT ---- */
+      .question-line { font-size: 11px; margin: 0; }
 
       input.guess {
-        padding: 12px;
-        font-size: 16px; /* zapobiega auto-zoomowi w iOS */
+        padding: 11px 10px;
+        font-size: 16px;
       }
 
+      /* ---- HINTY ---- */
       .hints {
-        gap: 4px;
+        gap: 3px;
       }
 
       .hint-btn {
         flex: 1;
-        padding: 8px 4px;
+        padding: 7px 2px;
         font-size: 9px;
+        letter-spacing: 0;
         min-width: 0;
+        text-align: center;
       }
 
       .hint-btn .cost {
@@ -1259,39 +1304,28 @@
         margin: 0;
       }
 
-      .actions {
-        gap: 6px;
-      }
+      /* ---- PRZYCISKI ---- */
+      .actions { gap: 5px; }
+      .btn { padding: 10px 6px; font-size: 11px; }
+      #btnDalej { font-size: 20px; padding: 14px; }
 
-      .btn-stop {
-        padding: 10px 14px;
-        font-size: 11px;
-      }
+      /* ---- STATS MINI ---- */
+      .stats-mini { padding-top: 6px; }
+      .stat-mini { padding: 6px 4px; }
+      .stat-mini .v { font-size: 14px; }
+      .stat-mini .l { font-size: 8px; }
 
-      .btn {
-        padding: 10px;
-        font-size: 11px;
-      }
-
-      .stats-mini {
-        padding-top: 8px;
-      }
-
-      .stat-mini .v {
-        font-size: 14px;
-      }
-
-      /* Podpowiedzi nad inputem na mobile */
+      /* ---- AUTOCOMPLETE — nad inputem ---- */
       .suggestions {
         bottom: 100%;
         top: auto;
-        max-height: 200px;
+        max-height: 180px;
       }
 
-      .flash {
-        font-size: 50px;
-      }
+      /* ---- FLASH ---- */
+      .flash { font-size: 50px; }
     }
+
     /* ============ NICK / RANKING ============ */
 
     /* Gracz w HUD */
