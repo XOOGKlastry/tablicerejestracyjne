@@ -1,5079 +1,4 @@
 <!DOCTYPE html>
-
-<html lang="pl">
-
-
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-
-<title>MISTRZ TABLIC — gra w polskie tablice rejestracyjne</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link
-
-href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;900&display=swap"
-
-rel="stylesheet">
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-
-<style>
-
-:root {
-
---asfalt: #0e0e10;
-
---asfalt-2: #16161a;
-
---panel: #1c1c20;
-
---panel-2: #26262c;
-
---line: #2c2c33;
-
---tekst: #f5f5f5;
-
---tekst-dim: #a8a8b0;
-
---tekst-mute: #6b6b75;
-
---zolty: #ffcc00;
-
---zolty-dim: #b8930a;
-
---niebieski-eu: #003399;
-
---zielony: #1bd96a;
-
---czerwony: #ff3b3b;
-
---pomaranczowy: #ff8a1a;
-
-}
-
-
-
-* {
-
-margin: 0;
-
-padding: 0;
-
-box-sizing: border-box
-
-}
-
-
-
-html,
-
-body {
-
-height: 100%;
-
-overflow: hidden
-
-}
-
-
-
-body {
-
-font-family: 'Outfit', -apple-system, sans-serif;
-
-background: var(--asfalt);
-
-color: var(--tekst);
-
--webkit-font-smoothing: antialiased;
-
-position: relative;
-
-}
-
-
-
-body::before {
-
-content: "";
-
-position: fixed;
-
-inset: 0;
-
-background-image:
-
-radial-gradient(circle at 25% 25%, rgba(255, 204, 0, 0.03) 0%, transparent 40%),
-
-radial-gradient(circle at 75% 75%, rgba(0, 51, 153, 0.04) 0%, transparent 40%);
-
-pointer-events: none;
-
-z-index: 0;
-
-}
-
-
-
-body::after {
-
-content: "";
-
-position: fixed;
-
-inset: 0;
-
-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='0.4'/></svg>");
-
-opacity: 0.025;
-
-pointer-events: none;
-
-z-index: 1;
-
-mix-blend-mode: overlay;
-
-}
-
-
-
-/* ============ LAYOUT ============ */
-
-.app {
-
-position: relative;
-
-z-index: 2;
-
-display: grid;
-
-grid-template-columns: 420px 1fr;
-
-grid-template-rows: 64px 1fr;
-
-height: 100vh;
-
-gap: 0;
-
-}
-
-
-
-header.top {
-
-grid-column: 1/-1;
-
-display: flex;
-
-align-items: center;
-
-justify-content: space-between;
-
-padding: 0 24px;
-
-background: linear-gradient(180deg, #0a0a0c 0%, #16161a 100%);
-
-border-bottom: 1px solid var(--line);
-
-position: relative;
-
-}
-
-
-
-header.top::after {
-
-content: "";
-
-position: absolute;
-
-bottom: -1px;
-
-left: 0;
-
-right: 0;
-
-height: 3px;
-
-background: repeating-linear-gradient(90deg,
-
-var(--zolty) 0 32px,
-
-transparent 32px 56px);
-
-}
-
-
-
-.brand {
-
-display: flex;
-
-align-items: center;
-
-gap: 14px
-
-}
-
-
-
-.brand-mark {
-
-width: 40px;
-
-height: 40px;
-
-background: var(--zolty);
-
-color: #000;
-
-display: grid;
-
-place-items: center;
-
-font-family: 'Anton', sans-serif;
-
-font-size: 22px;
-
-letter-spacing: 1px;
-
-transform: skewX(-8deg);
-
-box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
-
-}
-
-
-
-.brand-mark span {
-
-transform: skewX(8deg)
-
-}
-
-
-
-.brand-title {
-
-font-family: 'Anton', sans-serif;
-
-font-size: 24px;
-
-letter-spacing: 3px;
-
-color: var(--tekst);
-
-line-height: 1;
-
-}
-
-
-
-.brand-sub {
-
-font-size: 10px;
-
-letter-spacing: 2px;
-
-color: var(--zolty);
-
-font-weight: 600;
-
-text-transform: uppercase;
-
-margin-top: 4px;
-
-}
-
-
-
-.hud {
-
-display: flex;
-
-gap: 8px;
-
-align-items: center
-
-}
-
-
-
-.hud-stat {
-
-display: flex;
-
-flex-direction: column;
-
-padding: 6px 14px;
-
-background: var(--panel);
-
-border: 1px solid var(--line);
-
-min-width: 80px;
-
-}
-
-
-
-.hud-stat .label {
-
-font-size: 9px;
-
-letter-spacing: 2px;
-
-color: var(--tekst-mute);
-
-text-transform: uppercase;
-
-}
-
-
-
-.hud-stat .value {
-
-font-family: 'DM Mono', monospace;
-
-font-size: 18px;
-
-font-weight: 500;
-
-color: var(--tekst);
-
-line-height: 1;
-
-margin-top: 2px;
-
-}
-
-
-
-.hud-stat.hot .value {
-
-color: var(--zolty)
-
-}
-
-
-
-.hud-stat.streak .value {
-
-color: var(--pomaranczowy)
-
-}
-
-
-
-.hud-icon-btn {
-
-background: var(--panel);
-
-border: 1px solid var(--line);
-
-color: var(--tekst-dim);
-
-padding: 10px;
-
-cursor: pointer;
-
-transition: all .15s;
-
-display: grid;
-
-place-items: center;
-
-}
-
-
-
-.hud-icon-btn:hover {
-
-border-color: var(--zolty);
-
-color: var(--zolty);
-
-}
-
-
-
-.hud-icon-btn svg {
-
-width: 18px;
-
-height: 18px
-
-}
-
-
-
-/* ============ PANEL GRY (lewy) ============ */
-
-aside.game {
-
-background: linear-gradient(180deg, var(--panel) 0%, var(--asfalt-2) 100%);
-
-border-right: 1px solid var(--line);
-
-overflow-y: auto;
-
-padding: 24px;
-
-display: flex;
-
-flex-direction: column;
-
-gap: 20px;
-
-}
-
-
-
-aside.game::-webkit-scrollbar {
-
-width: 6px
-
-}
-
-
-
-aside.game::-webkit-scrollbar-track {
-
-background: var(--asfalt-2)
-
-}
-
-
-
-aside.game::-webkit-scrollbar-thumb {
-
-background: var(--line);
-
-border-radius: 3px
-
-}
-
-
-
-/* Tryb gry - pills */
-
-.modes {
-
-display: grid;
-
-grid-template-columns: 1fr 1fr;
-
-gap: 6px;
-
-}
-
-
-
-.mode-btn {
-
-padding: 10px 8px;
-
-background: var(--asfalt-2);
-
-border: 1px solid var(--line);
-
-color: var(--tekst-dim);
-
-font-family: 'Outfit';
-
-font-size: 11px;
-
-font-weight: 500;
-
-letter-spacing: 1.5px;
-
-text-transform: uppercase;
-
-cursor: pointer;
-
-transition: all .15s;
-
-}
-
-
-
-.mode-btn:hover {
-
-border-color: var(--zolty);
-
-color: var(--tekst)
-
-}
-
-
-
-.mode-btn.active {
-
-background: var(--zolty);
-
-color: #000;
-
-border-color: var(--zolty);
-
-font-weight: 700;
-
-}
-
-
-
-/* TABLICA */
-
-.plate-wrap {
-
-margin: 8px 0;
-
-perspective: 1000px;
-
-}
-
-
-
-.plate {
-
-position: relative;
-
-width: 100%;
-
-aspect-ratio: 520/110;
-
-background: #fff;
-
-border: 3px solid #000;
-
-border-radius: 6px;
-
-display: flex;
-
-align-items: center;
-
-padding: 0 12px 0 56px;
-
-font-family: 'Anton', sans-serif;
-
-font-size: 54px;
-
-letter-spacing: 8px;
-
-color: #000;
-
-box-shadow:
-
-0 0 0 3px #000,
-
-0 8px 24px rgba(0, 0, 0, 0.6),
-
-inset 0 0 0 2px #fff,
-
-inset 0 0 30px rgba(0, 0, 0, 0.05);
-
-overflow: hidden;
-
-user-select: none;
-
-transition: transform .4s cubic-bezier(.25, 1, .4, 1);
-
-}
-
-
-
-.plate.rolling {
-
-animation: plate-roll .5s cubic-bezier(.25, 1, .4, 1)
-
-}
-
-
-
-@keyframes plate-roll {
-
-0% {
-
-transform: translateX(180px) rotateY(20deg);
-
-opacity: 0
-
-}
-
-100% {
-
-transform: translateX(0) rotateY(0);
-
-opacity: 1
-
-}
-
-}
-
-
-
-.plate-eu {
-
-position: absolute;
-
-left: 0;
-
-top: 0;
-
-bottom: 0;
-
-width: 42px;
-
-background: #003399;
-
-display: flex;
-
-flex-direction: column;
-
-align-items: center;
-
-justify-content: flex-start;
-
-padding: 12px 0;
-
-gap: 4px;
-
-}
-
-
-
-.plate-stars {
-
-display: flex;
-
-justify-content: center;
-
-align-items: center;
-
-width: 100%;
-
-height: 30px;
-
-}
-
-
-
-.plate-stars svg {
-
-filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.2));
-
-width: 24px;
-
-height: 24px;
-
-}
-
-
-
-.plate-pl {
-
-color: #fff;
-
-font-family: 'Anton', sans-serif;
-
-font-size: 18px;
-
-letter-spacing: 2px;
-
-}
-
-
-
-.plate-text {
-
-display: flex;
-
-align-items: center;
-
-gap: 18px;
-
-width: 100%;
-
-justify-content: center;
-
-}
-
-
-
-.plate-prefix {
-
-color: #000
-
-}
-
-
-
-.plate-rest {
-
-color: #bcbcbc;
-
-font-size: 42px;
-
-letter-spacing: 6px;
-
-}
-
-
-
-.plate-screw {
-
-position: absolute;
-
-width: 8px;
-
-height: 8px;
-
-background: radial-gradient(circle, #666 30%, #222 70%);
-
-border-radius: 50%;
-
-}
-
-
-
-.plate-screw.tl {
-
-top: 8px;
-
-right: 8px
-
-}
-
-
-
-.plate-screw.bl {
-
-bottom: 8px;
-
-right: 8px
-
-}
-
-
-
-/* Pytanie pod tablicą */
-
-.question-line {
-
-text-align: center;
-
-font-size: 13px;
-
-color: var(--tekst-dim);
-
-letter-spacing: 1px;
-
-margin-top: 4px;
-
-text-transform: uppercase;
-
-}
-
-
-
-.question-line strong {
-
-color: var(--zolty);
-
-font-weight: 600
-
-}
-
-
-
-/* Input */
-
-.input-wrap {
-
-position: relative;
-
-}
-
-
-
-input.guess {
-
-width: 100%;
-
-padding: 14px 16px;
-
-background: var(--asfalt);
-
-border: 2px solid var(--line);
-
-color: var(--tekst);
-
-font-family: 'Outfit';
-
-font-size: 16px;
-
-font-weight: 500;
-
-letter-spacing: .5px;
-
-outline: none;
-
-transition: all .15s;
-
-}
-
-
-
-input.guess:focus {
-
-border-color: var(--zolty);
-
-box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.15);
-
-}
-
-
-
-input.guess:focus::placeholder {
-
-color: transparent;
-
-}
-
-
-
-input.guess::placeholder {
-
-color: var(--tekst-mute)
-
-}
-
-
-
-input.guess:disabled {
-
-opacity: .5
-
-}
-
-
-
-/* FIX: Pulsowanie inputu na mobile gdy czeka na odpowiedź */
-
-input.guess.ready-pulse {
-
-animation: pulse-border .6s ease-out 2;
-
-}
-
-
-
-@keyframes pulse-border {
-
-0% { border-color: var(--line); box-shadow: none; }
-
-50% { border-color: var(--zolty); box-shadow: 0 0 0 3px rgba(255,204,0,0.25); }
-
-100% { border-color: var(--line); box-shadow: none; }
-
-}
-
-
-
-.suggestions {
-
-position: absolute;
-
-top: calc(100% + 4px);
-
-left: 0;
-
-right: 0;
-
-background: var(--panel-2);
-
-border: 1px solid var(--line);
-
-max-height: 280px;
-
-overflow-y: auto;
-
-z-index: 20;
-
-display: none;
-
-box-shadow: 0 12px 30px rgba(0, 0, 0, .5);
-
-}
-
-
-
-.suggestions.open {
-
-display: block
-
-}
-
-
-
-.suggestion {
-
-padding: 10px 16px;
-
-cursor: pointer;
-
-border-bottom: 1px solid var(--line);
-
-display: flex;
-
-justify-content: space-between;
-
-align-items: center;
-
-gap: 10px;
-
-font-size: 14px;
-
-transition: background .1s;
-
-}
-
-
-
-.suggestion:last-child {
-
-border-bottom: none
-
-}
-
-
-
-.suggestion:hover,
-
-.suggestion.hl {
-
-background: var(--asfalt-2)
-
-}
-
-
-
-.suggestion .nazwa {
-
-color: var(--tekst)
-
-}
-
-
-
-.suggestion .nazwa b {
-
-color: var(--zolty);
-
-font-weight: 700
-
-}
-
-
-
-.suggestion .meta {
-
-font-size: 10px;
-
-color: var(--tekst-mute);
-
-letter-spacing: 1px;
-
-text-transform: uppercase;
-
-white-space: nowrap;
-
-}
-
-
-
-/* Akcje */
-
-.actions {
-
-display: flex;
-
-gap: 8px
-
-}
-
-
-
-.btn {
-
-flex: 1;
-
-padding: 12px 14px;
-
-background: var(--zolty);
-
-border: none;
-
-color: #000;
-
-font-family: 'Outfit';
-
-font-size: 13px;
-
-font-weight: 700;
-
-letter-spacing: 1.5px;
-
-text-transform: uppercase;
-
-cursor: pointer;
-
-transition: all .15s;
-
-}
-
-
-
-.btn:hover {
-
-background: #fff;
-
-transform: translateY(-1px)
-
-}
-
-
-
-.btn:disabled {
-
-opacity: .4;
-
-cursor: not-allowed;
-
-transform: none
-
-}
-
-
-
-.btn.ghost {
-
-background: transparent;
-
-border: 1px solid var(--line);
-
-color: var(--tekst-dim);
-
-}
-
-
-
-.btn.ghost:hover {
-
-background: var(--panel);
-
-color: var(--tekst);
-
-border-color: var(--zolty);
-
-}
-
-
-
-.btn.danger {
-
-background: var(--czerwony);
-
-color: #fff
-
-}
-
-
-
-.btn.danger:hover {
-
-background: #ff5252
-
-}
-
-
-
-/* Hint bar */
-
-.hints {
-
-display: flex;
-
-gap: 6px;
-
-flex-wrap: wrap;
-
-}
-
-
-
-.hint-btn {
-
-padding: 7px 11px;
-
-background: transparent;
-
-border: 1px dashed var(--line);
-
-color: var(--tekst-mute);
-
-font-size: 11px;
-
-font-weight: 500;
-
-letter-spacing: 1px;
-
-text-transform: uppercase;
-
-cursor: pointer;
-
-transition: all .15s;
-
-font-family: 'Outfit';
-
-}
-
-
-
-.hint-btn:hover:not(:disabled) {
-
-border-color: var(--pomaranczowy);
-
-border-style: solid;
-
-color: var(--pomaranczowy);
-
-}
-
-
-
-.hint-btn:disabled {
-
-opacity: .3;
-
-cursor: not-allowed
-
-}
-
-
-
-.hint-btn .cost {
-
-color: var(--zolty);
-
-font-family: 'DM Mono';
-
-margin-left: 4px;
-
-}
-
-
-
-/* Panel feedbacku */
-
-.feedback {
-
-padding: 14px 16px;
-
-border: 1px solid var(--line);
-
-background: var(--asfalt-2);
-
-display: none;
-
-animation: slide-in .25s ease-out;
-
-}
-
-
-
-.feedback.show {
-
-display: block
-
-}
-
-
-
-.feedback.correct {
-
-border-left: 4px solid var(--zielony);
-
-background: linear-gradient(90deg, rgba(27, 217, 106, 0.1), var(--asfalt-2) 50%);
-
-}
-
-
-
-.feedback.wrong {
-
-border-left: 4px solid var(--czerwony);
-
-background: linear-gradient(90deg, rgba(255, 59, 59, 0.1), var(--asfalt-2) 50%);
-
-}
-
-
-
-.feedback.hint {
-
-border-left: 4px solid var(--pomaranczowy);
-
-background: linear-gradient(90deg, rgba(255, 138, 26, 0.1), var(--asfalt-2) 50%);
-
-}
-
-
-
-@keyframes slide-in {
-
-from {
-
-opacity: 0;
-
-transform: translateY(-4px)
-
-}
-
-to {
-
-opacity: 1;
-
-transform: translateY(0)
-
-}
-
-}
-
-
-
-.feedback-head {
-
-display: flex;
-
-align-items: center;
-
-gap: 8px;
-
-font-size: 12px;
-
-font-weight: 700;
-
-letter-spacing: 2px;
-
-text-transform: uppercase;
-
-margin-bottom: 8px;
-
-}
-
-
-
-.feedback.correct .feedback-head {
-
-color: var(--zielony)
-
-}
-
-
-
-.feedback.wrong .feedback-head {
-
-color: var(--czerwony)
-
-}
-
-
-
-.feedback.hint .feedback-head {
-
-color: var(--pomaranczowy)
-
-}
-
-
-
-.feedback-body {
-
-font-size: 14px;
-
-line-height: 1.5
-
-}
-
-
-
-.feedback-body strong {
-
-color: var(--zolty)
-
-}
-
-
-
-.feedback-meta {
-
-display: flex;
-
-flex-wrap: wrap;
-
-gap: 6px;
-
-margin-top: 10px;
-
-}
-
-
-
-.chip {
-
-padding: 4px 10px;
-
-background: var(--panel);
-
-border: 1px solid var(--line);
-
-font-size: 11px;
-
-letter-spacing: 1px;
-
-color: var(--tekst-dim);
-
-text-transform: uppercase;
-
-}
-
-
-
-.chip a {
-
-color: var(--zolty);
-
-text-decoration: none
-
-}
-
-
-
-.chip a:hover {
-
-text-decoration: underline
-
-}
-
-
-
-/* Mini statystyki */
-
-.stats-mini {
-
-display: grid;
-
-grid-template-columns: repeat(3, 1fr);
-
-gap: 6px;
-
-margin-top: auto;
-
-padding-top: 12px;
-
-border-top: 1px solid var(--line);
-
-}
-
-
-
-.stat-mini {
-
-text-align: center;
-
-padding: 8px 6px;
-
-background: var(--asfalt-2);
-
-}
-
-
-
-.stat-mini .l {
-
-font-size: 9px;
-
-color: var(--tekst-mute);
-
-letter-spacing: 1.5px;
-
-text-transform: uppercase;
-
-}
-
-
-
-.stat-mini .v {
-
-font-family: 'DM Mono';
-
-font-size: 16px;
-
-color: var(--tekst);
-
-font-weight: 500;
-
-margin-top: 2px;
-
-}
-
-
-
-/* ============ MAPA ============ */
-
-main.map-section {
-
-position: relative;
-
-background: var(--asfalt-2);
-
-}
-
-
-
-#map {
-
-width: 100%;
-
-height: 100%;
-
-background: #0a0a0c;
-
-z-index: 1;
-
-}
-
-
-
-.map-overlay-top {
-
-position: absolute;
-
-top: 16px;
-
-left: 16px;
-
-z-index: 500;
-
-background: rgba(28, 28, 32, 0.92);
-
-backdrop-filter: blur(8px);
-
-border: 1px solid var(--line);
-
-padding: 10px 14px;
-
-font-size: 11px;
-
-letter-spacing: 1.5px;
-
-color: var(--tekst-dim);
-
-text-transform: uppercase;
-
-pointer-events: none;
-
-}
-
-
-
-.map-overlay-top strong {
-
-color: var(--zolty)
-
-}
-
-
-
-/* Popup leaflet */
-
-.leaflet-popup-content-wrapper {
-
-background: var(--panel) !important;
-
-color: var(--tekst) !important;
-
-border: 1px solid var(--zolty);
-
-border-radius: 0 !important;
-
-box-shadow: 0 12px 40px rgba(0, 0, 0, .7) !important;
-
-padding: 0 !important;
-
-}
-
-
-
-.leaflet-popup-content {
-
-margin: 0 !important;
-
-width: 280px !important;
-
-font-family: 'Outfit', sans-serif !important;
-
-}
-
-
-
-.leaflet-popup-tip {
-
-background: var(--panel) !important;
-
-border: 1px solid var(--zolty);
-
-}
-
-
-
-.leaflet-popup-close-button {
-
-color: var(--tekst-dim) !important;
-
-font-size: 20px !important;
-
-padding: 8px !important;
-
-}
-
-
-
-.popup { padding: 0 }
-
-
-
-.popup-head {
-
-background: var(--zolty);
-
-color: #000;
-
-padding: 10px 14px;
-
-font-family: 'Anton', sans-serif;
-
-letter-spacing: 2px;
-
-font-size: 18px;
-
-}
-
-
-
-.popup-head .kod {
-
-background: #000;
-
-color: var(--zolty);
-
-padding: 2px 8px;
-
-margin-right: 8px;
-
-font-size: 14px;
-
-}
-
-
-
-.popup-body {
-
-padding: 12px 14px
-
-}
-
-
-
-.popup-row {
-
-display: flex;
-
-justify-content: space-between;
-
-font-size: 12px;
-
-padding: 6px 0;
-
-border-bottom: 1px solid var(--line);
-
-}
-
-
-
-.popup-row:last-of-type {
-
-border-bottom: none
-
-}
-
-
-
-.popup-row .l {
-
-color: var(--tekst-mute);
-
-text-transform: uppercase;
-
-letter-spacing: 1px;
-
-font-size: 10px
-
-}
-
-
-
-.popup-row .v {
-
-color: var(--tekst);
-
-font-weight: 500
-
-}
-
-
-
-.popup-links {
-
-display: flex;
-
-gap: 6px;
-
-margin-top: 10px;
-
-padding-top: 10px;
-
-border-top: 1px solid var(--line);
-
-}
-
-
-
-.popup-link {
-
-flex: 1;
-
-padding: 7px;
-
-background: var(--asfalt-2);
-
-color: var(--tekst);
-
-text-align: center;
-
-font-size: 11px;
-
-letter-spacing: 1px;
-
-text-transform: uppercase;
-
-text-decoration: none;
-
-border: 1px solid var(--line);
-
-transition: all .15s;
-
-font-weight: 600;
-
-}
-
-
-
-.popup-link:hover {
-
-background: var(--zolty);
-
-color: #000;
-
-border-color: var(--zolty);
-
-}
-
-
-
-/* Custom marker */
-
-.tag-marker {
-
-background: var(--zolty);
-
-color: #000;
-
-padding: 6px 10px;
-
-font-family: 'Anton', sans-serif;
-
-font-size: 14px;
-
-letter-spacing: 2px;
-
-border: 2px solid #000;
-
-white-space: nowrap;
-
-box-shadow: 0 4px 12px rgba(0, 0, 0, .6);
-
-transform: translateY(-100%);
-
-position: relative;
-
-}
-
-
-
-.tag-marker::after {
-
-content: "";
-
-position: absolute;
-
-bottom: -8px;
-
-left: 50%;
-
-transform: translateX(-50%);
-
-width: 0;
-
-height: 0;
-
-border-left: 6px solid transparent;
-
-border-right: 6px solid transparent;
-
-border-top: 8px solid var(--zolty);
-
-}
-
-
-
-/* ============ MODAL ============ */
-
-.modal-bg {
-
-position: fixed;
-
-inset: 0;
-
-background: rgba(0, 0, 0, .75);
-
-backdrop-filter: blur(4px);
-
-z-index: 1000;
-
-display: none;
-
-align-items: center;
-
-justify-content: center;
-
-padding: 20px;
-
-}
-
-
-
-.modal-bg.open {
-
-display: flex
-
-}
-
-
-
-.modal {
-
-background: var(--panel);
-
-border: 1px solid var(--zolty);
-
-max-width: 560px;
-
-width: 100%;
-
-max-height: 90vh;
-
-overflow-y: auto;
-
-}
-
-
-
-.modal-head {
-
-background: var(--zolty);
-
-color: #000;
-
-padding: 14px 20px;
-
-display: flex;
-
-justify-content: space-between;
-
-align-items: center;
-
-font-family: 'Anton', sans-serif;
-
-font-size: 22px;
-
-letter-spacing: 3px;
-
-}
-
-
-
-.modal-close {
-
-background: transparent;
-
-border: none;
-
-font-size: 24px;
-
-cursor: pointer;
-
-color: #000;
-
-font-weight: bold;
-
-padding: 0 4px;
-
-}
-
-
-
-.modal-body {
-
-padding: 20px
-
-}
-
-
-
-.modal h3 {
-
-font-family: 'Anton', sans-serif;
-
-font-size: 16px;
-
-letter-spacing: 2px;
-
-color: var(--zolty);
-
-margin: 16px 0 8px;
-
-text-transform: uppercase;
-
-}
-
-
-
-.modal h3:first-child {
-
-margin-top: 0
-
-}
-
-
-
-.modal p {
-
-color: var(--tekst-dim);
-
-font-size: 14px;
-
-line-height: 1.6;
-
-margin-bottom: 8px;
-
-}
-
-
-
-.woj-stats-list {
-
-display: flex;
-
-flex-direction: column;
-
-gap: 6px;
-
-margin-top: 8px
-
-}
-
-
-
-.woj-bar {
-
-display: grid;
-
-grid-template-columns: 140px 1fr 60px;
-
-align-items: center;
-
-gap: 10px;
-
-font-size: 12px;
-
-}
-
-
-
-.woj-bar .name {
-
-color: var(--tekst-dim);
-
-text-transform: capitalize;
-
-letter-spacing: .5px;
-
-}
-
-
-
-.woj-bar .track {
-
-height: 6px;
-
-background: var(--asfalt-2);
-
-position: relative;
-
-}
-
-
-
-.woj-bar .fill {
-
-position: absolute;
-
-inset: 0 auto 0 0;
-
-background: linear-gradient(90deg, var(--czerwony) 0%, var(--pomaranczowy) 50%, var(--zielony) 100%);
-
-background-size: 200% 100%;
-
-}
-
-
-
-.woj-bar .pct {
-
-font-family: 'DM Mono';
-
-color: var(--tekst);
-
-text-align: right;
-
-}
-
-
-
-.kbd {
-
-display: inline-block;
-
-padding: 2px 6px;
-
-background: var(--asfalt-2);
-
-border: 1px solid var(--line);
-
-font-family: 'DM Mono';
-
-font-size: 11px;
-
-color: var(--zolty);
-
-margin: 0 2px;
-
-}
-
-
-
-/* ============ FLASH ============ */
-
-.flash {
-
-position: fixed;
-
-top: 50%;
-
-left: 50%;
-
-transform: translate(-50%, -50%);
-
-pointer-events: none;
-
-z-index: 900;
-
-font-family: 'Anton', sans-serif;
-
-font-size: 90px;
-
-letter-spacing: 6px;
-
-color: var(--zielony);
-
-text-shadow: 0 0 30px currentColor, 0 0 60px currentColor;
-
-opacity: 0;
-
-}
-
-
-
-.flash.show {
-
-animation: flash-anim 1s ease-out forwards;
-
-}
-
-
-
-.flash.bad {
-
-color: var(--czerwony);
-
-text-shadow: 0 0 30px var(--czerwony), 0 0 60px rgba(255, 59, 59, 0.5);
-
-}
-
-
-
-@keyframes flash-anim {
-
-0% { opacity: 0; transform: translate(-50%, -50%) scale(.7) }
-
-20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) }
-
-80% { opacity: 1; transform: translate(-50%, -50%) scale(1) }
-
-100% { opacity: 0; transform: translate(-50%, -50%) scale(1.4) }
-
-}
-
-
-
-/* ============ MOBILE ============ */
-
-@media (max-width: 900px) {
-
-
-
-/* FIX: dvh uwzględnia pasek przeglądarki i klawiaturę */
-
-html, body {
-
-overflow: hidden;
-
-height: 100%;
-
-height: -webkit-fill-available;
-
-}
-
-
-
-.app {
-
-grid-template-columns: 1fr;
-
-grid-template-rows: auto 1fr;
-
-height: 100vh;
-
-height: 100dvh; /* dynamic viewport height — kluczowa poprawka */
-
-min-height: -webkit-fill-available;
-
-}
-
-
-
-header.top {
-
-padding: 8px 12px;
-
-height: 56px;
-
-flex-shrink: 0; /* nie kurczy się przy klawiaturze */
-
-}
-
-
-
-.brand-mark {
-
-width: 32px;
-
-height: 32px;
-
-font-size: 16px;
-
-}
-
-
-
-.brand-title {
-
-font-size: 16px;
-
-letter-spacing: 1px;
-
-}
-
-
-
-.brand-sub {
-
-display: none;
-
-}
-
-
-
-.hud {
-
-gap: 4px;
-
-}
-
-
-
-.hud-stat {
-
-min-width: 60px;
-
-padding: 4px 8px;
-
-}
-
-
-
-.hud-stat .value {
-
-font-size: 14px;
-
-}
-
-
-
-.hud-icon-btn {
-
-padding: 6px;
-
-}
-
-
-
-aside.game {
-
-padding: 12px;
-
-gap: 12px;
-
-border-right: none;
-
-overflow-y: auto;
-
-/* FIX: zapobiega "skaczącemu" layoutowi gdy klawiatura pojawia się/znika */
-
-min-height: 0;
-
-flex: 1;
-
-}
-
-
-
-/* Mapa ukryta na mobile */
-
-main.map-section {
-
-display: none !important;
-
-}
-
-
-
-.plate-wrap {
-
-margin: 0;
-
-}
-
-
-
-.plate {
-
-font-size: 36px;
-
-padding: 0 10px 0 46px;
-
-border-width: 2px;
-
-}
-
-
-
-.plate-eu {
-
-width: 38px;
-
-padding: 6px 0;
-
-}
-
-
-
-.plate-pl {
-
-font-size: 14px;
-
-}
-
-
-
-.plate-rest {
-
-font-size: 28px;
-
-}
-
-
-
-.plate-stars svg {
-
-width: 20px;
-
-height: 20px;
-
-}
-
-
-
-.question-line {
-
-font-size: 11px;
-
-margin: 0;
-
-}
-
-
-
-input.guess {
-
-padding: 12px;
-
-font-size: 16px; /* zapobiega auto-zoomowi w iOS */
-
-}
-
-
-
-.hints {
-
-gap: 4px;
-
-}
-
-
-
-.hint-btn {
-
-flex: 1;
-
-padding: 8px 4px;
-
-font-size: 9px;
-
-min-width: 0;
-
-}
-
-
-
-.hint-btn .cost {
-
-display: block;
-
-font-size: 8px;
-
-margin: 0;
-
-}
-
-
-
-.actions {
-
-gap: 6px;
-
-}
-
-
-
-.btn {
-
-padding: 10px;
-
-font-size: 11px;
-
-}
-
-
-
-.stats-mini {
-
-padding-top: 8px;
-
-}
-
-
-
-.stat-mini .v {
-
-font-size: 14px;
-
-}
-
-
-
-/* Podpowiedzi nad inputem na mobile */
-
-.suggestions {
-
-bottom: 100%;
-
-top: auto;
-
-max-height: 200px;
-
-}
-
-
-
-.flash {
-
-font-size: 50px;
-
-}
-
-}
-
-</style>
-
-</head>
-
-
-
-<body>
-
-
-
-<div class="app">
-
-<header class="top">
-
-<div class="brand">
-
-<div class="brand-mark"><span>JP</span></div>
-
-<div>
-
-<div class="brand-title">TABLCE REJESTRACYJNE QUIZ</div>
-
-<div class="brand-sub">— SPRAWDZ SWOJĄ WIEDZE O POLSKICH TABLICACH REJESTRACYJNYCH</div>
-
-</div>
-
-</div>
-
-<div class="hud">
-
-<div class="hud-stat hot">
-
-<div class="label">Punkty</div>
-
-<div class="value" id="hudPunkty">0</div>
-
-</div>
-
-<div class="hud-stat streak">
-
-<div class="label">Seria</div>
-
-<div class="value" id="hudSeria">0</div>
-
-</div>
-
-<div class="hud-stat" style="border-bottom: 2px solid var(--niebieski-eu);">
-
-<div class="label">Trafność</div>
-
-<div class="value" id="hudTraf" style="color: var(--niebieski-eu);">—</div>
-
-</div>
-
-<button class="hud-icon-btn" id="btnStats" title="Statystyki">
-
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-<path d="M3 3v18h18" />
-
-<rect x="7" y="13" width="3" height="5" />
-
-<rect x="12" y="9" width="3" height="9" />
-
-<rect x="17" y="6" width="3" height="12" />
-
-</svg>
-
-</button>
-
-<button class="hud-icon-btn" id="btnHelp" title="Pomoc">
-
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-<circle cx="12" cy="12" r="10" />
-
-<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-
-<line x1="12" y1="17" x2="12.01" y2="17" />
-
-</svg>
-
-</button>
-
-</div>
-
-</header>
-
-
-
-<aside class="game">
-
-<div class="modes">
-
-<button class="mode-btn active" data-mode="classic">Klasyk</button>
-
-<button class="mode-btn" data-mode="reverse">Odwrotny</button>
-
-<button class="mode-btn" data-mode="time">Na czas</button>
-
-<button class="mode-btn" data-mode="region">Region</button>
-
-</div>
-
-
-
-<div class="plate-wrap">
-
-<div class="plate" id="plate">
-
-<div class="plate-eu">
-
-<div class="plate-stars">
-
-<svg viewBox="0 0 120 120" width="30" height="30">
-
-<defs>
-
-<polygon id="star" points="0,-10 2,-3 9,-3 3,1 6,8 0,4 -6,8 -3,1 -9,-3 -2,-3" fill="#ffcc00" />
-
-</defs>
-
-<g transform="translate(60,60)">
-
-<use xlink:href="#star" y="-40" />
-
-<use xlink:href="#star" y="-40" transform="rotate(30)" />
-
-<use xlink:href="#star" y="-40" transform="rotate(60)" />
-
-<use xlink:href="#star" y="-40" transform="rotate(90)" />
-
-<use xlink:href="#star" y="-40" transform="rotate(120)" />
-
-<use xlink:href="#star" y="-40" transform="rotate(150)" />
-
-<use xlink:href="#star" y="-40" transform="rotate(180)" />
-
-<use xlink:href="#star" y="-40" transform="rotate(210)" />
-
-<use xlink:href="#star" y="-40" transform="rotate(240)" />
-
-<use xlink:href="#star" y="-40" transform="rotate(270)" />
-
-<use xlink:href="#star" y="-40" transform="rotate(300)" />
-
-<use xlink:href="#star" y="-40" transform="rotate(330)" />
-
-</g>
-
-</svg>
-
-</div>
-
-<div class="plate-pl">PL</div>
-
-</div>
-
-<div class="plate-text">
-
-<span class="plate-prefix" id="platePrefix">KR</span><span class="plate-rest">12345</span>
-
-</div>
-
-<div class="plate-screw tl"></div>
-
-<div class="plate-screw bl"></div>
-
-</div>
-
-</div>
-
-
-
-<div class="question-line" id="questionLine">
-
-Jaki to <strong>powiat</strong>? Wpisz nazwę.
-
-</div>
-
-
-
-<div class="input-wrap">
-
-<input class="guess" id="guessInput" type="text" autocomplete="off" placeholder="np. Kraków, Wałbrzych..."
-
-spellcheck="false">
-
-<div class="suggestions" id="suggestions"></div>
-
-</div>
-
-
-
-<div class="hints">
-
-<button class="hint-btn" id="hintWoj" data-hint="woj">
-
-Województwo<span class="cost">−5 pkt</span>
-
-</button>
-
-<button class="hint-btn" id="hintLetter" data-hint="letter">
-
-Pierwsza litera<span class="cost">−10 pkt</span>
-
-</button>
-
-<button class="hint-btn" id="hintType" data-hint="type">
-
-Typ powiatu<span class="cost">−3 pkt</span>
-
-</button>
-
-</div>
-
-
-
-<div class="actions">
-
-<button class="btn" id="btnSubmit">Sprawdź</button>
-
-<button class="btn ghost" id="btnSkip">Pomiń</button>
-
-</div>
-
-
-
-<div class="feedback" id="feedback"></div>
-
-
-
-<div class="stats-mini">
-
-<div class="stat-mini">
-
-<div class="l">Pytania</div>
-
-<div class="v" id="miniQ">0</div>
-
-</div>
-
-<div class="stat-mini">
-
-<div class="l">Najl. seria</div>
-
-<div class="v" id="miniBest">0</div>
-
-</div>
-
-<div class="stat-mini">
-
-<div class="l">Rekord</div>
-
-<div class="v" id="miniRec">0</div>
-
-</div>
-
-</div>
-
-</aside>
-
-
-
-<main class="map-section">
-
-<div id="map"></div>
-
-<div class="map-overlay-top" id="mapHint">
-
-🗺️ Trafiona lokalizacja pojawi się <strong>tutaj</strong>
-
-</div>
-
-</main>
-
-</div>
-
-
-
-<div class="flash" id="flash"></div>
-
-
-
-<!-- Modal pomocy -->
-
-<div class="modal-bg" id="helpModal">
-
-<div class="modal">
-
-<div class="modal-head">
-
-<span>Jak grać</span>
-
-<button class="modal-close" data-close>×</button>
-
-</div>
-
-<div class="modal-body">
-
-<h3>Tryby</h3>
-
-<p><b>Klasyk:</b> widzisz 2-3 literowy prefiks tablicy (np. <span class="kbd">KLI</span>) — wpisz nazwę powiatu.</p>
-
-<p><b>Odwrotny:</b> dostajesz nazwę powiatu — wpisz prefiks (np. <span class="kbd">Limanowa</span> → KLI).</p>
-
-<p><b>Na czas:</b> 90 sekund, ile zdążysz.</p>
-
-<p><b>Region:</b> tylko jedno wybrane województwo.</p>
-
-
-
-<h3>Punktacja</h3>
-
-<p>Bazowo +10 pkt za poprawną odpowiedź. Mnożnik za serię: każda poprawna z rzędu daje +2 dodatkowe punkty (max +30).</p>
-
-
-
-<h3>Skróty klawiaturowe</h3>
-
-<p><span class="kbd">Enter</span> — sprawdź / zatwierdź podpowiedź<br>
-
-<span class="kbd">↑</span> <span class="kbd">↓</span> — nawigacja po podpowiedziach<br>
-
-<span class="kbd">Tab</span> — uzupełnij najlepszą podpowiedź<br>
-
-<span class="kbd">Esc</span> — pomiń pytanie
-
-</p>
-
-
-
-<h3>Adaptive learning</h3>
-
-<p>Powiaty, które mylisz, pojawiają się <b>częściej</b>. Te które dobrze znasz — rzadziej. Postęp zapisuje się w przeglądarce.</p>
-
-
-
-<h3>Hinty</h3>
-
-<p>Możesz odsłonić wskazówkę kosztem punktów. Hinty nie zerują serii.</p>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- Modal statystyk -->
-
-<div class="modal-bg" id="statsModal">
-
-<div class="modal">
-
-<div class="modal-head">
-
-<span>Statystyki</span>
-
-<button class="modal-close" data-close>×</button>
-
-</div>
-
-<div class="modal-body">
-
-<h3>Po województwach</h3>
-
-<div class="woj-stats-list" id="wojStatsList"></div>
-
-
-
-<h3>Top 5 najczęściej mylonych</h3>
-
-<div id="topWrongList" style="margin-top:8px;font-size:13px;color:var(--tekst-dim)"></div>
-
-
-
-<h3>Akcje</h3>
-
-<div class="actions" style="margin-top:8px">
-
-<button class="btn ghost" id="btnReset">Wyzeruj postęp</button>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- Modal regionu -->
-
-<div class="modal-bg" id="regionModal">
-
-<div class="modal">
-
-<div class="modal-head">
-
-<span>Wybierz region</span>
-
-<button class="modal-close" data-close>×</button>
-
-</div>
-
-<div class="modal-body">
-
-<p>Tryb regionalny — gra losuje powiaty tylko z wybranego województwa.</p>
-
-<div id="regionList" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px"></div>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-
-
-
-<script>
-
-/* ============================================================
-
-BAZA POLSKICH KODÓW REJESTRACYJNYCH
-
-============================================================ */
-
-const POWIATY = [
-
-// ========== DOLNOŚLĄSKIE (D) ==========
-
-{ kod: "DB", nazwa: "Wałbrzych", typ: "miasto", woj: "dolnośląskie", lat: 50.7841, lng: 16.2845, wiki: "Wałbrzych" },
-
-{ kod: "DJ", nazwa: "Jelenia Góra", typ: "miasto", woj: "dolnośląskie", lat: 50.9044, lng: 15.7195, wiki: "Jelenia_Góra" },
-
-{ kod: "DL", nazwa: "Legnica", typ: "miasto", woj: "dolnośląskie", lat: 51.2070, lng: 16.1553, wiki: "Legnica" },
-
-{ kod: "DW", nazwa: "Wrocław", typ: "miasto", woj: "dolnośląskie", lat: 51.1079, lng: 17.0385, wiki: "Wrocław" },
-
-{ kod: "DBA", nazwa: "Bolesławiec", typ: "ziemski", woj: "dolnośląskie", lat: 51.2615, lng: 15.5697, wiki: "Bolesławiec" },
-
-{ kod: "DDZ", nazwa: "Dzierżoniów", typ: "ziemski", woj: "dolnośląskie", lat: 50.7290, lng: 16.6510, wiki: "Dzierżoniów" },
-
-{ kod: "DGL", nazwa: "Głogów", typ: "ziemski", woj: "dolnośląskie", lat: 51.6566, lng: 16.0848, wiki: "Głogów" },
-
-{ kod: "DGR", nazwa: "Góra", typ: "ziemski", woj: "dolnośląskie", lat: 51.6720, lng: 16.5500, wiki: "Góra_(województwo_dolnośląskie)" },
-
-{ kod: "DJA", nazwa: "Jawor", typ: "ziemski", woj: "dolnośląskie", lat: 51.0510, lng: 16.1932, wiki: "Jawor" },
-
-{ kod: "DKA", nazwa: "Kamienna Góra", typ: "ziemski", woj: "dolnośląskie", lat: 50.7857, lng: 16.0297, wiki: "Kamienna_Góra" },
-
-{ kod: "DKL", nazwa: "Kłodzko", typ: "ziemski", woj: "dolnośląskie", lat: 50.4356, lng: 16.6611, wiki: "Kłodzko" },
-
-{ kod: "DLB", nazwa: "Lubin", typ: "ziemski", woj: "dolnośląskie", lat: 51.4015, lng: 16.2018, wiki: "Lubin" },
-
-{ kod: "DLE", nazwa: "Legnica (powiat)", typ: "ziemski", woj: "dolnośląskie", lat: 51.1900, lng: 16.0500, wiki: "Powiat_legnicki" },
-
-{ kod: "DLU", nazwa: "Lubań", typ: "ziemski", woj: "dolnośląskie", lat: 51.1208, lng: 15.2920, wiki: "Lubań_(województwo_dolnośląskie)" },
-
-{ kod: "DLW", nazwa: "Lwówek Śląski", typ: "ziemski", woj: "dolnośląskie", lat: 51.1083, lng: 15.5806, wiki: "Lwówek_Śląski" },
-
-{ kod: "DMI", nazwa: "Milicz", typ: "ziemski", woj: "dolnośląskie", lat: 51.5275, lng: 17.2769, wiki: "Milicz" },
-
-{ kod: "DOA", nazwa: "Oława", typ: "ziemski", woj: "dolnośląskie", lat: 50.9462, lng: 17.2937, wiki: "Oława" },
-
-{ kod: "DOL", nazwa: "Oleśnica", typ: "ziemski", woj: "dolnośląskie", lat: 51.2103, lng: 17.3893, wiki: "Oleśnica" },
-
-{ kod: "DPL", nazwa: "Polkowice", typ: "ziemski", woj: "dolnośląskie", lat: 51.5050, lng: 16.0750, wiki: "Polkowice" },
-
-{ kod: "DSR", nazwa: "Środa Śląska", typ: "ziemski", woj: "dolnośląskie", lat: 51.1697, lng: 16.5961, wiki: "Środa_Śląska" },
-
-{ kod: "DST", nazwa: "Strzelin", typ: "ziemski", woj: "dolnośląskie", lat: 50.7800, lng: 17.0633, wiki: "Strzelin" },
-
-{ kod: "DSW", nazwa: "Świdnica", typ: "ziemski", woj: "dolnośląskie", lat: 50.8434, lng: 16.4892, wiki: "Świdnica" },
-
-{ kod: "DTR", nazwa: "Trzebnica", typ: "ziemski", woj: "dolnośląskie", lat: 51.3107, lng: 17.0633, wiki: "Trzebnica" },
-
-{ kod: "DWA", nazwa: "Wałbrzych (powiat)", typ: "ziemski", woj: "dolnośląskie", lat: 50.8000, lng: 16.3000, wiki: "Powiat_wałbrzyski" },
-
-{ kod: "DWL", nazwa: "Wołów", typ: "ziemski", woj: "dolnośląskie", lat: 51.3375, lng: 16.6442, wiki: "Wołów" },
-
-{ kod: "DWR", nazwa: "Wrocław (powiat)", typ: "ziemski", woj: "dolnośląskie", lat: 51.1500, lng: 17.0500, wiki: "Powiat_wrocławski" },
-
-{ kod: "DZA", nazwa: "Ząbkowice Śląskie", typ: "ziemski", woj: "dolnośląskie", lat: 50.5839, lng: 16.8128, wiki: "Ząbkowice_Śląskie" },
-
-{ kod: "DZG", nazwa: "Zgorzelec", typ: "ziemski", woj: "dolnośląskie", lat: 51.1500, lng: 15.0000, wiki: "Zgorzelec" },
-
-{ kod: "DZL", nazwa: "Złotoryja", typ: "ziemski", woj: "dolnośląskie", lat: 51.1262, lng: 15.7714, wiki: "Złotoryja" },
-
-
-
-// ========== KUJAWSKO-POMORSKIE (C) ==========
-
-{ kod: "CB", nazwa: "Bydgoszcz", typ: "miasto", woj: "kujawsko-pomorskie", lat: 53.1235, lng: 18.0084, wiki: "Bydgoszcz" },
-
-{ kod: "CG", nazwa: "Grudziądz", typ: "miasto", woj: "kujawsko-pomorskie", lat: 53.4844, lng: 18.7536, wiki: "Grudziądz" },
-
-{ kod: "CT", nazwa: "Toruń", typ: "miasto", woj: "kujawsko-pomorskie", lat: 53.0138, lng: 18.5984, wiki: "Toruń" },
-
-{ kod: "CW", nazwa: "Włocławek", typ: "miasto", woj: "kujawsko-pomorskie", lat: 52.6483, lng: 19.0677, wiki: "Włocławek" },
-
-{ kod: "CAL", nazwa: "Aleksandrów Kujawski", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 52.8800, lng: 18.6900, wiki: "Aleksandrów_Kujawski" },
-
-{ kod: "CBR", nazwa: "Brodnica", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.2580, lng: 19.3964, wiki: "Brodnica" },
-
-{ kod: "CBY", nazwa: "Bydgoszcz (powiat)", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.1500, lng: 18.0000, wiki: "Powiat_bydgoski" },
-
-{ kod: "CCH", nazwa: "Chełmno", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.3475, lng: 18.4242, wiki: "Chełmno" },
-
-{ kod: "CGD", nazwa: "Golub-Dobrzyń", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.1117, lng: 19.0526, wiki: "Golub-Dobrzyń" },
-
-{ kod: "CGR", nazwa: "Grudziądz (powiat)", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.4500, lng: 18.7500, wiki: "Powiat_grudziądzki" },
-
-{ kod: "CIN", nazwa: "Inowrocław", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 52.7989, lng: 18.2625, wiki: "Inowrocław" },
-
-{ kod: "CLI", nazwa: "Lipno", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 52.8500, lng: 19.1750, wiki: "Lipno_(województwo_kujawsko-pomorskie)" },
-
-{ kod: "CMG", nazwa: "Mogilno", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 52.6589, lng: 17.9583, wiki: "Mogilno" },
-
-{ kod: "CNA", nazwa: "Nakło nad Notecią", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.1417, lng: 17.5969, wiki: "Nakło_nad_Notecią" },
-
-{ kod: "CRA", nazwa: "Radziejów", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 52.6256, lng: 18.5314, wiki: "Radziejów" },
-
-{ kod: "CRY", nazwa: "Rypin", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.0631, lng: 19.4106, wiki: "Rypin" },
-
-{ kod: "CSE", nazwa: "Sępólno Krajeńskie", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.4561, lng: 17.5328, wiki: "Sępólno_Krajeńskie" },
-
-{ kod: "CSW", nazwa: "Świecie", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.4097, lng: 18.4419, wiki: "Świecie" },
-
-{ kod: "CTO", nazwa: "Toruń (powiat)", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.0500, lng: 18.6000, wiki: "Powiat_toruński" },
-
-{ kod: "CTR", nazwa: "Tuchola", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.5867, lng: 17.8606, wiki: "Tuchola" },
-
-{ kod: "CWA", nazwa: "Wąbrzeźno", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.2786, lng: 18.9522, wiki: "Wąbrzeźno" },
-
-{ kod: "CWL", nazwa: "Włocławek (powiat)", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 52.6500, lng: 19.0500, wiki: "Powiat_włocławski" },
-
-{ kod: "CZN", nazwa: "Żnin", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 52.8497, lng: 17.7172, wiki: "Żnin" },
-
-
-
-// ========== LUBELSKIE (L) ==========
-
-{ kod: "LB", nazwa: "Biała Podlaska", typ: "miasto", woj: "lubelskie", lat: 52.0325, lng: 23.1149, wiki: "Biała_Podlaska" },
-
-{ kod: "LC", nazwa: "Chełm", typ: "miasto", woj: "lubelskie", lat: 51.1432, lng: 23.4716, wiki: "Chełm" },
-
-{ kod: "LU", nazwa: "Lublin", typ: "miasto", woj: "lubelskie", lat: 51.2465, lng: 22.5684, wiki: "Lublin" },
-
-{ kod: "LZ", nazwa: "Zamość", typ: "miasto", woj: "lubelskie", lat: 50.7231, lng: 23.2519, wiki: "Zamość" },
-
-{ kod: "LBI", nazwa: "Biłgoraj", typ: "ziemski", woj: "lubelskie", lat: 50.5413, lng: 22.7227, wiki: "Biłgoraj" },
-
-{ kod: "LBL", nazwa: "Biała Podlaska (powiat)", typ: "ziemski", woj: "lubelskie", lat: 52.0500, lng: 23.0500, wiki: "Powiat_bialski" },
-
-{ kod: "LCH", nazwa: "Chełm (powiat)", typ: "ziemski", woj: "lubelskie", lat: 51.1500, lng: 23.5000, wiki: "Powiat_chełmski" },
-
-{ kod: "LHR", nazwa: "Hrubieszów", typ: "ziemski", woj: "lubelskie", lat: 50.8050, lng: 23.8861, wiki: "Hrubieszów" },
-
-{ kod: "LJA", nazwa: "Janów Lubelski", typ: "ziemski", woj: "lubelskie", lat: 50.7081, lng: 22.4131, wiki: "Janów_Lubelski" },
-
-{ kod: "LKR", nazwa: "Krasnystaw", typ: "ziemski", woj: "lubelskie", lat: 50.9858, lng: 23.1719, wiki: "Krasnystaw" },
-
-{ kod: "LKS", nazwa: "Kraśnik", typ: "ziemski", woj: "lubelskie", lat: 50.9242, lng: 22.2256, wiki: "Kraśnik" },
-
-{ kod: "LLB", nazwa: "Lublin (powiat)", typ: "ziemski", woj: "lubelskie", lat: 51.2500, lng: 22.5500, wiki: "Powiat_lubelski" },
-
-{ kod: "LLW", nazwa: "Lubartów", typ: "ziemski", woj: "lubelskie", lat: 51.4625, lng: 22.6072, wiki: "Lubartów" },
-
-{ kod: "LLE", nazwa: "Łęczna", typ: "ziemski", woj: "lubelskie", lat: 51.3000, lng: 22.8833, wiki: "Łęczna" },
-
-{ kod: "LLU", nazwa: "Łuków", typ: "ziemski", woj: "lubelskie", lat: 51.9281, lng: 22.3789, wiki: "Łuków" },
-
-{ kod: "LOP", nazwa: "Opole Lubelskie", typ: "ziemski", woj: "lubelskie", lat: 51.1467, lng: 21.9683, wiki: "Opole_Lubelskie" },
-
-{ kod: "LPA", nazwa: "Parczew", typ: "ziemski", woj: "lubelskie", lat: 51.6406, lng: 22.9000, wiki: "Parczew" },
-
-{ kod: "LPU", nazwa: "Puławy", typ: "ziemski", woj: "lubelskie", lat: 51.4144, lng: 21.9694, wiki: "Puławy" },
-
-{ kod: "LRA", nazwa: "Radzyń Podlaski", typ: "ziemski", woj: "lubelskie", lat: 51.7822, lng: 22.6217, wiki: "Radzyń_Podlaski" },
-
-{ kod: "LRY", nazwa: "Ryki", typ: "ziemski", woj: "lubelskie", lat: 51.6256, lng: 21.9356, wiki: "Ryki" },
-
-{ kod: "LSW", nazwa: "Świdnik", typ: "ziemski", woj: "lubelskie", lat: 51.2197, lng: 22.6964, wiki: "Świdnik" },
-
-{ kod: "LTM", nazwa: "Tomaszów Lubelski", typ: "ziemski", woj: "lubelskie", lat: 50.4475, lng: 23.4194, wiki: "Tomaszów_Lubelski" },
-
-{ kod: "LWL", nazwa: "Włodawa", typ: "ziemski", woj: "lubelskie", lat: 51.5489, lng: 23.5475, wiki: "Włodawa" },
-
-{ kod: "LZA", nazwa: "Zamość (powiat)", typ: "ziemski", woj: "lubelskie", lat: 50.7000, lng: 23.2500, wiki: "Powiat_zamojski" },
-
-
-
-// ========== LUBUSKIE (F) ==========
-
-{ kod: "FG", nazwa: "Gorzów Wielkopolski", typ: "miasto", woj: "lubuskie", lat: 52.7368, lng: 15.2288, wiki: "Gorzów_Wielkopolski" },
-
-{ kod: "FZ", nazwa: "Zielona Góra", typ: "miasto", woj: "lubuskie", lat: 51.9356, lng: 15.5064, wiki: "Zielona_Góra" },
-
-{ kod: "FGW", nazwa: "Gorzów (powiat)", typ: "ziemski", woj: "lubuskie", lat: 52.7500, lng: 15.2500, wiki: "Powiat_gorzowski" },
-
-{ kod: "FKR", nazwa: "Krosno Odrzańskie", typ: "ziemski", woj: "lubuskie", lat: 52.0489, lng: 15.0975, wiki: "Krosno_Odrzańskie" },
-
-{ kod: "FMI", nazwa: "Międzyrzecz", typ: "ziemski", woj: "lubuskie", lat: 52.4444, lng: 15.5781, wiki: "Międzyrzecz" },
-
-{ kod: "FNW", nazwa: "Nowa Sól", typ: "ziemski", woj: "lubuskie", lat: 51.7969, lng: 15.7100, wiki: "Nowa_Sól" },
-
-{ kod: "FSD", nazwa: "Strzelce Krajeńskie", typ: "ziemski", woj: "lubuskie", lat: 52.8758, lng: 15.5375, wiki: "Strzelce_Krajeńskie" },
-
-{ kod: "FSL", nazwa: "Słubice", typ: "ziemski", woj: "lubuskie", lat: 52.3492, lng: 14.5594, wiki: "Słubice" },
-
-{ kod: "FSU", nazwa: "Sulęcin", typ: "ziemski", woj: "lubuskie", lat: 52.4422, lng: 15.1156, wiki: "Sulęcin" },
-
-{ kod: "FSW", nazwa: "Świebodzin", typ: "ziemski", woj: "lubuskie", lat: 52.2492, lng: 15.5333, wiki: "Świebodzin" },
-
-{ kod: "FWS", nazwa: "Wschowa", typ: "ziemski", woj: "lubuskie", lat: 51.8019, lng: 16.3186, wiki: "Wschowa" },
-
-{ kod: "FZA", nazwa: "Żagań", typ: "ziemski", woj: "lubuskie", lat: 51.6175, lng: 15.3147, wiki: "Żagań" },
-
-{ kod: "FZG", nazwa: "Zielona Góra (powiat)", typ: "ziemski", woj: "lubuskie", lat: 51.9000, lng: 15.5000, wiki: "Powiat_zielonogórski" },
-
-{ kod: "FZR", nazwa: "Żary", typ: "ziemski", woj: "lubuskie", lat: 51.6411, lng: 15.1322, wiki: "Żary" },
-
-
-
-// ========== ŁÓDZKIE (E) ==========
-
-{ kod: "EL", nazwa: "Łódź", typ: "miasto", woj: "łódzkie", lat: 51.7592, lng: 19.4560, wiki: "Łódź" },
-
-{ kod: "EP", nazwa: "Piotrków Trybunalski", typ: "miasto", woj: "łódzkie", lat: 51.4055, lng: 19.7030, wiki: "Piotrków_Trybunalski" },
-
-{ kod: "ES", nazwa: "Skierniewice", typ: "miasto", woj: "łódzkie", lat: 51.9544, lng: 20.1572, wiki: "Skierniewice" },
-
-{ kod: "EBE", nazwa: "Bełchatów", typ: "ziemski", woj: "łódzkie", lat: 51.3686, lng: 19.3553, wiki: "Bełchatów" },
-
-{ kod: "EBR", nazwa: "Brzeziny", typ: "ziemski", woj: "łódzkie", lat: 51.8081, lng: 19.7497, wiki: "Brzeziny" },
-
-{ kod: "EKU", nazwa: "Kutno", typ: "ziemski", woj: "łódzkie", lat: 52.2306, lng: 19.3653, wiki: "Kutno" },
-
-{ kod: "ELA", nazwa: "Łask", typ: "ziemski", woj: "łódzkie", lat: 51.5908, lng: 19.1342, wiki: "Łask" },
-
-{ kod: "ELC", nazwa: "Łęczyca", typ: "ziemski", woj: "łódzkie", lat: 52.0586, lng: 19.1969, wiki: "Łęczyca" },
-
-{ kod: "ELE", nazwa: "Łódź Wschód", typ: "ziemski", woj: "łódzkie", lat: 51.7500, lng: 19.6000, wiki: "Powiat_łódzki_wschodni" },
-
-{ kod: "ELW", nazwa: "Łowicz", typ: "ziemski", woj: "łódzkie", lat: 52.1075, lng: 19.9444, wiki: "Łowicz" },
-
-{ kod: "EOP", nazwa: "Opoczno", typ: "ziemski", woj: "łódzkie", lat: 51.3786, lng: 20.2828, wiki: "Opoczno" },
-
-{ kod: "EPA", nazwa: "Pabianice", typ: "ziemski", woj: "łódzkie", lat: 51.6644, lng: 19.3550, wiki: "Pabianice" },
-
-{ kod: "EPI", nazwa: "Piotrków (powiat)", typ: "ziemski", woj: "łódzkie", lat: 51.4000, lng: 19.7000, wiki: "Powiat_piotrkowski" },
-
-{ kod: "EPJ", nazwa: "Pajęczno", typ: "ziemski", woj: "łódzkie", lat: 51.1483, lng: 18.9886, wiki: "Pajęczno" },
-
-{ kod: "EPD", nazwa: "Poddębice", typ: "ziemski", woj: "łódzkie", lat: 51.8917, lng: 18.9583, wiki: "Poddębice" },
-
-{ kod: "ERA", nazwa: "Radomsko", typ: "ziemski", woj: "łódzkie", lat: 51.0683, lng: 19.4453, wiki: "Radomsko" },
-
-{ kod: "ERW", nazwa: "Rawa Mazowiecka", typ: "ziemski", woj: "łódzkie", lat: 51.7656, lng: 20.2553, wiki: "Rawa_Mazowiecka" },
-
-{ kod: "ESI", nazwa: "Sieradz", typ: "ziemski", woj: "łódzkie", lat: 51.5953, lng: 18.7308, wiki: "Sieradz" },
-
-{ kod: "ESK", nazwa: "Skierniewice (powiat)", typ: "ziemski", woj: "łódzkie", lat: 51.9500, lng: 20.1500, wiki: "Powiat_skierniewicki" },
-
-{ kod: "ETM", nazwa: "Tomaszów Mazowiecki", typ: "ziemski", woj: "łódzkie", lat: 51.5325, lng: 20.0089, wiki: "Tomaszów_Mazowiecki" },
-
-{ kod: "EWE", nazwa: "Wieluń", typ: "ziemski", woj: "łódzkie", lat: 51.2208, lng: 18.5694, wiki: "Wieluń" },
-
-{ kod: "EWI", nazwa: "Wieruszów", typ: "ziemski", woj: "łódzkie", lat: 51.2917, lng: 18.1572, wiki: "Wieruszów" },
-
-{ kod: "EZD", nazwa: "Zduńska Wola", typ: "ziemski", woj: "łódzkie", lat: 51.6000, lng: 18.9333, wiki: "Zduńska_Wola" },
-
-{ kod: "EZG", nazwa: "Zgierz", typ: "ziemski", woj: "łódzkie", lat: 51.8556, lng: 19.4053, wiki: "Zgierz" },
-
-
-
-// ========== MAŁOPOLSKIE (K) ==========
-
-{ kod: "KR", nazwa: "Kraków", typ: "miasto", woj: "małopolskie", lat: 50.0647, lng: 19.9450, wiki: "Kraków" },
-
-{ kod: "KN", nazwa: "Nowy Sącz", typ: "miasto", woj: "małopolskie", lat: 49.6175, lng: 20.7156, wiki: "Nowy_Sącz" },
-
-{ kod: "KT", nazwa: "Tarnów", typ: "miasto", woj: "małopolskie", lat: 50.0140, lng: 20.9839, wiki: "Tarnów" },
-
-{ kod: "KBC", nazwa: "Bochnia", typ: "ziemski", woj: "małopolskie", lat: 49.9697, lng: 20.4308, wiki: "Bochnia" },
-
-{ kod: "KBR", nazwa: "Brzesko", typ: "ziemski", woj: "małopolskie", lat: 49.9706, lng: 20.6056, wiki: "Brzesko" },
-
-{ kod: "KCH", nazwa: "Chrzanów", typ: "ziemski", woj: "małopolskie", lat: 50.1361, lng: 19.4036, wiki: "Chrzanów" },
-
-{ kod: "KDA", nazwa: "Dąbrowa Tarnowska", typ: "ziemski", woj: "małopolskie", lat: 50.1747, lng: 20.9886, wiki: "Dąbrowa_Tarnowska" },
-
-{ kod: "KGR", nazwa: "Gorlice", typ: "ziemski", woj: "małopolskie", lat: 49.6553, lng: 21.1611, wiki: "Gorlice" },
-
-{ kod: "KKR", nazwa: "Kraków (powiat)", typ: "ziemski", woj: "małopolskie", lat: 50.0500, lng: 20.0000, wiki: "Powiat_krakowski" },
-
-{ kod: "KLI", nazwa: "Limanowa", typ: "ziemski", woj: "małopolskie", lat: 49.7050, lng: 20.4253, wiki: "Limanowa" },
-
-{ kod: "KMI", nazwa: "Miechów", typ: "ziemski", woj: "małopolskie", lat: 50.3578, lng: 20.0297, wiki: "Miechów" },
-
-{ kod: "KMY", nazwa: "Myślenice", typ: "ziemski", woj: "małopolskie", lat: 49.8344, lng: 19.9389, wiki: "Myślenice" },
-
-{ kod: "KNS", nazwa: "Nowy Sącz (powiat)", typ: "ziemski", woj: "małopolskie", lat: 49.6000, lng: 20.7500, wiki: "Powiat_nowosądecki" },
-
-{ kod: "KNT", nazwa: "Nowy Targ", typ: "ziemski", woj: "małopolskie", lat: 49.4778, lng: 20.0306, wiki: "Nowy_Targ" },
-
-{ kod: "KOL", nazwa: "Olkusz", typ: "ziemski", woj: "małopolskie", lat: 50.2789, lng: 19.5644, wiki: "Olkusz" },
-
-{ kod: "KOS", nazwa: "Oświęcim", typ: "ziemski", woj: "małopolskie", lat: 50.0344, lng: 19.2098, wiki: "Oświęcim" },
-
-{ kod: "KPR", nazwa: "Proszowice", typ: "ziemski", woj: "małopolskie", lat: 50.1942, lng: 20.2864, wiki: "Proszowice" },
-
-{ kod: "KSU", nazwa: "Sucha Beskidzka", typ: "ziemski", woj: "małopolskie", lat: 49.7414, lng: 19.5919, wiki: "Sucha_Beskidzka" },
-
-{ kod: "KTA", nazwa: "Tarnów (powiat)", typ: "ziemski", woj: "małopolskie", lat: 50.0000, lng: 21.0000, wiki: "Powiat_tarnowski" },
-
-{ kod: "KTT", nazwa: "Tatrzański (Zakopane)", typ: "ziemski", woj: "małopolskie", lat: 49.2992, lng: 19.9494, wiki: "Powiat_tatrzański" },
-
-{ kod: "KWA", nazwa: "Wadowice", typ: "ziemski", woj: "małopolskie", lat: 49.8839, lng: 19.4906, wiki: "Wadowice" },
-
-{ kod: "KWI", nazwa: "Wieliczka", typ: "ziemski", woj: "małopolskie", lat: 49.9869, lng: 20.0644, wiki: "Wieliczka" },
-
-
-
-// ========== MAZOWIECKIE (W) ==========
-
-{ kod: "WA", nazwa: "Warszawa - Białołęka", typ: "miasto", woj: "mazowieckie", lat: 52.3211, lng: 20.9700, wiki: "Białołęka" },
-
-{ kod: "WB", nazwa: "Warszawa - Bielany", typ: "miasto", woj: "mazowieckie", lat: 52.2900, lng: 20.9400, wiki: "Bielany_(Warszawa)" },
-
-{ kod: "WD", nazwa: "Warszawa - Mokotów", typ: "miasto", woj: "mazowieckie", lat: 52.1900, lng: 21.0400, wiki: "Mokotów" },
-
-{ kod: "WE", nazwa: "Warszawa - Praga Płd.", typ: "miasto", woj: "mazowieckie", lat: 52.2400, lng: 21.0900, wiki: "Praga-Południe" },
-
-{ kod: "WF", nazwa: "Warszawa - Praga Płn.", typ: "miasto", woj: "mazowieckie", lat: 52.2600, lng: 21.0500, wiki: "Praga-Północ" },
-
-{ kod: "WH", nazwa: "Warszawa - Śródmieście", typ: "miasto", woj: "mazowieckie", lat: 52.2297, lng: 21.0122, wiki: "Śródmieście_(Warszawa)" },
-
-{ kod: "WI", nazwa: "Warszawa - Wola", typ: "miasto", woj: "mazowieckie", lat: 52.2370, lng: 20.9700, wiki: "Wola_(Warszawa)" },
-
-{ kod: "WJ", nazwa: "Warszawa - Ochota", typ: "miasto", woj: "mazowieckie", lat: 52.2050, lng: 20.9700, wiki: "Ochota" },
-
-{ kod: "WK", nazwa: "Warszawa - Wawer", typ: "miasto", woj: "mazowieckie", lat: 52.2000, lng: 21.1500, wiki: "Wawer" },
-
-{ kod: "WN", nazwa: "Warszawa - Targówek", typ: "miasto", woj: "mazowieckie", lat: 52.2900, lng: 21.0700, wiki: "Targówek" },
-
-{ kod: "WT", nazwa: "Warszawa - Ursus", typ: "miasto", woj: "mazowieckie", lat: 52.1950, lng: 20.8850, wiki: "Ursus_(Warszawa)" },
-
-{ kod: "WU", nazwa: "Warszawa - Ursynów", typ: "miasto", woj: "mazowieckie", lat: 52.1500, lng: 21.0500, wiki: "Ursynów" },
-
-{ kod: "WW", nazwa: "Warszawa - Wilanów", typ: "miasto", woj: "mazowieckie", lat: 52.1650, lng: 21.0900, wiki: "Wilanów" },
-
-{ kod: "WX", nazwa: "Warszawa - Włochy", typ: "miasto", woj: "mazowieckie", lat: 52.1900, lng: 20.9400, wiki: "Włochy_(Warszawa)" },
-
-{ kod: "WY", nazwa: "Warszawa - Bemowo", typ: "miasto", woj: "mazowieckie", lat: 52.2500, lng: 20.9100, wiki: "Bemowo" },
-
-{ kod: "WO", nazwa: "Ostrołęka", typ: "miasto", woj: "mazowieckie", lat: 53.0865, lng: 21.5742, wiki: "Ostrołęka" },
-
-{ kod: "WP", nazwa: "Płock", typ: "miasto", woj: "mazowieckie", lat: 52.5463, lng: 19.7065, wiki: "Płock" },
-
-{ kod: "WR", nazwa: "Radom", typ: "miasto", woj: "mazowieckie", lat: 51.4027, lng: 21.1471, wiki: "Radom" },
-
-{ kod: "WS", nazwa: "Siedlce", typ: "miasto", woj: "mazowieckie", lat: 52.1676, lng: 22.2902, wiki: "Siedlce" },
-
-{ kod: "WBI", nazwa: "Białobrzegi", typ: "ziemski", woj: "mazowieckie", lat: 51.6442, lng: 20.9569, wiki: "Białobrzegi" },
-
-{ kod: "WCI", nazwa: "Ciechanów", typ: "ziemski", woj: "mazowieckie", lat: 52.8814, lng: 20.6175, wiki: "Ciechanów" },
-
-{ kod: "WGM", nazwa: "Garwolin", typ: "ziemski", woj: "mazowieckie", lat: 51.8967, lng: 21.6122, wiki: "Garwolin" },
-
-{ kod: "WGS", nazwa: "Gostynin", typ: "ziemski", woj: "mazowieckie", lat: 52.4314, lng: 19.4658, wiki: "Gostynin" },
-
-{ kod: "WGR", nazwa: "Grodzisk Mazowiecki", typ: "ziemski", woj: "mazowieckie", lat: 52.1083, lng: 20.6250, wiki: "Grodzisk_Mazowiecki" },
-
-{ kod: "WGJ", nazwa: "Grójec", typ: "ziemski", woj: "mazowieckie", lat: 51.8628, lng: 20.8678, wiki: "Grójec" },
-
-{ kod: "WKB", nazwa: "Kozienice", typ: "ziemski", woj: "mazowieckie", lat: 51.5808, lng: 21.5500, wiki: "Kozienice" },
-
-{ kod: "WL", nazwa: "Legionowo", typ: "ziemski", woj: "mazowieckie", lat: 52.4044, lng: 20.9233, wiki: "Legionowo" },
-
-{ kod: "WLI", nazwa: "Lipsko", typ: "ziemski", woj: "mazowieckie", lat: 51.1592, lng: 21.6500, wiki: "Lipsko" },
-
-{ kod: "WLS", nazwa: "Łosice", typ: "ziemski", woj: "mazowieckie", lat: 52.2117, lng: 22.7222, wiki: "Łosice" },
-
-{ kod: "WM", nazwa: "Mińsk Mazowiecki", typ: "ziemski", woj: "mazowieckie", lat: 52.1817, lng: 21.5617, wiki: "Mińsk_Mazowiecki" },
-
-{ kod: "WMA", nazwa: "Maków Mazowiecki", typ: "ziemski", woj: "mazowieckie", lat: 52.8589, lng: 21.0997, wiki: "Maków_Mazowiecki" },
-
-{ kod: "WML", nazwa: "Mława", typ: "ziemski", woj: "mazowieckie", lat: 53.1119, lng: 20.3819, wiki: "Mława" },
-
-{ kod: "WND", nazwa: "Nowy Dwór Mazowiecki", typ: "ziemski", woj: "mazowieckie", lat: 52.4408, lng: 20.7158, wiki: "Nowy_Dwór_Mazowiecki" },
-
-{ kod: "WOS", nazwa: "Ostrołęka (powiat)", typ: "ziemski", woj: "mazowieckie", lat: 53.0500, lng: 21.5500, wiki: "Powiat_ostrołęcki" },
-
-{ kod: "WOR", nazwa: "Ostrów Mazowiecka", typ: "ziemski", woj: "mazowieckie", lat: 52.8033, lng: 21.8900, wiki: "Ostrów_Mazowiecka" },
-
-{ kod: "WOT", nazwa: "Otwock", typ: "ziemski", woj: "mazowieckie", lat: 52.1056, lng: 21.2614, wiki: "Otwock" },
-
-{ kod: "WPI", nazwa: "Piaseczno", typ: "ziemski", woj: "mazowieckie", lat: 52.0808, lng: 21.0233, wiki: "Piaseczno" },
-
-{ kod: "WPL", nazwa: "Płock (powiat)", typ: "ziemski", woj: "mazowieckie", lat: 52.5500, lng: 19.7000, wiki: "Powiat_płocki" },
-
-{ kod: "WPN", nazwa: "Płońsk", typ: "ziemski", woj: "mazowieckie", lat: 52.6258, lng: 20.3789, wiki: "Płońsk" },
-
-{ kod: "WPR", nazwa: "Pruszków", typ: "ziemski", woj: "mazowieckie", lat: 52.1700, lng: 20.8000, wiki: "Pruszków" },
-
-{ kod: "WPU", nazwa: "Przasnysz", typ: "ziemski", woj: "mazowieckie", lat: 53.0214, lng: 20.8786, wiki: "Przasnysz" },
-
-{ kod: "WPY", nazwa: "Przysucha", typ: "ziemski", woj: "mazowieckie", lat: 51.3578, lng: 20.6311, wiki: "Przysucha" },
-
-{ kod: "WPZ", nazwa: "Pułtusk", typ: "ziemski", woj: "mazowieckie", lat: 52.7058, lng: 21.0867, wiki: "Pułtusk" },
-
-{ kod: "WRA", nazwa: "Radom (powiat)", typ: "ziemski", woj: "mazowieckie", lat: 51.4000, lng: 21.1500, wiki: "Powiat_radomski" },
-
-{ kod: "WSC", nazwa: "Sochaczew", typ: "ziemski", woj: "mazowieckie", lat: 52.2289, lng: 20.2400, wiki: "Sochaczew" },
-
-{ kod: "WSE", nazwa: "Siedlce (powiat)", typ: "ziemski", woj: "mazowieckie", lat: 52.1500, lng: 22.3000, wiki: "Powiat_siedlecki" },
-
-{ kod: "WSI", nazwa: "Sierpc", typ: "ziemski", woj: "mazowieckie", lat: 52.8589, lng: 19.6692, wiki: "Sierpc" },
-
-{ kod: "WSO", nazwa: "Sokołów Podlaski", typ: "ziemski", woj: "mazowieckie", lat: 52.4106, lng: 22.2469, wiki: "Sokołów_Podlaski" },
-
-{ kod: "WSZ", nazwa: "Szydłowiec", typ: "ziemski", woj: "mazowieckie", lat: 51.2356, lng: 20.8508, wiki: "Szydłowiec" },
-
-{ kod: "WWE", nazwa: "Węgrów", typ: "ziemski", woj: "mazowieckie", lat: 52.4067, lng: 22.0094, wiki: "Węgrów" },
-
-{ kod: "WWL", nazwa: "Wołomin", typ: "ziemski", woj: "mazowieckie", lat: 52.3414, lng: 21.2406, wiki: "Wołomin" },
-
-{ kod: "WWY", nazwa: "Wyszków", typ: "ziemski", woj: "mazowieckie", lat: 52.5917, lng: 21.4631, wiki: "Wyszków" },
-
-{ kod: "WZ", nazwa: "Warszawa Zachodnia (Ożarów)", typ: "ziemski", woj: "mazowieckie", lat: 52.2089, lng: 20.7239, wiki: "Powiat_warszawski_zachodni" },
-
-{ kod: "WZW", nazwa: "Zwoleń", typ: "ziemski", woj: "mazowieckie", lat: 51.3611, lng: 21.5844, wiki: "Zwoleń" },
-
-{ kod: "WZU", nazwa: "Żuromin", typ: "ziemski", woj: "mazowieckie", lat: 53.0653, lng: 19.9100, wiki: "Żuromin" },
-
-{ kod: "WZY", nazwa: "Żyrardów", typ: "ziemski", woj: "mazowieckie", lat: 52.0489, lng: 20.4456, wiki: "Żyrardów" },
-
-
-
-// ========== OPOLSKIE (O) ==========
-
-{ kod: "OP", nazwa: "Opole", typ: "miasto", woj: "opolskie", lat: 50.6751, lng: 17.9213, wiki: "Opole" },
-
-{ kod: "OB", nazwa: "Brzeg", typ: "ziemski", woj: "opolskie", lat: 50.8606, lng: 17.4683, wiki: "Brzeg" },
-
-{ kod: "OG", nazwa: "Głubczyce", typ: "ziemski", woj: "opolskie", lat: 50.2017, lng: 17.8264, wiki: "Głubczyce" },
-
-{ kod: "OK", nazwa: "Kędzierzyn-Koźle", typ: "ziemski", woj: "opolskie", lat: 50.3494, lng: 18.2261, wiki: "Kędzierzyn-Koźle" },
-
-{ kod: "OKL", nazwa: "Kluczbork", typ: "ziemski", woj: "opolskie", lat: 50.9714, lng: 18.2208, wiki: "Kluczbork" },
-
-{ kod: "OKR", nazwa: "Krapkowice", typ: "ziemski", woj: "opolskie", lat: 50.4761, lng: 17.9656, wiki: "Krapkowice" },
-
-{ kod: "ONA", nazwa: "Namysłów", typ: "ziemski", woj: "opolskie", lat: 51.0786, lng: 17.7233, wiki: "Namysłów" },
-
-{ kod: "ONY", nazwa: "Nysa", typ: "ziemski", woj: "opolskie", lat: 50.4742, lng: 17.3328, wiki: "Nysa" },
-
-{ kod: "OOL", nazwa: "Olesno", typ: "ziemski", woj: "opolskie", lat: 50.8722, lng: 18.4181, wiki: "Olesno" },
-
-{ kod: "OPO", nazwa: "Opole (powiat)", typ: "ziemski", woj: "opolskie", lat: 50.6500, lng: 17.9000, wiki: "Powiat_opolski_(województwo_opolskie)" },
-
-{ kod: "OPR", nazwa: "Prudnik", typ: "ziemski", woj: "opolskie", lat: 50.3236, lng: 17.5786, wiki: "Prudnik" },
-
-{ kod: "OST", nazwa: "Strzelce Opolskie", typ: "ziemski", woj: "opolskie", lat: 50.5125, lng: 18.3050, wiki: "Strzelce_Opolskie" },
-
-
-
-// ========== PODKARPACKIE (R) ==========
-
-{ kod: "RZ", nazwa: "Rzeszów", typ: "miasto", woj: "podkarpackie", lat: 50.0413, lng: 21.9990, wiki: "Rzeszów" },
-
-{ kod: "RK", nazwa: "Krosno", typ: "miasto", woj: "podkarpackie", lat: 49.6883, lng: 21.7706, wiki: "Krosno" },
-
-{ kod: "RP", nazwa: "Przemyśl", typ: "miasto", woj: "podkarpackie", lat: 49.7836, lng: 22.7676, wiki: "Przemyśl" },
-
-{ kod: "RT", nazwa: "Tarnobrzeg", typ: "miasto", woj: "podkarpackie", lat: 50.5731, lng: 21.6797, wiki: "Tarnobrzeg" },
-
-{ kod: "RBI", nazwa: "Bieszczady (Ustrzyki Dolne)", typ: "ziemski", woj: "podkarpackie", lat: 49.4297, lng: 22.5933, wiki: "Powiat_bieszczadzki" },
-
-{ kod: "RBR", nazwa: "Brzozów", typ: "ziemski", woj: "podkarpackie", lat: 49.6936, lng: 22.0186, wiki: "Brzozów" },
-
-{ kod: "RDE", nazwa: "Dębica", typ: "ziemski", woj: "podkarpackie", lat: 50.0511, lng: 21.4117, wiki: "Dębica" },
-
-{ kod: "RJA", nazwa: "Jarosław", typ: "ziemski", woj: "podkarpackie", lat: 50.0167, lng: 22.6789, wiki: "Jarosław_(województwo_podkarpackie)" },
-
-{ kod: "RJS", nazwa: "Jasło", typ: "ziemski", woj: "podkarpackie", lat: 49.7456, lng: 21.4717, wiki: "Jasło" },
-
-{ kod: "RKL", nazwa: "Kolbuszowa", typ: "ziemski", woj: "podkarpackie", lat: 50.2469, lng: 21.7783, wiki: "Kolbuszowa" },
-
-{ kod: "RKR", nazwa: "Krosno (powiat)", typ: "ziemski", woj: "podkarpackie", lat: 49.6500, lng: 21.7500, wiki: "Powiat_krośnieński_(województwo_podkarpackie)" },
-
-{ kod: "RLA", nazwa: "Lesko", typ: "ziemski", woj: "podkarpackie", lat: 49.4694, lng: 22.3306, wiki: "Lesko" },
-
-{ kod: "RLE", nazwa: "Leżajsk", typ: "ziemski", woj: "podkarpackie", lat: 50.2647, lng: 22.4194, wiki: "Leżajsk" },
-
-{ kod: "RLU", nazwa: "Lubaczów", typ: "ziemski", woj: "podkarpackie", lat: 50.1567, lng: 23.1186, wiki: "Lubaczów" },
-
-{ kod: "RLW", nazwa: "Łańcut", typ: "ziemski", woj: "podkarpackie", lat: 50.0683, lng: 22.2300, wiki: "Łańcut" },
-
-{ kod: "RMI", nazwa: "Mielec", typ: "ziemski", woj: "podkarpackie", lat: 50.2872, lng: 21.4239, wiki: "Mielec" },
-
-{ kod: "RNI", nazwa: "Nisko", typ: "ziemski", woj: "podkarpackie", lat: 50.5217, lng: 22.1431, wiki: "Nisko" },
-
-{ kod: "RPR", nazwa: "Przemyśl (powiat)", typ: "ziemski", woj: "podkarpackie", lat: 49.7800, lng: 22.7500, wiki: "Powiat_przemyski" },
-
-{ kod: "RPZ", nazwa: "Przeworsk", typ: "ziemski", woj: "podkarpackie", lat: 50.0589, lng: 22.4944, wiki: "Przeworsk" },
-
-{ kod: "RRS", nazwa: "Ropczyce-Sędziszów", typ: "ziemski", woj: "podkarpackie", lat: 50.0539, lng: 21.6072, wiki: "Powiat_ropczycko-sędziszowski" },
-
-{ kod: "RRZ", nazwa: "Rzeszów (powiat)", typ: "ziemski", woj: "podkarpackie", lat: 50.0500, lng: 22.0000, wiki: "Powiat_rzeszowski" },
-
-{ kod: "RSA", nazwa: "Sanok", typ: "ziemski", woj: "podkarpackie", lat: 49.5556, lng: 22.2058, wiki: "Sanok" },
-
-{ kod: "RST", nazwa: "Stalowa Wola", typ: "ziemski", woj: "podkarpackie", lat: 50.5811, lng: 22.0539, wiki: "Stalowa_Wola" },
-
-{ kod: "RSR", nazwa: "Strzyżów", typ: "ziemski", woj: "podkarpackie", lat: 49.8722, lng: 21.7944, wiki: "Strzyżów" },
-
-{ kod: "RTA", nazwa: "Tarnobrzeg (powiat)", typ: "ziemski", woj: "podkarpackie", lat: 50.5500, lng: 21.7000, wiki: "Powiat_tarnobrzeski" },
-
-
-
-// ========== PODLASKIE (B) ==========
-
-{ kod: "BI", nazwa: "Białystok", typ: "miasto", woj: "podlaskie", lat: 53.1325, lng: 23.1688, wiki: "Białystok" },
-
-{ kod: "BL", nazwa: "Łomża", typ: "miasto", woj: "podlaskie", lat: 53.1781, lng: 22.0589, wiki: "Łomża" },
-
-{ kod: "BS", nazwa: "Suwałki", typ: "miasto", woj: "podlaskie", lat: 54.1117, lng: 22.9306, wiki: "Suwałki" },
-
-{ kod: "BAU", nazwa: "Augustów", typ: "ziemski", woj: "podlaskie", lat: 53.8439, lng: 22.9794, wiki: "Augustów" },
-
-{ kod: "BBI", nazwa: "Białystok (powiat)", typ: "ziemski", woj: "podlaskie", lat: 53.1500, lng: 23.1500, wiki: "Powiat_białostocki" },
-
-{ kod: "BBL", nazwa: "Bielsk Podlaski", typ: "ziemski", woj: "podlaskie", lat: 52.7672, lng: 23.1872, wiki: "Bielsk_Podlaski" },
-
-{ kod: "BGR", nazwa: "Grajewo", typ: "ziemski", woj: "podlaskie", lat: 53.6483, lng: 22.4567, wiki: "Grajewo" },
-
-{ kod: "BHA", nazwa: "Hajnówka", typ: "ziemski", woj: "podlaskie", lat: 52.7378, lng: 23.5750, wiki: "Hajnówka" },
-
-{ kod: "BKL", nazwa: "Kolno", typ: "ziemski", woj: "podlaskie", lat: 53.4128, lng: 21.9258, wiki: "Kolno_(województwo_podlaskie)" },
-
-{ kod: "BLM", nazwa: "Łomża (powiat)", typ: "ziemski", woj: "podlaskie", lat: 53.1500, lng: 22.0500, wiki: "Powiat_łomżyński" },
-
-{ kod: "BMN", nazwa: "Mońki", typ: "ziemski", woj: "podlaskie", lat: 53.4019, lng: 22.7989, wiki: "Mońki" },
-
-{ kod: "BSE", nazwa: "Sejny", typ: "ziemski", woj: "podlaskie", lat: 54.1083, lng: 23.3500, wiki: "Sejny" },
-
-{ kod: "BSI", nazwa: "Siemiatycze", typ: "ziemski", woj: "podlaskie", lat: 52.4267, lng: 22.8639, wiki: "Siemiatycze" },
-
-{ kod: "BSK", nazwa: "Sokółka", typ: "ziemski", woj: "podlaskie", lat: 53.4083, lng: 23.5022, wiki: "Sokółka" },
-
-{ kod: "BSU", nazwa: "Suwałki (powiat)", typ: "ziemski", woj: "podlaskie", lat: 54.1000, lng: 22.9500, wiki: "Powiat_suwalski" },
-
-{ kod: "BWM", nazwa: "Wysokie Mazowieckie", typ: "ziemski", woj: "podlaskie", lat: 52.9189, lng: 22.5142, wiki: "Wysokie_Mazowieckie" },
-
-{ kod: "BZA", nazwa: "Zambrów", typ: "ziemski", woj: "podlaskie", lat: 52.9858, lng: 22.2433, wiki: "Zambrów" },
-
-
-
-// ========== POMORSKIE (G) ==========
-
-{ kod: "GD", nazwa: "Gdańsk", typ: "miasto", woj: "pomorskie", lat: 54.3520, lng: 18.6466, wiki: "Gdańsk" },
-
-{ kod: "GA", nazwa: "Gdynia", typ: "miasto", woj: "pomorskie", lat: 54.5189, lng: 18.5305, wiki: "Gdynia" },
-
-{ kod: "GSP", nazwa: "Sopot", typ: "miasto", woj: "pomorskie", lat: 54.4419, lng: 18.5601, wiki: "Sopot" },
-
-{ kod: "GS", nazwa: "Słupsk", typ: "miasto", woj: "pomorskie", lat: 54.4641, lng: 17.0285, wiki: "Słupsk" },
-
-{ kod: "GBY", nazwa: "Bytów", typ: "ziemski", woj: "pomorskie", lat: 54.1697, lng: 17.4894, wiki: "Bytów" },
-
-{ kod: "GCH", nazwa: "Chojnice", typ: "ziemski", woj: "pomorskie", lat: 53.6953, lng: 17.5564, wiki: "Chojnice" },
-
-{ kod: "GCZ", nazwa: "Człuchów", typ: "ziemski", woj: "pomorskie", lat: 53.6664, lng: 17.3597, wiki: "Człuchów" },
-
-{ kod: "GDA", nazwa: "Gdańsk (powiat - Pruszcz Gd.)", typ: "ziemski", woj: "pomorskie", lat: 54.2614, lng: 18.6358, wiki: "Powiat_gdański" },
-
-{ kod: "GKA", nazwa: "Kartuzy", typ: "ziemski", woj: "pomorskie", lat: 54.3344, lng: 18.1981, wiki: "Kartuzy" },
-
-{ kod: "GKS", nazwa: "Kościerzyna", typ: "ziemski", woj: "pomorskie", lat: 54.1228, lng: 17.9789, wiki: "Kościerzyna" },
-
-{ kod: "GKW", nazwa: "Kwidzyn", typ: "ziemski", woj: "pomorskie", lat: 53.7297, lng: 18.9303, wiki: "Kwidzyn" },
-
-{ kod: "GLE", nazwa: "Lębork", typ: "ziemski", woj: "pomorskie", lat: 54.5417, lng: 17.7522, wiki: "Lębork" },
-
-{ kod: "GMB", nazwa: "Malbork", typ: "ziemski", woj: "pomorskie", lat: 54.0356, lng: 19.0264, wiki: "Malbork" },
-
-{ kod: "GNM", nazwa: "Nowy Dwór Gdański", typ: "ziemski", woj: "pomorskie", lat: 54.2117, lng: 19.1206, wiki: "Nowy_Dwór_Gdański" },
-
-{ kod: "GPU", nazwa: "Puck", typ: "ziemski", woj: "pomorskie", lat: 54.7186, lng: 18.4097, wiki: "Puck" },
-
-{ kod: "GSL", nazwa: "Słupsk (powiat)", typ: "ziemski", woj: "pomorskie", lat: 54.4500, lng: 17.0500, wiki: "Powiat_słupski" },
-
-{ kod: "GST", nazwa: "Starogard Gdański", typ: "ziemski", woj: "pomorskie", lat: 53.9722, lng: 18.5300, wiki: "Starogard_Gdański" },
-
-{ kod: "GSZ", nazwa: "Sztum", typ: "ziemski", woj: "pomorskie", lat: 53.9156, lng: 19.0306, wiki: "Sztum" },
-
-{ kod: "GTC", nazwa: "Tczew", typ: "ziemski", woj: "pomorskie", lat: 54.0917, lng: 18.7783, wiki: "Tczew" },
-
-{ kod: "GWE", nazwa: "Wejherowo", typ: "ziemski", woj: "pomorskie", lat: 54.6058, lng: 18.2364, wiki: "Wejherowo" },
-
-
-
-// ========== ŚLĄSKIE (S) ==========
-
-{ kod: "SK", nazwa: "Katowice", typ: "miasto", woj: "śląskie", lat: 50.2649, lng: 19.0238, wiki: "Katowice" },
-
-{ kod: "SY", nazwa: "Bytom", typ: "miasto", woj: "śląskie", lat: 50.3478, lng: 18.9275, wiki: "Bytom" },
-
-{ kod: "SC", nazwa: "Chorzów", typ: "miasto", woj: "śląskie", lat: 50.2972, lng: 18.9544, wiki: "Chorzów" },
-
-{ kod: "SCB", nazwa: "Częstochowa", typ: "miasto", woj: "śląskie", lat: 50.8118, lng: 19.1203, wiki: "Częstochowa" },
-
-{ kod: "SD", nazwa: "Dąbrowa Górnicza", typ: "miasto", woj: "śląskie", lat: 50.3247, lng: 19.1956, wiki: "Dąbrowa_Górnicza" },
-
-{ kod: "SG", nazwa: "Gliwice", typ: "miasto", woj: "śląskie", lat: 50.2945, lng: 18.6714, wiki: "Gliwice" },
-
-{ kod: "SJ", nazwa: "Jastrzębie-Zdrój", typ: "miasto", woj: "śląskie", lat: 49.9498, lng: 18.5760, wiki: "Jastrzębie-Zdrój" },
-
-{ kod: "SJZ", nazwa: "Jaworzno", typ: "miasto", woj: "śląskie", lat: 50.2049, lng: 19.2747, wiki: "Jaworzno" },
-
-{ kod: "SM", nazwa: "Mysłowice", typ: "miasto", woj: "śląskie", lat: 50.2415, lng: 19.1356, wiki: "Mysłowice" },
-
-{ kod: "SO", nazwa: "Sosnowiec", typ: "miasto", woj: "śląskie", lat: 50.2860, lng: 19.1042, wiki: "Sosnowiec" },
-
-{ kod: "SP", nazwa: "Piekary Śląskie", typ: "miasto", woj: "śląskie", lat: 50.3892, lng: 18.9300, wiki: "Piekary_Śląskie" },
-
-{ kod: "SR", nazwa: "Ruda Śląska", typ: "miasto", woj: "śląskie", lat: 50.2585, lng: 18.8567, wiki: "Ruda_Śląska" },
-
-{ kod: "SRS", nazwa: "Rybnik", typ: "miasto", woj: "śląskie", lat: 50.0971, lng: 18.5410, wiki: "Rybnik" },
-
-{ kod: "SI", nazwa: "Siemianowice Śląskie", typ: "miasto", woj: "śląskie", lat: 50.3108, lng: 19.0225, wiki: "Siemianowice_Śląskie" },
-
-{ kod: "SS", nazwa: "Świętochłowice", typ: "miasto", woj: "śląskie", lat: 50.3017, lng: 18.9189, wiki: "Świętochłowice" },
-
-{ kod: "ST", nazwa: "Tychy", typ: "miasto", woj: "śląskie", lat: 50.1357, lng: 18.9985, wiki: "Tychy" },
-
-{ kod: "SZ", nazwa: "Zabrze", typ: "miasto", woj: "śląskie", lat: 50.3249, lng: 18.7857, wiki: "Zabrze" },
-
-{ kod: "SW", nazwa: "Żory", typ: "miasto", woj: "śląskie", lat: 50.0453, lng: 18.7008, wiki: "Żory" },
-
-{ kod: "SB", nazwa: "Bielsko-Biała", typ: "miasto", woj: "śląskie", lat: 49.8224, lng: 19.0447, wiki: "Bielsko-Biała" },
-
-{ kod: "SBE", nazwa: "Będzin", typ: "ziemski", woj: "śląskie", lat: 50.3267, lng: 19.1308, wiki: "Będzin" },
-
-{ kod: "SBI", nazwa: "Bielsko (powiat)", typ: "ziemski", woj: "śląskie", lat: 49.8000, lng: 19.0500, wiki: "Powiat_bielski_(województwo_śląskie)" },
-
-{ kod: "SBL", nazwa: "Bieruń-Lędziny", typ: "ziemski", woj: "śląskie", lat: 50.0939, lng: 19.0894, wiki: "Powiat_bieruńsko-lędziński" },
-
-{ kod: "SCI", nazwa: "Cieszyn", typ: "ziemski", woj: "śląskie", lat: 49.7497, lng: 18.6306, wiki: "Cieszyn" },
-
-{ kod: "SCZ", nazwa: "Częstochowa (powiat)", typ: "ziemski", woj: "śląskie", lat: 50.8000, lng: 19.1000, wiki: "Powiat_częstochowski" },
-
-{ kod: "SGL", nazwa: "Gliwice (powiat)", typ: "ziemski", woj: "śląskie", lat: 50.3000, lng: 18.5000, wiki: "Powiat_gliwicki" },
-
-{ kod: "SKL", nazwa: "Kłobuck", typ: "ziemski", woj: "śląskie", lat: 50.9097, lng: 18.9358, wiki: "Kłobuck" },
-
-{ kod: "SLU", nazwa: "Lubliniec", typ: "ziemski", woj: "śląskie", lat: 50.6692, lng: 18.6856, wiki: "Lubliniec" },
-
-{ kod: "SMI", nazwa: "Mikołów", typ: "ziemski", woj: "śląskie", lat: 50.1722, lng: 18.9061, wiki: "Mikołów" },
-
-{ kod: "SMY", nazwa: "Myszków", typ: "ziemski", woj: "śląskie", lat: 50.5644, lng: 19.3306, wiki: "Myszków" },
-
-{ kod: "SPS", nazwa: "Pszczyna", typ: "ziemski", woj: "śląskie", lat: 49.9817, lng: 18.9442, wiki: "Pszczyna" },
-
-{ kod: "SRA", nazwa: "Racibórz", typ: "ziemski", woj: "śląskie", lat: 50.0917, lng: 18.2192, wiki: "Racibórz" },
-
-{ kod: "SRC", nazwa: "Rybnik (powiat)", typ: "ziemski", woj: "śląskie", lat: 50.1000, lng: 18.5000, wiki: "Powiat_rybnicki" },
-
-{ kod: "STA", nazwa: "Tarnowskie Góry", typ: "ziemski", woj: "śląskie", lat: 50.4458, lng: 18.8606, wiki: "Tarnowskie_Góry" },
-
-{ kod: "SWA", nazwa: "Wodzisław Śląski", typ: "ziemski", woj: "śląskie", lat: 50.0036, lng: 18.4636, wiki: "Wodzisław_Śląski" },
-
-{ kod: "SZA", nazwa: "Zawiercie", typ: "ziemski", woj: "śląskie", lat: 50.4881, lng: 19.4156, wiki: "Zawiercie" },
-
-{ kod: "SZY", nazwa: "Żywiec", typ: "ziemski", woj: "śląskie", lat: 49.6856, lng: 19.1925, wiki: "Żywiec" },
-
-
-
-// ========== ŚWIĘTOKRZYSKIE (T) ==========
-
-{ kod: "TK", nazwa: "Kielce", typ: "miasto", woj: "świętokrzyskie", lat: 50.8661, lng: 20.6286, wiki: "Kielce" },
-
-{ kod: "TBU", nazwa: "Busko-Zdrój", typ: "ziemski", woj: "świętokrzyskie", lat: 50.4711, lng: 20.7172, wiki: "Busko-Zdrój" },
-
-{ kod: "TJE", nazwa: "Jędrzejów", typ: "ziemski", woj: "świętokrzyskie", lat: 50.6481, lng: 20.3019, wiki: "Jędrzejów" },
-
-{ kod: "TKA", nazwa: "Kazimierza Wielka", typ: "ziemski", woj: "świętokrzyskie", lat: 50.2675, lng: 20.4942, wiki: "Kazimierza_Wielka" },
-
-{ kod: "TKI", nazwa: "Kielce (powiat)", typ: "ziemski", woj: "świętokrzyskie", lat: 50.8500, lng: 20.6500, wiki: "Powiat_kielecki" },
-
-{ kod: "TKO", nazwa: "Końskie", typ: "ziemski", woj: "świętokrzyskie", lat: 51.1908, lng: 20.4067, wiki: "Końskie" },
-
-{ kod: "TOP", nazwa: "Opatów", typ: "ziemski", woj: "świętokrzyskie", lat: 50.8042, lng: 21.4286, wiki: "Opatów" },
-
-{ kod: "TOS", nazwa: "Ostrowiec Świętokrzyski", typ: "ziemski", woj: "świętokrzyskie", lat: 50.9292, lng: 21.3858, wiki: "Ostrowiec_Świętokrzyski" },
-
-{ kod: "TPI", nazwa: "Pińczów", typ: "ziemski", woj: "świętokrzyskie", lat: 50.5217, lng: 20.5256, wiki: "Pińczów" },
-
-{ kod: "TSA", nazwa: "Sandomierz", typ: "ziemski", woj: "świętokrzyskie", lat: 50.6822, lng: 21.7494, wiki: "Sandomierz" },
-
-{ kod: "TSK", nazwa: "Skarżysko-Kamienna", typ: "ziemski", woj: "świętokrzyskie", lat: 51.1106, lng: 20.8728, wiki: "Skarżysko-Kamienna" },
-
-{ kod: "TST", nazwa: "Starachowice", typ: "ziemski", woj: "świętokrzyskie", lat: 51.0383, lng: 21.0728, wiki: "Starachowice" },
-
-{ kod: "TSZ", nazwa: "Staszów", typ: "ziemski", woj: "świętokrzyskie", lat: 50.5594, lng: 21.1672, wiki: "Staszów" },
-
-{ kod: "TWL", nazwa: "Włoszczowa", typ: "ziemski", woj: "świętokrzyskie", lat: 50.8511, lng: 19.9697, wiki: "Włoszczowa" },
-
-
-
-// ========== WARMIŃSKO-MAZURSKIE (N) ==========
-
-{ kod: "NO", nazwa: "Olsztyn", typ: "miasto", woj: "warmińsko-mazurskie", lat: 53.7784, lng: 20.4801, wiki: "Olsztyn" },
-
-{ kod: "NE", nazwa: "Elbląg", typ: "miasto", woj: "warmińsko-mazurskie", lat: 54.1522, lng: 19.4088, wiki: "Elbląg" },
-
-{ kod: "NBA", nazwa: "Bartoszyce", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 54.2519, lng: 20.8064, wiki: "Bartoszyce" },
-
-{ kod: "NBR", nazwa: "Braniewo", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 54.3792, lng: 19.8225, wiki: "Braniewo" },
-
-{ kod: "NDZ", nazwa: "Działdowo", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.2369, lng: 20.1789, wiki: "Działdowo" },
-
-{ kod: "NEB", nazwa: "Elbląg (powiat)", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 54.1500, lng: 19.4500, wiki: "Powiat_elbląski" },
-
-{ kod: "NEL", nazwa: "Ełk", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.8278, lng: 22.3625, wiki: "Ełk" },
-
-{ kod: "NGI", nazwa: "Giżycko", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 54.0381, lng: 21.7644, wiki: "Giżycko" },
-
-{ kod: "NGO", nazwa: "Gołdap", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 54.3092, lng: 22.3050, wiki: "Gołdap" },
-
-{ kod: "NIL", nazwa: "Iława", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.5928, lng: 19.5681, wiki: "Iława" },
-
-{ kod: "NKE", nazwa: "Kętrzyn", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 54.0769, lng: 21.3719, wiki: "Kętrzyn" },
-
-{ kod: "NLI", nazwa: "Lidzbark Warmiński", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 54.1264, lng: 20.5775, wiki: "Lidzbark_Warmiński" },
-
-{ kod: "NMR", nazwa: "Mrągowo", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.8697, lng: 21.3050, wiki: "Mrągowo" },
-
-{ kod: "NNI", nazwa: "Nidzica", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.3592, lng: 20.4264, wiki: "Nidzica" },
-
-{ kod: "NNM", nazwa: "Nowe Miasto Lubawskie", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.4250, lng: 19.5933, wiki: "Nowe_Miasto_Lubawskie" },
-
-{ kod: "NOL", nazwa: "Olsztyn (powiat)", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.7800, lng: 20.4800, wiki: "Powiat_olsztyński" },
-
-{ kod: "NOE", nazwa: "Olecko", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 54.0397, lng: 22.5028, wiki: "Olecko" },
-
-{ kod: "NOS", nazwa: "Ostróda", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.6975, lng: 19.9694, wiki: "Ostróda" },
-
-{ kod: "NPI", nazwa: "Pisz", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.6258, lng: 21.8081, wiki: "Pisz" },
-
-{ kod: "NSZ", nazwa: "Szczytno", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.5614, lng: 20.9844, wiki: "Szczytno" },
-
-{ kod: "NWE", nazwa: "Węgorzewo", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 54.2111, lng: 21.7456, wiki: "Węgorzewo" },
-
-
-
-// ========== WIELKOPOLSKIE (P) ==========
-
-{ kod: "PO", nazwa: "Poznań", typ: "miasto", woj: "wielkopolskie", lat: 52.4064, lng: 16.9252, wiki: "Poznań" },
-
-{ kod: "PK", nazwa: "Kalisz", typ: "miasto", woj: "wielkopolskie", lat: 51.7575, lng: 18.0900, wiki: "Kalisz" },
-
-{ kod: "PN", nazwa: "Konin", typ: "miasto", woj: "wielkopolskie", lat: 52.2231, lng: 18.2511, wiki: "Konin" },
-
-{ kod: "PL", nazwa: "Leszno", typ: "miasto", woj: "wielkopolskie", lat: 51.8403, lng: 16.5750, wiki: "Leszno" },
-
-{ kod: "PCH", nazwa: "Chodzież", typ: "ziemski", woj: "wielkopolskie", lat: 52.9947, lng: 16.9189, wiki: "Chodzież" },
-
-{ kod: "PCZ", nazwa: "Czarnków-Trzcianka", typ: "ziemski", woj: "wielkopolskie", lat: 52.9036, lng: 16.5683, wiki: "Powiat_czarnkowsko-trzcianecki" },
-
-{ kod: "PGN", nazwa: "Gniezno", typ: "ziemski", woj: "wielkopolskie", lat: 52.5347, lng: 17.5961, wiki: "Gniezno" },
-
-{ kod: "PGO", nazwa: "Gostyń", typ: "ziemski", woj: "wielkopolskie", lat: 51.8825, lng: 17.0119, wiki: "Gostyń" },
-
-{ kod: "PGR", nazwa: "Grodzisk Wielkopolski", typ: "ziemski", woj: "wielkopolskie", lat: 52.2381, lng: 16.3547, wiki: "Grodzisk_Wielkopolski" },
-
-{ kod: "PJA", nazwa: "Jarocin", typ: "ziemski", woj: "wielkopolskie", lat: 51.9700, lng: 17.5044, wiki: "Jarocin" },
-
-{ kod: "PKA", nazwa: "Kalisz (powiat)", typ: "ziemski", woj: "wielkopolskie", lat: 51.7600, lng: 18.0500, wiki: "Powiat_kaliski" },
-
-{ kod: "PKE", nazwa: "Kępno", typ: "ziemski", woj: "wielkopolskie", lat: 51.2806, lng: 17.9897, wiki: "Kępno" },
-
-{ kod: "PKL", nazwa: "Koło", typ: "ziemski", woj: "wielkopolskie", lat: 52.2014, lng: 18.6394, wiki: "Koło_(miasto)" },
-
-{ kod: "PKN", nazwa: "Konin (powiat)", typ: "ziemski", woj: "wielkopolskie", lat: 52.2200, lng: 18.2500, wiki: "Powiat_koniński" },
-
-{ kod: "PKS", nazwa: "Kościan", typ: "ziemski", woj: "wielkopolskie", lat: 52.0856, lng: 16.6431, wiki: "Kościan" },
-
-{ kod: "PKR", nazwa: "Krotoszyn", typ: "ziemski", woj: "wielkopolskie", lat: 51.6986, lng: 17.4406, wiki: "Krotoszyn" },
-
-{ kod: "PLE", nazwa: "Leszno (powiat)", typ: "ziemski", woj: "wielkopolskie", lat: 51.8500, lng: 16.5500, wiki: "Powiat_leszczyński" },
-
-{ kod: "PMI", nazwa: "Międzychód", typ: "ziemski", woj: "wielkopolskie", lat: 52.5917, lng: 15.8736, wiki: "Międzychód" },
-
-{ kod: "PNT", nazwa: "Nowy Tomyśl", typ: "ziemski", woj: "wielkopolskie", lat: 52.3217, lng: 16.1278, wiki: "Nowy_Tomyśl" },
-
-{ kod: "POB", nazwa: "Oborniki", typ: "ziemski", woj: "wielkopolskie", lat: 52.6469, lng: 16.8131, wiki: "Oborniki" },
-
-{ kod: "POS", nazwa: "Ostrów Wielkopolski", typ: "ziemski", woj: "wielkopolskie", lat: 51.6500, lng: 17.8081, wiki: "Ostrów_Wielkopolski" },
-
-{ kod: "POT", nazwa: "Ostrzeszów", typ: "ziemski", woj: "wielkopolskie", lat: 51.4264, lng: 17.9381, wiki: "Ostrzeszów" },
-
-{ kod: "PPI", nazwa: "Piła", typ: "ziemski", woj: "wielkopolskie", lat: 53.1511, lng: 16.7383, wiki: "Piła" },
-
-{ kod: "PPL", nazwa: "Pleszew", typ: "ziemski", woj: "wielkopolskie", lat: 51.8939, lng: 17.7894, wiki: "Pleszew" },
-
-{ kod: "PP", nazwa: "Poznań (powiat)", typ: "ziemski", woj: "wielkopolskie", lat: 52.4000, lng: 16.9000, wiki: "Powiat_poznański" },
-
-{ kod: "PRA", nazwa: "Rawicz", typ: "ziemski", woj: "wielkopolskie", lat: 51.6097, lng: 16.8589, wiki: "Rawicz" },
-
-{ kod: "PSL", nazwa: "Słupca", typ: "ziemski", woj: "wielkopolskie", lat: 52.2856, lng: 17.8717, wiki: "Słupca" },
-
-{ kod: "PSE", nazwa: "Szamotuły", typ: "ziemski", woj: "wielkopolskie", lat: 52.6125, lng: 16.5764, wiki: "Szamotuły" },
-
-{ kod: "PSR", nazwa: "Środa Wielkopolska", typ: "ziemski", woj: "wielkopolskie", lat: 52.2289, lng: 17.2792, wiki: "Środa_Wielkopolska" },
-
-{ kod: "PSD", nazwa: "Śrem", typ: "ziemski", woj: "wielkopolskie", lat: 52.0894, lng: 17.0144, wiki: "Śrem" },
-
-{ kod: "PTU", nazwa: "Turek", typ: "ziemski", woj: "wielkopolskie", lat: 52.0142, lng: 18.5006, wiki: "Turek_(miasto)" },
-
-{ kod: "PWA", nazwa: "Wągrowiec", typ: "ziemski", woj: "wielkopolskie", lat: 52.8081, lng: 17.2014, wiki: "Wągrowiec" },
-
-{ kod: "PWO", nazwa: "Wolsztyn", typ: "ziemski", woj: "wielkopolskie", lat: 52.1108, lng: 16.1117, wiki: "Wolsztyn" },
-
-{ kod: "PWR", nazwa: "Września", typ: "ziemski", woj: "wielkopolskie", lat: 52.3247, lng: 17.5675, wiki: "Września" },
-
-{ kod: "PZ", nazwa: "Złotów", typ: "ziemski", woj: "wielkopolskie", lat: 53.3636, lng: 17.0339, wiki: "Złotów" },
-
-
-
-// ========== ZACHODNIOPOMORSKIE (Z) ==========
-
-{ kod: "ZS", nazwa: "Szczecin", typ: "miasto", woj: "zachodniopomorskie", lat: 53.4285, lng: 14.5528, wiki: "Szczecin" },
-
-{ kod: "ZK", nazwa: "Koszalin", typ: "miasto", woj: "zachodniopomorskie", lat: 54.1944, lng: 16.1722, wiki: "Koszalin" },
-
-{ kod: "ZSW", nazwa: "Świnoujście", typ: "miasto", woj: "zachodniopomorskie", lat: 53.9097, lng: 14.2475, wiki: "Świnoujście" },
-
-{ kod: "ZBI", nazwa: "Białogard", typ: "ziemski", woj: "zachodniopomorskie", lat: 54.0064, lng: 15.9881, wiki: "Białogard" },
-
-{ kod: "ZCH", nazwa: "Choszczno", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.1683, lng: 15.4203, wiki: "Choszczno" },
-
-{ kod: "ZDR", nazwa: "Drawsko Pomorskie", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.5253, lng: 15.8108, wiki: "Drawsko_Pomorskie" },
-
-{ kod: "ZGL", nazwa: "Goleniów", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.5658, lng: 14.8275, wiki: "Goleniów" },
-
-{ kod: "ZGR", nazwa: "Gryfice", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.9158, lng: 15.2031, wiki: "Gryfice" },
-
-{ kod: "ZGY", nazwa: "Gryfino", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.2522, lng: 14.4878, wiki: "Gryfino" },
-
-{ kod: "ZKA", nazwa: "Kamień Pomorski", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.9694, lng: 14.7681, wiki: "Kamień_Pomorski" },
-
-{ kod: "ZKL", nazwa: "Kołobrzeg", typ: "ziemski", woj: "zachodniopomorskie", lat: 54.1758, lng: 15.5836, wiki: "Kołobrzeg" },
-
-{ kod: "ZKO", nazwa: "Koszalin (powiat)", typ: "ziemski", woj: "zachodniopomorskie", lat: 54.1900, lng: 16.1700, wiki: "Powiat_koszaliński" },
-
-{ kod: "ZLO", nazwa: "Łobez", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.6394, lng: 15.6228, wiki: "Łobez" },
-
-{ kod: "ZMY", nazwa: "Myślibórz", typ: "ziemski", woj: "zachodniopomorskie", lat: 52.9258, lng: 14.8689, wiki: "Myślibórz" },
-
-{ kod: "ZPL", nazwa: "Police", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.5497, lng: 14.5722, wiki: "Police_(miasto)" },
-
-{ kod: "ZPY", nazwa: "Pyrzyce", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.1497, lng: 14.8911, wiki: "Pyrzyce" },
-
-{ kod: "ZSL", nazwa: "Sławno", typ: "ziemski", woj: "zachodniopomorskie", lat: 54.3625, lng: 16.6789, wiki: "Sławno" },
-
-{ kod: "ZSZ", nazwa: "Szczecin (powiat - Szczecinek)", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.7100, lng: 16.6986, wiki: "Szczecinek" },
-
-{ kod: "ZST", nazwa: "Stargard", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.3367, lng: 15.0500, wiki: "Stargard" },
-
-{ kod: "ZSD", nazwa: "Świdwin", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.7733, lng: 15.7728, wiki: "Świdwin" },
-
-{ kod: "ZWA", nazwa: "Wałcz", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.2722, lng: 16.4711, wiki: "Wałcz" },
-
-];
-
-
-
-/* ============================================================
-
-STAN GRY
-
-============================================================ */
-
-const STORAGE_KEY = 'mistrzTablic_v1';
-
-const state = {
-
-mode: 'classic',
-
-regionWoj: null,
-
-current: null,
-
-punkty: 0,
-
-seria: 0,
-
-najlSeria: 0,
-
-rekord: 0,
-
-pytania: 0,
-
-trafione: 0,
-
-hintsUsed: { woj: false, letter: false, type: false },
-
-history: [],
-
-perPowiat: {},
-
-timer: null,
-
-timeLeft: 0,
-
-};
-
-
-
-function loadState() {
-
-try {
-
-const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-
-Object.assign(state, {
-
-najlSeria: saved.najlSeria || 0,
-
-rekord: saved.rekord || 0,
-
-pytania: saved.pytania || 0,
-
-trafione: saved.trafione || 0,
-
-perPowiat: saved.perPowiat || {},
-
-});
-
-} catch (e) { console.warn('Nie udało się wczytać postępu:', e); }
-
-}
-
-
-
-function saveState() {
-
-try {
-
-localStorage.setItem(STORAGE_KEY, JSON.stringify({
-
-najlSeria: state.najlSeria,
-
-rekord: state.rekord,
-
-pytania: state.pytania,
-
-trafione: state.trafione,
-
-perPowiat: state.perPowiat,
-
-}));
-
-} catch (e) { }
-
-}
-
-
-
-/* ============================================================
-
-POMOCNICZE
-
-============================================================ */
-
-function normalize(s) {
-
-return s.toLowerCase()
-
-.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-
-.replace(/ł/g, 'l').replace(/Ł/g, 'l')
-
-.replace(/[^a-z0-9 ]/g, '')
-
-.trim();
-
-}
-
-
-
-function levenshtein(a, b) {
-
-if (a.length === 0) return b.length;
-
-if (b.length === 0) return a.length;
-
-const m = Array.from({ length: a.length + 1 }, (_, i) => [i]);
-
-for (let j = 1; j <= b.length; j++) m[0][j] = j;
-
-for (let i = 1; i <= a.length; i++) {
-
-for (let j = 1; j <= b.length; j++) {
-
-const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-
-m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + cost);
-
-}
-
-}
-
-return m[a.length][b.length];
-
-}
-
-
-
-function matches(input, powiat) {
-
-const ni = normalize(input);
-
-const nn = normalize(powiat.nazwa);
-
-if (ni === nn) return 'exact';
-
-const nnBase = normalize(powiat.nazwa.replace(/\s*\([^)]*\)/g, ''));
-
-if (ni === nnBase) return 'exact';
-
-if (powiat.nazwa.startsWith('Warszawa') && ni === 'warszawa') return 'exact';
-
-const dist = levenshtein(ni, nnBase);
-
-if (dist <= 1) return 'fuzzy';
-
-if (nnBase.length > 8 && dist <= 2) return 'fuzzy';
-
-return null;
-
-}
-
-
-
-function findSuggestions(query, limit = 8) {
-
-const nq = normalize(query);
-
-if (nq.length < 1) return [];
-
-const pool = state.mode === 'region' && state.regionWoj
-
-? POWIATY.filter(p => p.woj === state.regionWoj)
-
-: POWIATY;
-
-const seen = new Set();
-
-const results = [];
-
-for (const p of pool) {
-
-const nn = normalize(p.nazwa);
-
-if (nn.startsWith(nq) || nn.includes(nq)) {
-
-const key = p.nazwa;
-
-if (!seen.has(key)) {
-
-seen.add(key);
-
-results.push({ p, score: nn.startsWith(nq) ? 0 : 1 });
-
-}
-
-}
-
-}
-
-results.sort((a, b) => a.score - b.score || a.p.nazwa.localeCompare(b.p.nazwa, 'pl'));
-
-return results.slice(0, limit).map(r => r.p);
-
-}
-
-
-
-/* ============================================================
-
-LOSOWANIE
-
-============================================================ */
-
-function getWeight(kod) {
-
-const stat = state.perPowiat[kod];
-
-if (!stat) return 1.0;
-
-const total = stat.good + stat.bad;
-
-if (total === 0) return 1.0;
-
-const accuracy = stat.good / total;
-
-return Math.max(0.25, 1 + (1 - accuracy) * 3);
-
-}
-
-
-
-function pickRandom() {
-
-const pool = state.mode === 'region' && state.regionWoj
-
-? POWIATY.filter(p => p.woj === state.regionWoj)
-
-: POWIATY;
-
-const weights = pool.map(p => getWeight(p.kod));
-
-const sum = weights.reduce((a, b) => a + b, 0);
-
-let r = Math.random() * sum;
-
-for (let i = 0; i < pool.length; i++) {
-
-r -= weights[i];
-
-if (r <= 0) return pool[i];
-
-}
-
-return pool[pool.length - 1];
-
-}
-
-
-
-/* ============================================================
-
-UI
-
-============================================================ */
-
-const $ = id => document.getElementById(id);
-
-
-
-// FIX: wykryj urządzenie dotykowe (mobile)
-
-const isMobile = () => window.innerWidth <= 900 || ('ontouchstart' in window);
-
-
-
-function updateHud() {
-
-$('hudPunkty').textContent = state.punkty;
-
-$('hudSeria').textContent = state.seria;
-
-$('miniQ').textContent = state.pytania;
-
-$('miniBest').textContent = state.najlSeria;
-
-$('miniRec').textContent = state.rekord;
-
-const traf = state.pytania > 0
-
-? Math.round((state.trafione / state.pytania) * 100) + '%'
-
-: '—';
-
-$('hudTraf').textContent = traf;
-
-}
-
-
-
-function setPlateContent(prefix) {
-
-$('platePrefix').textContent = prefix;
-
-const plate = $('plate');
-
-plate.classList.remove('rolling');
-
-void plate.offsetWidth;
-
-plate.classList.add('rolling');
-
-}
-
-
-
-function flash(text, isBad = false) {
-
-const el = $('flash');
-
-el.textContent = text;
-
-el.classList.toggle('bad', isBad);
-
-el.classList.remove('show');
-
-void el.offsetWidth;
-
-el.classList.add('show');
-
-setTimeout(() => el.classList.remove('show'), 1000);
-
-}
-
-
-
-function showFeedback(html, kind = 'correct') {
-
-const fb = $('feedback');
-
-fb.className = 'feedback show ' + kind;
-
-fb.innerHTML = html;
-
-}
-
-
-
-function clearFeedback() {
-
-$('feedback').className = 'feedback';
-
-}
-
-
-
-/* ============================================================
-
-PYTANIE
-
-============================================================ */
-
-function nextQuestion() {
-
-state.current = pickRandom();
-
-state.hintsUsed = { woj: false, letter: false, type: false };
-
-document.querySelectorAll('.hint-btn').forEach(b => b.disabled = false);
-
-
-
-const inp = $('guessInput');
-
-inp.value = '';
-
-inp.disabled = false;
-
-
-
-// *** FIX GŁÓWNY: NIE wywołuj focus() na mobile ***
-
-// Na mobile focus() otwiera klawiaturę programmatycznie z setTimeout,
-
-// co powoduje resize viewportu i "zacięcie" layoutu.
-
-// Użytkownik mobilny sam tapnie w pole gdy będzie gotowy.
-
-if (!isMobile()) {
-
-inp.focus();
-
-} else {
-
-// Na mobile: delikatna animacja pulsowania inputu jako sygnał "wpisz tutaj"
-
-inp.classList.remove('ready-pulse');
-
-void inp.offsetWidth; // reflow
-
-inp.classList.add('ready-pulse');
-
-// Przewiń panel gry na górę, żeby tablica była widoczna
-
-const gamePanel = document.querySelector('aside.game');
-
-if (gamePanel) gamePanel.scrollTop = 0;
-
-}
-
-
-
-if (state.mode === 'reverse') {
-
-$('platePrefix').textContent = '???';
-
-$('questionLine').innerHTML = `Powiat: <strong>${state.current.nazwa}</strong> — wpisz <strong>kod tablicy</strong>`;
-
-inp.placeholder = 'np. KR, WPI, KLI...';
-
-} else {
-
-setPlateContent(state.current.kod);
-
-$('questionLine').innerHTML = `Jaki to <strong>powiat</strong>? Wpisz nazwę.`;
-
-inp.placeholder = 'np. Kraków, Wałbrzych...';
-
-}
-
-
-
-hideSuggestions();
-
-clearFeedback();
-
-}
-
-
-
-function recordResult(kod, good) {
-
-if (!state.perPowiat[kod]) state.perPowiat[kod] = { good: 0, bad: 0 };
-
-if (good) state.perPowiat[kod].good++;
-
-else state.perPowiat[kod].bad++;
-
-}
-
-
-
-function submitAnswer() {
-
-if (!state.current) return;
-
-const inp = $('guessInput');
-
-const val = inp.value.trim();
-
-if (!val) return;
-
-
-
-let correct = false, kind = null;
-
-
-
-if (state.mode === 'reverse') {
-
-const valU = val.toUpperCase().replace(/\s+/g, '');
-
-if (valU === state.current.kod) { correct = true; kind = 'exact'; }
-
-} else {
-
-kind = matches(val, state.current);
-
-correct = !!kind;
-
-}
-
-
-
-state.pytania++;
-
-inp.disabled = true;
-
-hideSuggestions();
-
-
-
-if (correct) {
-
-recordResult(state.current.kod, true);
-
-state.trafione++;
-
-state.seria++;
-
-if (state.seria > state.najlSeria) state.najlSeria = state.seria;
-
-const bonus = Math.min(state.seria * 2, 30);
-
-const gain = 10 + bonus + (kind === 'fuzzy' ? -2 : 0);
-
-state.punkty += gain;
-
-if (state.punkty > state.rekord) state.rekord = state.punkty;
-
-
-
-flash('+' + gain, false);
-
-showCorrectFeedback(state.current, gain, kind === 'fuzzy');
-
-flyToOnMap(state.current);
-
-// FIX: krótszy czas na mobile dla lepszego UX
-
-setTimeout(nextQuestion, isMobile() ? 1800 : 2200);
-
-} else {
-
-recordResult(state.current.kod, false);
-
-state.seria = 0;
-
-flash('BŁĄD', true);
-
-showWrongFeedback(state.current, val);
-
-flyToOnMap(state.current, true);
-
-setTimeout(nextQuestion, isMobile() ? 2800 : 3500);
-
-}
-
-
-
-saveState();
-
-updateHud();
-
-}
-
-
-
-function skipQuestion() {
-
-if (!state.current) return;
-
-state.pytania++;
-
-state.seria = 0;
-
-recordResult(state.current.kod, false);
-
-const inp = $('guessInput');
-
-inp.disabled = true;
-
-hideSuggestions();
-
-showWrongFeedback(state.current, null, true);
-
-flyToOnMap(state.current, true);
-
-saveState();
-
-updateHud();
-
-setTimeout(nextQuestion, isMobile() ? 2000 : 2500);
-
-}
-
-
-
-function showCorrectFeedback(p, gain, fuzzy) {
-
-const wikiUrl = `https://pl.wikipedia.org/wiki/${encodeURIComponent(p.wiki)}`;
-
-const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
-
-showFeedback(`
-
-<div class="feedback-head">✓ Brawo${fuzzy ? ' (z literówką)' : ''}!</div>
-
-<div class="feedback-body">
-
-<strong>${p.kod}</strong> = <strong>${p.nazwa}</strong> — woj. ${p.woj}.
-
-Zdobyte: <strong>+${gain} pkt</strong>.
-
-</div>
-
-<div class="feedback-meta">
-
-<span class="chip">Typ: ${p.typ === 'miasto' ? 'miasto na prawach powiatu' : 'powiat ziemski'}</span>
-
-<span class="chip"><a href="${wikiUrl}" target="_blank" rel="noopener">Wikipedia ↗</a></span>
-
-<span class="chip"><a href="${mapsUrl}" target="_blank" rel="noopener">Google Maps ↗</a></span>
-
-</div>
-
-`, 'correct');
-
-}
-
-
-
-function showWrongFeedback(p, given, skipped = false) {
-
-const wikiUrl = `https://pl.wikipedia.org/wiki/${encodeURIComponent(p.wiki)}`;
-
-showFeedback(`
-
-<div class="feedback-head">${skipped ? '↷ Pominięte' : '✗ Błąd'}</div>
-
-<div class="feedback-body">
-
-${state.mode === 'reverse'
-
-? `Prawidłowy kod dla <strong>${p.nazwa}</strong> to <strong>${p.kod}</strong>.`
-
-: `Kod <strong>${p.kod}</strong> oznacza <strong>${p.nazwa}</strong> (woj. ${p.woj}).`
-
-}
-
-${given ? `<br><span style="color:var(--tekst-mute)">Twoja odpowiedź: "${given}"</span>` : ''}
-
-</div>
-
-<div class="feedback-meta">
-
-<span class="chip"><a href="${wikiUrl}" target="_blank" rel="noopener">Sprawdź na Wiki ↗</a></span>
-
-</div>
-
-`, 'wrong');
-
-}
-
-
-
-/* ============================================================
-
-AUTOCOMPLETE
-
-============================================================ */
-
-let suggHl = -1;
-
-let currentSugg = [];
-
-
-
-function renderSuggestions(query) {
-
-if (state.mode === 'reverse') { hideSuggestions(); return; }
-
-currentSugg = findSuggestions(query, 8);
-
-if (currentSugg.length === 0) { hideSuggestions(); return; }
-
-const nq = normalize(query);
-
-const html = currentSugg.map((p, i) => {
-
-const nn = normalize(p.nazwa);
-
-const ix = nn.indexOf(nq);
-
-let nazwaHtml = p.nazwa;
-
-if (ix >= 0 && nq.length > 0) {
-
-const end = ix + nq.length;
-
-nazwaHtml = `<b>${p.nazwa.slice(0, end)}</b>${p.nazwa.slice(end)}`;
-
-}
-
-return `<div class="suggestion ${i === suggHl ? 'hl' : ''}" data-idx="${i}">
-
-<span class="nazwa">${nazwaHtml}</span>
-
-<span class="meta">${p.woj}</span>
-
-</div>`;
-
-}).join('');
-
-$('suggestions').innerHTML = html;
-
-$('suggestions').classList.add('open');
-
-}
-
-
-
-function hideSuggestions() {
-
-$('suggestions').classList.remove('open');
-
-suggHl = -1;
-
-}
-
-
-
-function pickSuggestion(idx) {
-
-if (idx < 0 || idx >= currentSugg.length) return;
-
-$('guessInput').value = currentSugg[idx].nazwa;
-
-hideSuggestions();
-
-submitAnswer();
-
-}
-
-
-
-/* ============================================================
-
-MAPA
-
-============================================================ */
-
-let map, currentMarker;
-
-
-
-function initMap() {
-
-const mapContainer = $('map');
-
-if (!mapContainer || window.getComputedStyle(mapContainer).display === 'none') return;
-
-
-
-map = L.map('map', {
-
-center: [52.0, 19.4],
-
-zoom: 6,
-
-minZoom: 5,
-
-maxZoom: 14,
-
-tap: false,
-
-zoomControl: true,
-
-attributionControl: true,
-
-});
-
-
-
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-
-attribution: '© OpenStreetMap, © CARTO',
-
-subdomains: 'abcd',
-
-maxZoom: 19,
-
-}).addTo(map);
-
-}
-
-
-
-function flyToOnMap(p, isBad = false) {
-
-if (!map) return;
-
-$('mapHint').style.display = 'none';
-
-
-
-if (currentMarker) currentMarker.remove();
-
-
-
-const icon = L.divIcon({
-
-html: `<div class="tag-marker" style="background:${isBad ? 'var(--czerwony)' : 'var(--zolty)'};color:${isBad ? '#fff' : '#000'}">${p.kod}</div>`,
-
-iconSize: [80, 30],
-
-iconAnchor: [40, 30],
-
-className: '',
-
-});
-
-currentMarker = L.marker([p.lat, p.lng], { icon }).addTo(map);
-
-
-
-const wikiUrl = `https://pl.wikipedia.org/wiki/${encodeURIComponent(p.wiki)}`;
-
-const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
-
-const stat = state.perPowiat[p.kod] || { good: 0, bad: 0 };
-
-const total = stat.good + stat.bad;
-
-const acc = total > 0 ? Math.round((stat.good / total) * 100) + '%' : '—';
-
-
-
-const popupHtml = `
-
-<div class="popup">
-
-<div class="popup-head"><span class="kod">${p.kod}</span>${p.nazwa}</div>
-
-<div class="popup-body">
-
-<div class="popup-row"><span class="l">Województwo</span><span class="v">${p.woj}</span></div>
-
-<div class="popup-row"><span class="l">Typ</span><span class="v">${p.typ === 'miasto' ? 'miasto na prawach powiatu' : 'powiat ziemski'}</span></div>
-
-<div class="popup-row"><span class="l">Twoja trafność</span><span class="v">${acc} (${stat.good}/${total})</span></div>
-
-<div class="popup-row"><span class="l">Współrzędne</span><span class="v">${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}</span></div>
-
-<div class="popup-links">
-
-<a class="popup-link" href="${wikiUrl}" target="_blank" rel="noopener">Wikipedia</a>
-
-<a class="popup-link" href="${mapsUrl}" target="_blank" rel="noopener">Maps</a>
-
-</div>
-
-</div>
-
-</div>
-
-`;
-
-currentMarker.bindPopup(popupHtml, { maxWidth: 320, closeButton: true }).openPopup();
-
-map.flyTo([p.lat, p.lng], 10, { duration: 1.2, easeLinearity: 0.4 });
-
-}
-
-
-
-/* ============================================================
-
-HINTY
-
-============================================================ */
-
-function useHint(type) {
-
-if (!state.current) return;
-
-if (state.hintsUsed[type]) return;
-
-state.hintsUsed[type] = true;
-
-
-
-let cost = 0, msg = '';
-
-if (type === 'woj') {
-
-cost = 5;
-
-msg = `Województwo: <strong>${state.current.woj}</strong>`;
-
-} else if (type === 'letter') {
-
-cost = 10;
-
-msg = `Pierwsza litera: <strong>${state.current.nazwa[0].toUpperCase()}</strong>`;
-
-} else if (type === 'type') {
-
-cost = 3;
-
-msg = state.current.typ === 'miasto'
-
-? 'To <strong>miasto na prawach powiatu</strong> (główny ośrodek)'
-
-: 'To <strong>powiat ziemski</strong>';
-
-}
-
-
-
-state.punkty = Math.max(0, state.punkty - cost);
-
-showFeedback(`
-
-<div class="feedback-head">💡 Podpowiedź</div>
-
-<div class="feedback-body">${msg} <span style="color:var(--tekst-mute)">(−${cost} pkt)</span></div>
-
-`, 'hint');
-
-document.querySelector(`.hint-btn[data-hint="${type}"]`).disabled = true;
-
-updateHud();
-
-saveState();
-
-}
-
-
-
-/* ============================================================
-
-TRYB NA CZAS
-
-============================================================ */
-
-function startTimeMode() {
-
-state.timeLeft = 90;
-
-state.punkty = 0;
-
-state.seria = 0;
-
-if (state.timer) clearInterval(state.timer);
-
-state.timer = setInterval(() => {
-
-state.timeLeft--;
-
-document.title = `⏱ ${state.timeLeft}s — MISTRZ TABLIC`;
-
-if (state.timeLeft <= 0) {
-
-clearInterval(state.timer);
-
-state.timer = null;
-
-endTimeMode();
-
-}
-
-}, 1000);
-
-updateHud();
-
-nextQuestion();
-
-}
-
-
-
-function endTimeMode() {
-
-document.title = 'MISTRZ TABLIC';
-
-$('guessInput').disabled = true;
-
-showFeedback(`
-
-<div class="feedback-head">⏱ Koniec czasu!</div>
-
-<div class="feedback-body">
-
-Odpowiedzi: <strong>${state.pytania}</strong>, trafionych: <strong>${state.trafione}</strong>.
-
-Wynik: <strong>${state.punkty} pkt</strong>.
-
-</div>
-
-`, 'correct');
-
-}
-
-
-
-/* ============================================================
-
-STATYSTYKI
-
-============================================================ */
-
-function buildStatsModal() {
-
-const perWoj = {};
-
-for (const p of POWIATY) {
-
-if (!perWoj[p.woj]) perWoj[p.woj] = { good: 0, bad: 0 };
-
-const s = state.perPowiat[p.kod];
-
-if (s) { perWoj[p.woj].good += s.good; perWoj[p.woj].bad += s.bad; }
-
-}
-
-const sortedWoj = Object.entries(perWoj).sort((a, b) => {
-
-const totA = a[1].good + a[1].bad;
-
-const totB = b[1].good + b[1].bad;
-
-return totB - totA;
-
-});
-
-let html = '';
-
-for (const [woj, s] of sortedWoj) {
-
-const total = s.good + s.bad;
-
-if (total === 0) continue;
-
-const pct = Math.round((s.good / total) * 100);
-
-html += `
-
-<div class="woj-bar">
-
-<div class="name">${woj}</div>
-
-<div class="track"><div class="fill" style="width:${pct}%;background-position:${100 - pct}% 0"></div></div>
-
-<div class="pct">${pct}% (${s.good}/${total})</div>
-
-</div>
-
-`;
-
-}
-
-$('wojStatsList').innerHTML = html || '<div style="color:var(--tekst-mute);font-size:13px">Brak danych — zagraj kilka rund.</div>';
-
-
-
-const mistakes = Object.entries(state.perPowiat)
-
-.map(([kod, s]) => ({ kod, ...s, total: s.good + s.bad, accuracy: s.good / (s.good + s.bad || 1) }))
-
-.filter(x => x.bad > 0)
-
-.sort((a, b) => b.bad - a.bad || a.accuracy - b.accuracy)
-
-.slice(0, 5);
-
-if (mistakes.length === 0) {
-
-$('topWrongList').innerHTML = '<span style="color:var(--tekst-mute)">Brak błędów. Świetnie!</span>';
-
-} else {
-
-$('topWrongList').innerHTML = mistakes.map(m => {
-
-const p = POWIATY.find(x => x.kod === m.kod);
-
-if (!p) return '';
-
-return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)">
-
-<span><b style="color:var(--zolty);font-family:'DM Mono'">${m.kod}</b> ${p.nazwa}</span>
-
-<span style="color:var(--czerwony)">${m.bad}× pomyłka</span>
-
-</div>`;
-
-}).join('');
-
-}
-
-}
-
-
-
-/* ============================================================
-
-REGION
-
-============================================================ */
-
-function buildRegionModal() {
-
-const wojs = [...new Set(POWIATY.map(p => p.woj))].sort((a, b) => a.localeCompare(b, 'pl'));
-
-$('regionList').innerHTML = wojs.map(w => {
-
-const count = POWIATY.filter(p => p.woj === w).length;
-
-return `<button class="btn ghost" data-woj="${w}" style="font-size:11px">${w} <span style="color:var(--tekst-mute)">(${count})</span></button>`;
-
-}).join('');
-
-$('regionList').querySelectorAll('button').forEach(b => {
-
-b.addEventListener('click', () => {
-
-state.regionWoj = b.dataset.woj;
-
-$('regionModal').classList.remove('open');
-
-nextQuestion();
-
-});
-
-});
-
-}
-
-
-
-/* ============================================================
-
-TRYBY GRY
-
-============================================================ */
-
-function setMode(mode) {
-
-if (state.timer) { clearInterval(state.timer); state.timer = null; document.title = 'MISTRZ TABLIC'; }
-
-state.mode = mode;
-
-document.querySelectorAll('.mode-btn').forEach(b => {
-
-b.classList.toggle('active', b.dataset.mode === mode);
-
-});
-
-
-
-if (mode === 'time') {
-
-startTimeMode();
-
-} else if (mode === 'region') {
-
-buildRegionModal();
-
-$('regionModal').classList.add('open');
-
-} else {
-
-state.regionWoj = null;
-
-nextQuestion();
-
-}
-
-}
-
-
-
-/* ============================================================
-
-EVENT LISTENERS
-
-============================================================ */
-
-document.addEventListener('DOMContentLoaded', () => {
-
-loadState();
-
-initMap();
-
-updateHud();
-
-
-
-document.querySelectorAll('.mode-btn').forEach(b => {
-
-b.addEventListener('click', () => setMode(b.dataset.mode));
-
-});
-
-
-
-const inp = $('guessInput');
-
-inp.addEventListener('input', e => {
-
-suggHl = -1;
-
-renderSuggestions(e.target.value);
-
-});
-
-inp.addEventListener('keydown', e => {
-
-const sugg = $('suggestions');
-
-const open = sugg.classList.contains('open');
-
-if (e.key === 'Enter') {
-
-e.preventDefault();
-
-if (open && suggHl >= 0) { pickSuggestion(suggHl); return; }
-
-submitAnswer();
-
-} else if (e.key === 'ArrowDown') {
-
-if (open) { e.preventDefault(); suggHl = Math.min(suggHl + 1, currentSugg.length - 1); renderSuggestions(inp.value); }
-
-} else if (e.key === 'ArrowUp') {
-
-if (open) { e.preventDefault(); suggHl = Math.max(suggHl - 1, 0); renderSuggestions(inp.value); }
-
-} else if (e.key === 'Tab') {
-
-if (open && currentSugg.length > 0) {
-
-e.preventDefault();
-
-inp.value = currentSugg[0].nazwa;
-
-hideSuggestions();
-
-}
-
-} else if (e.key === 'Escape') {
-
-if (open) hideSuggestions();
-
-else skipQuestion();
-
-}
-
-});
-
-
-
-$('suggestions').addEventListener('click', e => {
-
-const s = e.target.closest('.suggestion');
-
-if (s) { pickSuggestion(parseInt(s.dataset.idx)); }
-
-});
-
-
-
-document.addEventListener('click', e => {
-
-if (!e.target.closest('.input-wrap')) hideSuggestions();
-
-});
-
-
-
-$('btnSubmit').addEventListener('click', submitAnswer);
-
-$('btnSkip').addEventListener('click', skipQuestion);
-
-
-
-document.querySelectorAll('.hint-btn').forEach(b => {
-
-b.addEventListener('click', () => useHint(b.dataset.hint));
-
-});
-
-
-
-$('btnHelp').addEventListener('click', () => $('helpModal').classList.add('open'));
-
-$('btnStats').addEventListener('click', () => {
-
-buildStatsModal();
-
-$('statsModal').classList.add('open');
-
-});
-
-document.querySelectorAll('[data-close]').forEach(b => {
-
-b.addEventListener('click', e => e.target.closest('.modal-bg').classList.remove('open'));
-
-});
-
-document.querySelectorAll('.modal-bg').forEach(m => {
-
-m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-
-});
-
-$('btnReset').addEventListener('click', () => {
-
-if (!confirm('Wyzerować cały postęp? Ta operacja jest nieodwracalna.')) return;
-
-localStorage.removeItem(STORAGE_KEY);
-
-state.najlSeria = 0;
-
-state.rekord = 0;
-
-state.pytania = 0;
-
-state.trafione = 0;
-
-state.perPowiat = {};
-
-state.punkty = 0;
-
-state.seria = 0;
-
-updateHud();
-
-buildStatsModal();
-
-});
-
-
-
-nextQuestion();
-
-});
-
-</script>
-
-</body>
-
-
-
-</html>
-
-Problem z przechodzeniem do kolejnego pytania na urządzeniach mobilnych wynika z tzw. cichego błędu (z ang. silent error) rzucanego przez bibliotekę mapy (Leaflet), który nagle przerywa działanie całego skryptu.
-
-Oto co dokładnie dzieje się pod maską:
-
-Zgodnie z kodem CSS (@media (max-width: 900px)), na małych ekranach ukrywasz główny kontener mapy (main.map-section { display: none !important; }).
-
-Kiedy udzielasz odpowiedzi (poprawnej lub błędnej), w funkcji submitAnswer() zawsze na koniec wywoływana jest funkcja flyToOnMap().
-
-W tym momencie biblioteka Leaflet budzi się do życia i próbuje wygenerować znacznik (żółty #ffcc00 przy sukcesie lub czerwony #ff3b3b przy błędzie), a następnie płynnie przesunąć do niego widok poleceniem map.flyTo().
-
-Ponieważ kontener z mapą jest ukryty (ma wymiary 0x0 pikseli), matematyczne wyliczenia pikseli i rzutu mapy wywołują w bibliotece błąd dzielenia przez zero i rzucają wyjątek krytyczny w konsoli.
-
-Z racji, że błąd nie jest przechwytywany, mechanizm JavaScript natychmiast zatrzymuje tam dalsze działanie kodu i nigdy nie dociera do linijki setTimeout(nextQuestion, ...). Gra po prostu się "zawiesza".
-
-Rozwiązanie
-Musimy poinstruować funkcję rysującą obiekty na mapie, aby natychmiast kończyła swoje działanie, jeśli widzi, że użytkownik jest na telefonie i sekcja z mapą nie jest wyrenderowana.
-
-Najbardziej niezawodnym sposobem sprawdzenia, czy dany element (lub jakikolwiek z jego rodziców) jest ukryty przez display: none, jest odpytanie właściwości offsetParent.
-
-Odszukaj w swoim kodzie deklarację funkcji flyToOnMap (okolice 1030. linijki) i zmodyfikuj instrukcję weryfikującą stan na samym jej początku:
-
-JavaScript
-    function flyToOnMap(p, isBad = false) {
-      // FIX: Pomiń logikę mapy, jeśli kontener (#map) jest fizycznie niewidoczny
-      if (!map || document.getElementById('map').offsetParent === null) return;
-      
-      $('mapHint').style.display = 'none';
-
-      if (currentMarker) currentMarker.remove();
-
-      const icon = L.divIcon({
-// ... reszta kodu pozostaje bez zmian
-To sprawi, że na wersji mobilnej silnik gry zignoruje obsługę mapy i płynnie odpali licznik przechodzący do kolejnej tablicy rejestracyjnej.
-
-Podaj caly plik do pobrania niepomijaj niczego
-
-Oto kompletny kod Twojej gry w formacie HTML, gotowy do pobrania.
-
-Zastosowałem w nim kluczową poprawkę w funkcji flyToOnMap. Problem polegał na tym, że na telefonach mapa jest ukryta za pomocą stylu display: none. Kiedy biblioteka Leaflet próbowała wykonać animację przesunięcia widoku na niewidocznym elemencie o zerowej powierzchni, dochodziło do błędu krytycznego, który blokował dalsze wykonywanie skryptu (w tym przejście do kolejnego pytania).
-
-Teraz kod sprawdza właściwość offsetParent kontenera — jeśli jest on ukryty, operacje na mapie są bezpiecznie pomijane, a licznik punktów i nowe pytanie pojawiają się bez zakłóceń.
-
-Wprowadzone zmiany:
-
-Naprawa błędu mobilnego: Dodano warunek if (!map || $('map').offsetParent === null) return; wewnątrz funkcji flyToOnMap.
-
-Optymalizacja UX na mobile: Wyłączono wymuszanie fokusu (focus()) na polu tekstowym przy nowych pytaniach na telefonach, co zapobiega gwałtownym przeskokom klawiatury. Zamiast tego dodano delikatne pulsowanie obramowania w kolorze żółtym (#ffcc00), sugerujące gotowość do wpisywania.
-
-Kolorystyka: Utrzymano spójny design oparty na barwach: asfaltowy (#0e0e10), żółty (#ffcc00) dla akcentów, zielony (#1bd96a) dla poprawnych odpowiedzi oraz czerwony (#ff3b3b) dla błędów.
-
-Twój plik HTML jest gotowy:
-Ikona HTML
- mistrz-tablic 
-HTML
-
-Wystarczy pobrać plik, zapisać go na komputerze i otworzyć w dowolnej przeglądarce. Poprawka dla urządzeń mobilnych gwarantuje, że błędy uniemożliwiające grę zostały usunięte.
-
-
-
-
-
-Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność i GeminiOtwiera się w nowym oknie
-
-<!DOCTYPE html>
 <html lang="pl">
 
 <head>
@@ -6079,6 +1004,58 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       margin: 0 2px;
     }
 
+    /* Rząd DALEJ / STOP */
+    .actions-dalej {
+      display: none;
+      gap: 8px;
+    }
+
+    .actions-dalej.visible {
+      display: flex;
+    }
+
+    .btn-dalej-next {
+      background: var(--zielony);
+      color: #000;
+      font-weight: 700;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-dalej-next::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: var(--progress, 100%);
+      background: rgba(0,0,0,0.12);
+      transition: width 1s linear;
+    }
+
+    .btn-dalej-next:hover {
+      background: #22f07a;
+    }
+
+    .btn-stop {
+      flex: 0 0 auto;
+      padding: 12px 18px;
+    }
+
+    #dalej-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      margin-left: 6px;
+      opacity: 0.75;
+    }
+
+    @keyframes dalej-in {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .actions-dalej.visible {
+      animation: dalej-in .2s ease-out;
+    }
+
     /* ============ FLASH ============ */
     .flash {
       position: fixed;
@@ -6114,6 +1091,7 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
     /* ============ MOBILE ============ */
     @media (max-width: 900px) {
 
+      /* FIX: dvh uwzględnia pasek przeglądarki i klawiaturę */
       html, body {
         overflow: hidden;
         height: 100%;
@@ -6124,14 +1102,14 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
         grid-template-columns: 1fr;
         grid-template-rows: auto 1fr;
         height: 100vh;
-        height: 100dvh;
+        height: 100dvh; /* dynamic viewport height — kluczowa poprawka */
         min-height: -webkit-fill-available;
       }
 
       header.top {
         padding: 8px 12px;
         height: 56px;
-        flex-shrink: 0;
+        flex-shrink: 0; /* nie kurczy się przy klawiaturze */
       }
 
       .brand-mark {
@@ -6171,10 +1149,12 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
         gap: 12px;
         border-right: none;
         overflow-y: auto;
+        /* FIX: zapobiega "skaczącemu" layoutowi gdy klawiatura pojawia się/znika */
         min-height: 0;
         flex: 1;
       }
 
+      /* Mapa ukryta na mobile */
       main.map-section {
         display: none !important;
       }
@@ -6214,7 +1194,7 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
 
       input.guess {
         padding: 12px;
-        font-size: 16px;
+        font-size: 16px; /* zapobiega auto-zoomowi w iOS */
       }
 
       .hints {
@@ -6238,6 +1218,11 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
         gap: 6px;
       }
 
+      .btn-stop {
+        padding: 10px 14px;
+        font-size: 11px;
+      }
+
       .btn {
         padding: 10px;
         font-size: 11px;
@@ -6251,6 +1236,7 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
         font-size: 14px;
       }
 
+      /* Podpowiedzi nad inputem na mobile */
       .suggestions {
         bottom: 100%;
         top: auto;
@@ -6375,6 +1361,12 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
         <button class="btn ghost" id="btnSkip">Pomiń</button>
       </div>
 
+      <!-- Rząd DALEJ / STOP — pojawia się po odpowiedzi -->
+      <div class="actions-dalej" id="actionsDalej">
+        <button class="btn btn-dalej-next" id="btnDalej">DALEJ <span id="dalej-count">5</span></button>
+        <button class="btn ghost btn-stop" id="btnStop">STOP</button>
+      </div>
+
       <div class="feedback" id="feedback"></div>
 
       <div class="stats-mini">
@@ -6479,6 +1471,7 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
        BAZA POLSKICH KODÓW REJESTRACYJNYCH
        ============================================================ */
     const POWIATY = [
+      // ========== DOLNOŚLĄSKIE (D) ==========
       { kod: "DB", nazwa: "Wałbrzych", typ: "miasto", woj: "dolnośląskie", lat: 50.7841, lng: 16.2845, wiki: "Wałbrzych" },
       { kod: "DJ", nazwa: "Jelenia Góra", typ: "miasto", woj: "dolnośląskie", lat: 50.9044, lng: 15.7195, wiki: "Jelenia_Góra" },
       { kod: "DL", nazwa: "Legnica", typ: "miasto", woj: "dolnośląskie", lat: 51.2070, lng: 16.1553, wiki: "Legnica" },
@@ -6508,6 +1501,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "DZA", nazwa: "Ząbkowice Śląskie", typ: "ziemski", woj: "dolnośląskie", lat: 50.5839, lng: 16.8128, wiki: "Ząbkowice_Śląskie" },
       { kod: "DZG", nazwa: "Zgorzelec", typ: "ziemski", woj: "dolnośląskie", lat: 51.1500, lng: 15.0000, wiki: "Zgorzelec" },
       { kod: "DZL", nazwa: "Złotoryja", typ: "ziemski", woj: "dolnośląskie", lat: 51.1262, lng: 15.7714, wiki: "Złotoryja" },
+
+      // ========== KUJAWSKO-POMORSKIE (C) ==========
       { kod: "CB", nazwa: "Bydgoszcz", typ: "miasto", woj: "kujawsko-pomorskie", lat: 53.1235, lng: 18.0084, wiki: "Bydgoszcz" },
       { kod: "CG", nazwa: "Grudziądz", typ: "miasto", woj: "kujawsko-pomorskie", lat: 53.4844, lng: 18.7536, wiki: "Grudziądz" },
       { kod: "CT", nazwa: "Toruń", typ: "miasto", woj: "kujawsko-pomorskie", lat: 53.0138, lng: 18.5984, wiki: "Toruń" },
@@ -6531,6 +1526,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "CWA", nazwa: "Wąbrzeźno", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.2786, lng: 18.9522, wiki: "Wąbrzeźno" },
       { kod: "CWL", nazwa: "Włocławek (powiat)", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 52.6500, lng: 19.0500, wiki: "Powiat_włocławski" },
       { kod: "CZN", nazwa: "Żnin", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 52.8497, lng: 17.7172, wiki: "Żnin" },
+
+      // ========== LUBELSKIE (L) ==========
       { kod: "LB", nazwa: "Biała Podlaska", typ: "miasto", woj: "lubelskie", lat: 52.0325, lng: 23.1149, wiki: "Biała_Podlaska" },
       { kod: "LC", nazwa: "Chełm", typ: "miasto", woj: "lubelskie", lat: 51.1432, lng: 23.4716, wiki: "Chełm" },
       { kod: "LU", nazwa: "Lublin", typ: "miasto", woj: "lubelskie", lat: 51.2465, lng: 22.5684, wiki: "Lublin" },
@@ -6555,6 +1552,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "LTM", nazwa: "Tomaszów Lubelski", typ: "ziemski", woj: "lubelskie", lat: 50.4475, lng: 23.4194, wiki: "Tomaszów_Lubelski" },
       { kod: "LWL", nazwa: "Włodawa", typ: "ziemski", woj: "lubelskie", lat: 51.5489, lng: 23.5475, wiki: "Włodawa" },
       { kod: "LZA", nazwa: "Zamość (powiat)", typ: "ziemski", woj: "lubelskie", lat: 50.7000, lng: 23.2500, wiki: "Powiat_zamojski" },
+
+      // ========== LUBUSKIE (F) ==========
       { kod: "FG", nazwa: "Gorzów Wielkopolski", typ: "miasto", woj: "lubuskie", lat: 52.7368, lng: 15.2288, wiki: "Gorzów_Wielkopolski" },
       { kod: "FZ", nazwa: "Zielona Góra", typ: "miasto", woj: "lubuskie", lat: 51.9356, lng: 15.5064, wiki: "Zielona_Góra" },
       { kod: "FGW", nazwa: "Gorzów (powiat)", typ: "ziemski", woj: "lubuskie", lat: 52.7500, lng: 15.2500, wiki: "Powiat_gorzowski" },
@@ -6569,6 +1568,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "FZA", nazwa: "Żagań", typ: "ziemski", woj: "lubuskie", lat: 51.6175, lng: 15.3147, wiki: "Żagań" },
       { kod: "FZG", nazwa: "Zielona Góra (powiat)", typ: "ziemski", woj: "lubuskie", lat: 51.9000, lng: 15.5000, wiki: "Powiat_zielonogórski" },
       { kod: "FZR", nazwa: "Żary", typ: "ziemski", woj: "lubuskie", lat: 51.6411, lng: 15.1322, wiki: "Żary" },
+
+      // ========== ŁÓDZKIE (E) ==========
       { kod: "EL", nazwa: "Łódź", typ: "miasto", woj: "łódzkie", lat: 51.7592, lng: 19.4560, wiki: "Łódź" },
       { kod: "EP", nazwa: "Piotrków Trybunalski", typ: "miasto", woj: "łódzkie", lat: 51.4055, lng: 19.7030, wiki: "Piotrków_Trybunalski" },
       { kod: "ES", nazwa: "Skierniewice", typ: "miasto", woj: "łódzkie", lat: 51.9544, lng: 20.1572, wiki: "Skierniewice" },
@@ -6593,6 +1594,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "EWI", nazwa: "Wieruszów", typ: "ziemski", woj: "łódzkie", lat: 51.2917, lng: 18.1572, wiki: "Wieruszów" },
       { kod: "EZD", nazwa: "Zduńska Wola", typ: "ziemski", woj: "łódzkie", lat: 51.6000, lng: 18.9333, wiki: "Zduńska_Wola" },
       { kod: "EZG", nazwa: "Zgierz", typ: "ziemski", woj: "łódzkie", lat: 51.8556, lng: 19.4053, wiki: "Zgierz" },
+
+      // ========== MAŁOPOLSKIE (K) ==========
       { kod: "KR", nazwa: "Kraków", typ: "miasto", woj: "małopolskie", lat: 50.0647, lng: 19.9450, wiki: "Kraków" },
       { kod: "KN", nazwa: "Nowy Sącz", typ: "miasto", woj: "małopolskie", lat: 49.6175, lng: 20.7156, wiki: "Nowy_Sącz" },
       { kod: "KT", nazwa: "Tarnów", typ: "miasto", woj: "małopolskie", lat: 50.0140, lng: 20.9839, wiki: "Tarnów" },
@@ -6615,6 +1618,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "KTT", nazwa: "Tatrzański (Zakopane)", typ: "ziemski", woj: "małopolskie", lat: 49.2992, lng: 19.9494, wiki: "Powiat_tatrzański" },
       { kod: "KWA", nazwa: "Wadowice", typ: "ziemski", woj: "małopolskie", lat: 49.8839, lng: 19.4906, wiki: "Wadowice" },
       { kod: "KWI", nazwa: "Wieliczka", typ: "ziemski", woj: "małopolskie", lat: 49.9869, lng: 20.0644, wiki: "Wieliczka" },
+
+      // ========== MAZOWIECKIE (W) ==========
       { kod: "WA", nazwa: "Warszawa - Białołęka", typ: "miasto", woj: "mazowieckie", lat: 52.3211, lng: 20.9700, wiki: "Białołęka" },
       { kod: "WB", nazwa: "Warszawa - Bielany", typ: "miasto", woj: "mazowieckie", lat: 52.2900, lng: 20.9400, wiki: "Bielany_(Warszawa)" },
       { kod: "WD", nazwa: "Warszawa - Mokotów", typ: "miasto", woj: "mazowieckie", lat: 52.1900, lng: 21.0400, wiki: "Mokotów" },
@@ -6671,6 +1676,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "WZW", nazwa: "Zwoleń", typ: "ziemski", woj: "mazowieckie", lat: 51.3611, lng: 21.5844, wiki: "Zwoleń" },
       { kod: "WZU", nazwa: "Żuromin", typ: "ziemski", woj: "mazowieckie", lat: 53.0653, lng: 19.9100, wiki: "Żuromin" },
       { kod: "WZY", nazwa: "Żyrardów", typ: "ziemski", woj: "mazowieckie", lat: 52.0489, lng: 20.4456, wiki: "Żyrardów" },
+
+      // ========== OPOLSKIE (O) ==========
       { kod: "OP", nazwa: "Opole", typ: "miasto", woj: "opolskie", lat: 50.6751, lng: 17.9213, wiki: "Opole" },
       { kod: "OB", nazwa: "Brzeg", typ: "ziemski", woj: "opolskie", lat: 50.8606, lng: 17.4683, wiki: "Brzeg" },
       { kod: "OG", nazwa: "Głubczyce", typ: "ziemski", woj: "opolskie", lat: 50.2017, lng: 17.8264, wiki: "Głubczyce" },
@@ -6683,6 +1690,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "OPO", nazwa: "Opole (powiat)", typ: "ziemski", woj: "opolskie", lat: 50.6500, lng: 17.9000, wiki: "Powiat_opolski_(województwo_opolskie)" },
       { kod: "OPR", nazwa: "Prudnik", typ: "ziemski", woj: "opolskie", lat: 50.3236, lng: 17.5786, wiki: "Prudnik" },
       { kod: "OST", nazwa: "Strzelce Opolskie", typ: "ziemski", woj: "opolskie", lat: 50.5125, lng: 18.3050, wiki: "Strzelce_Opolskie" },
+
+      // ========== PODKARPACKIE (R) ==========
       { kod: "RZ", nazwa: "Rzeszów", typ: "miasto", woj: "podkarpackie", lat: 50.0413, lng: 21.9990, wiki: "Rzeszów" },
       { kod: "RK", nazwa: "Krosno", typ: "miasto", woj: "podkarpackie", lat: 49.6883, lng: 21.7706, wiki: "Krosno" },
       { kod: "RP", nazwa: "Przemyśl", typ: "miasto", woj: "podkarpackie", lat: 49.7836, lng: 22.7676, wiki: "Przemyśl" },
@@ -6708,6 +1717,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "RST", nazwa: "Stalowa Wola", typ: "ziemski", woj: "podkarpackie", lat: 50.5811, lng: 22.0539, wiki: "Stalowa_Wola" },
       { kod: "RSR", nazwa: "Strzyżów", typ: "ziemski", woj: "podkarpackie", lat: 49.8722, lng: 21.7944, wiki: "Strzyżów" },
       { kod: "RTA", nazwa: "Tarnobrzeg (powiat)", typ: "ziemski", woj: "podkarpackie", lat: 50.5500, lng: 21.7000, wiki: "Powiat_tarnobrzeski" },
+
+      // ========== PODLASKIE (B) ==========
       { kod: "BI", nazwa: "Białystok", typ: "miasto", woj: "podlaskie", lat: 53.1325, lng: 23.1688, wiki: "Białystok" },
       { kod: "BL", nazwa: "Łomża", typ: "miasto", woj: "podlaskie", lat: 53.1781, lng: 22.0589, wiki: "Łomża" },
       { kod: "BS", nazwa: "Suwałki", typ: "miasto", woj: "podlaskie", lat: 54.1117, lng: 22.9306, wiki: "Suwałki" },
@@ -6725,6 +1736,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "BSU", nazwa: "Suwałki (powiat)", typ: "ziemski", woj: "podlaskie", lat: 54.1000, lng: 22.9500, wiki: "Powiat_suwalski" },
       { kod: "BWM", nazwa: "Wysokie Mazowieckie", typ: "ziemski", woj: "podlaskie", lat: 52.9189, lng: 22.5142, wiki: "Wysokie_Mazowieckie" },
       { kod: "BZA", nazwa: "Zambrów", typ: "ziemski", woj: "podlaskie", lat: 52.9858, lng: 22.2433, wiki: "Zambrów" },
+
+      // ========== POMORSKIE (G) ==========
       { kod: "GD", nazwa: "Gdańsk", typ: "miasto", woj: "pomorskie", lat: 54.3520, lng: 18.6466, wiki: "Gdańsk" },
       { kod: "GA", nazwa: "Gdynia", typ: "miasto", woj: "pomorskie", lat: 54.5189, lng: 18.5305, wiki: "Gdynia" },
       { kod: "GSP", nazwa: "Sopot", typ: "miasto", woj: "pomorskie", lat: 54.4419, lng: 18.5601, wiki: "Sopot" },
@@ -6745,6 +1758,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "GSZ", nazwa: "Sztum", typ: "ziemski", woj: "pomorskie", lat: 53.9156, lng: 19.0306, wiki: "Sztum" },
       { kod: "GTC", nazwa: "Tczew", typ: "ziemski", woj: "pomorskie", lat: 54.0917, lng: 18.7783, wiki: "Tczew" },
       { kod: "GWE", nazwa: "Wejherowo", typ: "ziemski", woj: "pomorskie", lat: 54.6058, lng: 18.2364, wiki: "Wejherowo" },
+
+      // ========== ŚLĄSKIE (S) ==========
       { kod: "SK", nazwa: "Katowice", typ: "miasto", woj: "śląskie", lat: 50.2649, lng: 19.0238, wiki: "Katowice" },
       { kod: "SY", nazwa: "Bytom", typ: "miasto", woj: "śląskie", lat: 50.3478, lng: 18.9275, wiki: "Bytom" },
       { kod: "SC", nazwa: "Chorzów", typ: "miasto", woj: "śląskie", lat: 50.2972, lng: 18.9544, wiki: "Chorzów" },
@@ -6781,6 +1796,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "SWA", nazwa: "Wodzisław Śląski", typ: "ziemski", woj: "śląskie", lat: 50.0036, lng: 18.4636, wiki: "Wodzisław_Śląski" },
       { kod: "SZA", nazwa: "Zawiercie", typ: "ziemski", woj: "śląskie", lat: 50.4881, lng: 19.4156, wiki: "Zawiercie" },
       { kod: "SZY", nazwa: "Żywiec", typ: "ziemski", woj: "śląskie", lat: 49.6856, lng: 19.1925, wiki: "Żywiec" },
+
+      // ========== ŚWIĘTOKRZYSKIE (T) ==========
       { kod: "TK", nazwa: "Kielce", typ: "miasto", woj: "świętokrzyskie", lat: 50.8661, lng: 20.6286, wiki: "Kielce" },
       { kod: "TBU", nazwa: "Busko-Zdrój", typ: "ziemski", woj: "świętokrzyskie", lat: 50.4711, lng: 20.7172, wiki: "Busko-Zdrój" },
       { kod: "TJE", nazwa: "Jędrzejów", typ: "ziemski", woj: "świętokrzyskie", lat: 50.6481, lng: 20.3019, wiki: "Jędrzejów" },
@@ -6795,6 +1812,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "TST", nazwa: "Starachowice", typ: "ziemski", woj: "świętokrzyskie", lat: 51.0383, lng: 21.0728, wiki: "Starachowice" },
       { kod: "TSZ", nazwa: "Staszów", typ: "ziemski", woj: "świętokrzyskie", lat: 50.5594, lng: 21.1672, wiki: "Staszów" },
       { kod: "TWL", nazwa: "Włoszczowa", typ: "ziemski", woj: "świętokrzyskie", lat: 50.8511, lng: 19.9697, wiki: "Włoszczowa" },
+
+      // ========== WARMIŃSKO-MAZURSKIE (N) ==========
       { kod: "NO", nazwa: "Olsztyn", typ: "miasto", woj: "warmińsko-mazurskie", lat: 53.7784, lng: 20.4801, wiki: "Olsztyn" },
       { kod: "NE", nazwa: "Elbląg", typ: "miasto", woj: "warmińsko-mazurskie", lat: 54.1522, lng: 19.4088, wiki: "Elbląg" },
       { kod: "NBA", nazwa: "Bartoszyce", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 54.2519, lng: 20.8064, wiki: "Bartoszyce" },
@@ -6816,6 +1835,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "NPI", nazwa: "Pisz", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.6258, lng: 21.8081, wiki: "Pisz" },
       { kod: "NSZ", nazwa: "Szczytno", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 53.5614, lng: 20.9844, wiki: "Szczytno" },
       { kod: "NWE", nazwa: "Węgorzewo", typ: "ziemski", woj: "warmińsko-mazurskie", lat: 54.2111, lng: 21.7456, wiki: "Węgorzewo" },
+
+      // ========== WIELKOPOLSKIE (P) ==========
       { kod: "PO", nazwa: "Poznań", typ: "miasto", woj: "wielkopolskie", lat: 52.4064, lng: 16.9252, wiki: "Poznań" },
       { kod: "PK", nazwa: "Kalisz", typ: "miasto", woj: "wielkopolskie", lat: 51.7575, lng: 18.0900, wiki: "Kalisz" },
       { kod: "PN", nazwa: "Konin", typ: "miasto", woj: "wielkopolskie", lat: 52.2231, lng: 18.2511, wiki: "Konin" },
@@ -6851,6 +1872,8 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       { kod: "PWO", nazwa: "Wolsztyn", typ: "ziemski", woj: "wielkopolskie", lat: 52.1108, lng: 16.1117, wiki: "Wolsztyn" },
       { kod: "PWR", nazwa: "Września", typ: "ziemski", woj: "wielkopolskie", lat: 52.3247, lng: 17.5675, wiki: "Września" },
       { kod: "PZ", nazwa: "Złotów", typ: "ziemski", woj: "wielkopolskie", lat: 53.3636, lng: 17.0339, wiki: "Złotów" },
+
+      // ========== ZACHODNIOPOMORSKIE (Z) ==========
       { kod: "ZS", nazwa: "Szczecin", typ: "miasto", woj: "zachodniopomorskie", lat: 53.4285, lng: 14.5528, wiki: "Szczecin" },
       { kod: "ZK", nazwa: "Koszalin", typ: "miasto", woj: "zachodniopomorskie", lat: 54.1944, lng: 16.1722, wiki: "Koszalin" },
       { kod: "ZSW", nazwa: "Świnoujście", typ: "miasto", woj: "zachodniopomorskie", lat: 53.9097, lng: 14.2475, wiki: "Świnoujście" },
@@ -6889,6 +1912,7 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       pytania: 0,
       trafione: 0,
       hintsUsed: { woj: false, letter: false, type: false },
+      history: [],
       perPowiat: {},
       timer: null,
       timeLeft: 0,
@@ -6904,7 +1928,7 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
           trafione: saved.trafione || 0,
           perPowiat: saved.perPowiat || {},
         });
-      } catch (e) { }
+      } catch (e) { console.warn('Nie udało się wczytać postępu:', e); }
     }
 
     function saveState() {
@@ -6919,9 +1943,12 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       } catch (e) { }
     }
 
+    /* ============================================================
+       POMOCNICZE
+       ============================================================ */
     function normalize(s) {
       return s.toLowerCase()
-        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/ł/g, 'l').replace(/Ł/g, 'l')
         .replace(/[^a-z0-9 ]/g, '')
         .trim();
@@ -6976,6 +2003,9 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       return results.slice(0, limit).map(r => r.p);
     }
 
+    /* ============================================================
+       LOSOWANIE
+       ============================================================ */
     function getWeight(kod) {
       const stat = state.perPowiat[kod];
       if (!stat) return 1.0;
@@ -6999,7 +2029,12 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       return pool[pool.length - 1];
     }
 
+    /* ============================================================
+       UI
+       ============================================================ */
     const $ = id => document.getElementById(id);
+
+    // FIX: wykryj urządzenie dotykowe (mobile)
     const isMobile = () => window.innerWidth <= 900 || ('ontouchstart' in window);
 
     function updateHud() {
@@ -7042,7 +2077,11 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       $('feedback').className = 'feedback';
     }
 
+    /* ============================================================
+       PYTANIE
+       ============================================================ */
     function nextQuestion() {
+      hideDalej();
       state.current = pickRandom();
       state.hintsUsed = { woj: false, letter: false, type: false };
       document.querySelectorAll('.hint-btn').forEach(b => b.disabled = false);
@@ -7051,12 +2090,18 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       inp.value = '';
       inp.disabled = false;
 
+      // *** FIX GŁÓWNY: NIE wywołuj focus() na mobile ***
+      // Na mobile focus() otwiera klawiaturę programmatycznie z setTimeout,
+      // co powoduje resize viewportu i "zacięcie" layoutu.
+      // Użytkownik mobilny sam tapnie w pole gdy będzie gotowy.
       if (!isMobile()) {
         inp.focus();
       } else {
+        // Na mobile: delikatna animacja pulsowania inputu jako sygnał "wpisz tutaj"
         inp.classList.remove('ready-pulse');
-        void inp.offsetWidth;
+        void inp.offsetWidth; // reflow
         inp.classList.add('ready-pulse');
+        // Przewiń panel gry na górę, żeby tablica była widoczna
         const gamePanel = document.querySelector('aside.game');
         if (gamePanel) gamePanel.scrollTop = 0;
       }
@@ -7088,6 +2133,7 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       if (!val) return;
 
       let correct = false, kind = null;
+
       if (state.mode === 'reverse') {
         const valU = val.toUpperCase().replace(/\s+/g, '');
         if (valU === state.current.kod) { correct = true; kind = 'exact'; }
@@ -7109,17 +2155,18 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
         const gain = 10 + bonus + (kind === 'fuzzy' ? -2 : 0);
         state.punkty += gain;
         if (state.punkty > state.rekord) state.rekord = state.punkty;
+
         flash('+' + gain, false);
         showCorrectFeedback(state.current, gain, kind === 'fuzzy');
         flyToOnMap(state.current);
-        setTimeout(nextQuestion, isMobile() ? 1800 : 2200);
+        showDalej();
       } else {
         recordResult(state.current.kod, false);
         state.seria = 0;
         flash('BŁĄD', true);
         showWrongFeedback(state.current, val);
         flyToOnMap(state.current, true);
-        setTimeout(nextQuestion, isMobile() ? 2800 : 3500);
+        showDalej();
       }
 
       saveState();
@@ -7138,12 +2185,12 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       flyToOnMap(state.current, true);
       saveState();
       updateHud();
-      setTimeout(nextQuestion, isMobile() ? 2000 : 2500);
+      showDalej();
     }
 
     function showCorrectFeedback(p, gain, fuzzy) {
       const wikiUrl = `https://pl.wikipedia.org/wiki/${encodeURIComponent(p.wiki)}`;
-      const mapsUrl = `https://www.google.com/maps?q=${p.lat},${p.lng}`;
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
       showFeedback(`
         <div class="feedback-head">✓ Brawo${fuzzy ? ' (z literówką)' : ''}!</div>
         <div class="feedback-body">
@@ -7175,6 +2222,9 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       `, 'wrong');
     }
 
+    /* ============================================================
+       AUTOCOMPLETE
+       ============================================================ */
     let suggHl = -1;
     let currentSugg = [];
 
@@ -7212,11 +2262,15 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       submitAnswer();
     }
 
+    /* ============================================================
+       MAPA
+       ============================================================ */
     let map, currentMarker;
 
     function initMap() {
       const mapContainer = $('map');
       if (!mapContainer || window.getComputedStyle(mapContainer).display === 'none') return;
+
       map = L.map('map', {
         center: [52.0, 19.4],
         zoom: 6,
@@ -7226,6 +2280,7 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
         zoomControl: true,
         attributionControl: true,
       });
+
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap, © CARTO',
         subdomains: 'abcd',
@@ -7234,11 +2289,11 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
     }
 
     function flyToOnMap(p, isBad = false) {
-      // FIX: Pomiń logikę mapy, jeśli kontener (#map) jest fizycznie niewidoczny (np. na mobile)
-      if (!map || $('map').offsetParent === null) return;
-      
+      if (!map) return;
       $('mapHint').style.display = 'none';
+
       if (currentMarker) currentMarker.remove();
+
       const icon = L.divIcon({
         html: `<div class="tag-marker" style="background:${isBad ? 'var(--czerwony)' : 'var(--zolty)'};color:${isBad ? '#fff' : '#000'}">${p.kod}</div>`,
         iconSize: [80, 30],
@@ -7246,40 +2301,67 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
         className: '',
       });
       currentMarker = L.marker([p.lat, p.lng], { icon }).addTo(map);
+
+      const wikiUrl = `https://pl.wikipedia.org/wiki/${encodeURIComponent(p.wiki)}`;
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
       const stat = state.perPowiat[p.kod] || { good: 0, bad: 0 };
       const total = stat.good + stat.bad;
       const acc = total > 0 ? Math.round((stat.good / total) * 100) + '%' : '—';
+
       const popupHtml = `
         <div class="popup">
           <div class="popup-head"><span class="kod">${p.kod}</span>${p.nazwa}</div>
           <div class="popup-body">
             <div class="popup-row"><span class="l">Województwo</span><span class="v">${p.woj}</span></div>
-            <div class="popup-row"><span class="l">Twoja trafność</span><span class="v">${acc}</span></div>
+            <div class="popup-row"><span class="l">Typ</span><span class="v">${p.typ === 'miasto' ? 'miasto na prawach powiatu' : 'powiat ziemski'}</span></div>
+            <div class="popup-row"><span class="l">Twoja trafność</span><span class="v">${acc} (${stat.good}/${total})</span></div>
+            <div class="popup-row"><span class="l">Współrzędne</span><span class="v">${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}</span></div>
             <div class="popup-links">
-              <a class="popup-link" href="https://pl.wikipedia.org/wiki/${encodeURIComponent(p.wiki)}" target="_blank">Wikipedia</a>
+              <a class="popup-link" href="${wikiUrl}" target="_blank" rel="noopener">Wikipedia</a>
+              <a class="popup-link" href="${mapsUrl}" target="_blank" rel="noopener">Maps</a>
             </div>
           </div>
         </div>
       `;
       currentMarker.bindPopup(popupHtml, { maxWidth: 320, closeButton: true }).openPopup();
-      map.flyTo([p.lat, p.lng], 10, { duration: 1.2 });
+      map.flyTo([p.lat, p.lng], 10, { duration: 1.2, easeLinearity: 0.4 });
     }
 
+    /* ============================================================
+       HINTY
+       ============================================================ */
     function useHint(type) {
       if (!state.current) return;
       if (state.hintsUsed[type]) return;
       state.hintsUsed[type] = true;
+
       let cost = 0, msg = '';
-      if (type === 'woj') { cost = 5; msg = `Województwo: <strong>${state.current.woj}</strong>`; }
-      else if (type === 'letter') { cost = 10; msg = `Pierwsza litera: <strong>${state.current.nazwa[0].toUpperCase()}</strong>`; }
-      else if (type === 'type') { cost = 3; msg = state.current.typ === 'miasto' ? 'To <strong>miasto na prawach powiatu</strong>' : 'To <strong>powiat ziemski</strong>'; }
+      if (type === 'woj') {
+        cost = 5;
+        msg = `Województwo: <strong>${state.current.woj}</strong>`;
+      } else if (type === 'letter') {
+        cost = 10;
+        msg = `Pierwsza litera: <strong>${state.current.nazwa[0].toUpperCase()}</strong>`;
+      } else if (type === 'type') {
+        cost = 3;
+        msg = state.current.typ === 'miasto'
+          ? 'To <strong>miasto na prawach powiatu</strong> (główny ośrodek)'
+          : 'To <strong>powiat ziemski</strong>';
+      }
+
       state.punkty = Math.max(0, state.punkty - cost);
-      showFeedback(`<div class="feedback-head">💡 Podpowiedź</div><div class="feedback-body">${msg}</div>`, 'hint');
+      showFeedback(`
+        <div class="feedback-head">💡 Podpowiedź</div>
+        <div class="feedback-body">${msg} <span style="color:var(--tekst-mute)">(−${cost} pkt)</span></div>
+      `, 'hint');
       document.querySelector(`.hint-btn[data-hint="${type}"]`).disabled = true;
       updateHud();
       saveState();
     }
 
+    /* ============================================================
+       TRYB NA CZAS
+       ============================================================ */
     function startTimeMode() {
       state.timeLeft = 90;
       state.punkty = 0;
@@ -7287,17 +2369,32 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
       if (state.timer) clearInterval(state.timer);
       state.timer = setInterval(() => {
         state.timeLeft--;
-        if (state.timeLeft <= 0) { clearInterval(state.timer); state.timer = null; endTimeMode(); }
+        document.title = `⏱ ${state.timeLeft}s — MISTRZ TABLIC`;
+        if (state.timeLeft <= 0) {
+          clearInterval(state.timer);
+          state.timer = null;
+          endTimeMode();
+        }
       }, 1000);
       updateHud();
       nextQuestion();
     }
 
     function endTimeMode() {
+      document.title = 'MISTRZ TABLIC';
       $('guessInput').disabled = true;
-      showFeedback(`<div class="feedback-head">⏱ Koniec czasu!</div><div class="feedback-body">Wynik: <strong>${state.punkty} pkt</strong>.</div>`, 'correct');
+      showFeedback(`
+        <div class="feedback-head">⏱ Koniec czasu!</div>
+        <div class="feedback-body">
+          Odpowiedzi: <strong>${state.pytania}</strong>, trafionych: <strong>${state.trafione}</strong>.
+          Wynik: <strong>${state.punkty} pkt</strong>.
+        </div>
+      `, 'correct');
     }
 
+    /* ============================================================
+       STATYSTYKI
+       ============================================================ */
     function buildStatsModal() {
       const perWoj = {};
       for (const p of POWIATY) {
@@ -7305,40 +2402,145 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
         const s = state.perPowiat[p.kod];
         if (s) { perWoj[p.woj].good += s.good; perWoj[p.woj].bad += s.bad; }
       }
+      const sortedWoj = Object.entries(perWoj).sort((a, b) => {
+        const totA = a[1].good + a[1].bad;
+        const totB = b[1].good + b[1].bad;
+        return totB - totA;
+      });
       let html = '';
-      for (const [woj, s] of Object.entries(perWoj).sort()) {
+      for (const [woj, s] of sortedWoj) {
         const total = s.good + s.bad;
         if (total === 0) continue;
         const pct = Math.round((s.good / total) * 100);
-        html += `<div class="woj-bar"><div class="name">${woj}</div><div class="track"><div class="fill" style="width:${pct}%"></div></div><div class="pct">${pct}%</div></div>`;
+        html += `
+          <div class="woj-bar">
+            <div class="name">${woj}</div>
+            <div class="track"><div class="fill" style="width:${pct}%;background-position:${100 - pct}% 0"></div></div>
+            <div class="pct">${pct}% (${s.good}/${total})</div>
+          </div>
+        `;
       }
-      $('wojStatsList').innerHTML = html || 'Brak danych.';
+      $('wojStatsList').innerHTML = html || '<div style="color:var(--tekst-mute);font-size:13px">Brak danych — zagraj kilka rund.</div>';
+
+      const mistakes = Object.entries(state.perPowiat)
+        .map(([kod, s]) => ({ kod, ...s, total: s.good + s.bad, accuracy: s.good / (s.good + s.bad || 1) }))
+        .filter(x => x.bad > 0)
+        .sort((a, b) => b.bad - a.bad || a.accuracy - b.accuracy)
+        .slice(0, 5);
+      if (mistakes.length === 0) {
+        $('topWrongList').innerHTML = '<span style="color:var(--tekst-mute)">Brak błędów. Świetnie!</span>';
+      } else {
+        $('topWrongList').innerHTML = mistakes.map(m => {
+          const p = POWIATY.find(x => x.kod === m.kod);
+          if (!p) return '';
+          return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)">
+            <span><b style="color:var(--zolty);font-family:'DM Mono'">${m.kod}</b> ${p.nazwa}</span>
+            <span style="color:var(--czerwony)">${m.bad}× pomyłka</span>
+          </div>`;
+        }).join('');
+      }
     }
 
-    function setMode(mode) {
-      if (state.timer) { clearInterval(state.timer); state.timer = null; }
-      state.mode = mode;
-      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-      if (mode === 'time') startTimeMode();
-      else if (mode === 'region') { buildRegionModal(); $('regionModal').classList.add('open'); }
-      else { state.regionWoj = null; nextQuestion(); }
-    }
-
+    /* ============================================================
+       REGION
+       ============================================================ */
     function buildRegionModal() {
-      const wojs = [...new Set(POWIATY.map(p => p.woj))].sort();
-      $('regionList').innerHTML = wojs.map(w => `<button class="btn ghost" data-woj="${w}">${w}</button>`).join('');
+      const wojs = [...new Set(POWIATY.map(p => p.woj))].sort((a, b) => a.localeCompare(b, 'pl'));
+      $('regionList').innerHTML = wojs.map(w => {
+        const count = POWIATY.filter(p => p.woj === w).length;
+        return `<button class="btn ghost" data-woj="${w}" style="font-size:11px">${w} <span style="color:var(--tekst-mute)">(${count})</span></button>`;
+      }).join('');
       $('regionList').querySelectorAll('button').forEach(b => {
-        b.addEventListener('click', () => { state.regionWoj = b.dataset.woj; $('regionModal').classList.remove('open'); nextQuestion(); });
+        b.addEventListener('click', () => {
+          state.regionWoj = b.dataset.woj;
+          $('regionModal').classList.remove('open');
+          nextQuestion();
+        });
       });
     }
 
+    /* ============================================================
+       TRYBY GRY
+       ============================================================ */
+    function setMode(mode) {
+      if (state.timer) { clearInterval(state.timer); state.timer = null; document.title = 'MISTRZ TABLIC'; }
+      state.mode = mode;
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+
+      if (mode === 'time') {
+        startTimeMode();
+      } else if (mode === 'region') {
+        buildRegionModal();
+        $('regionModal').classList.add('open');
+      } else {
+        state.regionWoj = null;
+        nextQuestion();
+      }
+    }
+
+    /* ============================================================
+       DALEJ — odliczanie 5 sekund
+       ============================================================ */
+    let dalej_timer = null;
+    let dalej_seconds = 5;
+
+    function showDalej() {
+      // Wyczyść poprzedni timer jeśli był
+      clearDalejTimer();
+
+      const wrap = $('actionsDalej');
+      const countEl = $('dalej-count');
+      const btn = $('btnDalej');
+
+      dalej_seconds = 5;
+      countEl.textContent = dalej_seconds;
+      btn.style.setProperty('--progress', '100%');
+      wrap.classList.add('visible');
+
+      // Odliczanie co sekundę
+      dalej_timer = setInterval(() => {
+        dalej_seconds--;
+        countEl.textContent = dalej_seconds;
+        // Pasek cofający się w tle
+        btn.style.setProperty('--progress', (dalej_seconds / 5 * 100) + '%');
+        if (dalej_seconds <= 0) {
+          clearDalejTimer();
+          nextQuestion();
+        }
+      }, 1000);
+    }
+
+    function hideDalej() {
+      clearDalejTimer();
+      $('actionsDalej').classList.remove('visible');
+    }
+
+    function clearDalejTimer() {
+      if (dalej_timer) {
+        clearInterval(dalej_timer);
+        dalej_timer = null;
+      }
+    }
+
+    /* ============================================================
+       EVENT LISTENERS
+       ============================================================ */
     document.addEventListener('DOMContentLoaded', () => {
       loadState();
       initMap();
       updateHud();
-      document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        b.addEventListener('click', () => setMode(b.dataset.mode));
+      });
+
       const inp = $('guessInput');
-      inp.addEventListener('input', e => { suggHl = -1; renderSuggestions(e.target.value); });
+      inp.addEventListener('input', e => {
+        suggHl = -1;
+        renderSuggestions(e.target.value);
+      });
       inp.addEventListener('keydown', e => {
         const sugg = $('suggestions');
         const open = sugg.classList.contains('open');
@@ -7350,28 +2552,64 @@ Gemini to AI i może popełniać błędy, także co do ludzi. Twoja prywatność
           if (open) { e.preventDefault(); suggHl = Math.min(suggHl + 1, currentSugg.length - 1); renderSuggestions(inp.value); }
         } else if (e.key === 'ArrowUp') {
           if (open) { e.preventDefault(); suggHl = Math.max(suggHl - 1, 0); renderSuggestions(inp.value); }
-        } else if (e.key === 'Escape') { if (open) hideSuggestions(); else skipQuestion(); }
+        } else if (e.key === 'Tab') {
+          if (open && currentSugg.length > 0) {
+            e.preventDefault();
+            inp.value = currentSugg[0].nazwa;
+            hideSuggestions();
+          }
+        } else if (e.key === 'Escape') {
+          if (open) hideSuggestions();
+          else skipQuestion();
+        }
       });
+
       $('suggestions').addEventListener('click', e => {
         const s = e.target.closest('.suggestion');
-        if (s) pickSuggestion(parseInt(s.dataset.idx));
+        if (s) { pickSuggestion(parseInt(s.dataset.idx)); }
       });
-      document.addEventListener('click', e => { if (!e.target.closest('.input-wrap')) hideSuggestions(); });
+
+      document.addEventListener('click', e => {
+        if (!e.target.closest('.input-wrap')) hideSuggestions();
+      });
+
       $('btnSubmit').addEventListener('click', submitAnswer);
       $('btnSkip').addEventListener('click', skipQuestion);
-      document.querySelectorAll('.hint-btn').forEach(b => b.addEventListener('click', () => useHint(b.dataset.hint)));
-      $('btnHelp').addEventListener('click', () => $('helpModal').classList.add('open'));
-      $('btnStats').addEventListener('click', () => { buildStatsModal(); $('statsModal').classList.add('open'); });
-      document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', e => e.target.closest('.modal-bg').classList.remove('open')));
-      $('btnReset').addEventListener('click', () => {
-        if (!confirm('Wyzerować postęp?')) return;
-        localStorage.removeItem(STORAGE_KEY);
-        location.reload();
+      $('btnDalej').addEventListener('click', () => { hideDalej(); nextQuestion(); });
+      $('btnStop').addEventListener('click', () => { clearDalejTimer(); $('dalej-count').textContent = '∞'; });
+
+      document.querySelectorAll('.hint-btn').forEach(b => {
+        b.addEventListener('click', () => useHint(b.dataset.hint));
       });
+
+      $('btnHelp').addEventListener('click', () => $('helpModal').classList.add('open'));
+      $('btnStats').addEventListener('click', () => {
+        buildStatsModal();
+        $('statsModal').classList.add('open');
+      });
+      document.querySelectorAll('[data-close]').forEach(b => {
+        b.addEventListener('click', e => e.target.closest('.modal-bg').classList.remove('open'));
+      });
+      document.querySelectorAll('.modal-bg').forEach(m => {
+        m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+      });
+      $('btnReset').addEventListener('click', () => {
+        if (!confirm('Wyzerować cały postęp? Ta operacja jest nieodwracalna.')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        state.najlSeria = 0;
+        state.rekord = 0;
+        state.pytania = 0;
+        state.trafione = 0;
+        state.perPowiat = {};
+        state.punkty = 0;
+        state.seria = 0;
+        updateHud();
+        buildStatsModal();
+      });
+
       nextQuestion();
     });
   </script>
 </body>
+
 </html>
-mistrz-tablic.html
-Wyświetlam mistrz-tablic.html.
