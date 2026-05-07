@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pl">
 
@@ -1004,56 +1005,36 @@
       margin: 0 2px;
     }
 
-    /* Rząd DALEJ / STOP */
-    .actions-dalej {
-      display: none;
-      gap: 8px;
-    }
-
-    .actions-dalej.visible {
-      display: flex;
-    }
-
-    .btn-dalej-next {
+    /* ============ PRZYCISK DALEJ — inline, zawsze widoczny po odpowiedzi ============ */
+    #btnDalej {
+      display: none;           /* ukryty domyślnie */
+      width: 100%;
+      padding: 15px;
       background: var(--zielony);
+      border: none;
       color: #000;
-      font-weight: 700;
-      position: relative;
-      overflow: hidden;
+      font-family: 'Anton', sans-serif;
+      font-size: 22px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      cursor: pointer;
+      animation: dalej-pop .2s cubic-bezier(.34,1.56,.64,1);
     }
 
-    .btn-dalej-next::before {
-      content: "";
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: var(--progress, 100%);
-      background: rgba(0,0,0,0.12);
-      transition: width 1s linear;
+    #btnDalej:active {
+      transform: scale(.97);
     }
 
-    .btn-dalej-next:hover {
-      background: #22f07a;
+    @keyframes dalej-pop {
+      from { opacity:0; transform: scale(.93); }
+      to   { opacity:1; transform: scale(1); }
     }
 
-    .btn-stop {
-      flex: 0 0 auto;
-      padding: 12px 18px;
-    }
-
-    #dalej-count {
-      font-family: 'DM Mono', monospace;
-      font-size: 15px;
-      margin-left: 6px;
-      opacity: 0.75;
-    }
-
-    @keyframes dalej-in {
-      from { opacity: 0; transform: translateY(-4px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .actions-dalej.visible {
-      animation: dalej-in .2s ease-out;
+    @media (max-width: 900px) {
+      #btnDalej {
+        padding: 18px;
+        font-size: 24px;
+      }
     }
 
     /* ============ FLASH ============ */
@@ -1356,16 +1337,15 @@
         </button>
       </div>
 
-      <div class="actions">
+      <!-- Przyciski gry — Sprawdź/Pomiń widoczne przy pytaniu, DALEJ po odpowiedzi -->
+      <div class="actions" id="actionsGame">
         <button class="btn" id="btnSubmit">Sprawdź</button>
         <button class="btn ghost" id="btnSkip">Pomiń</button>
       </div>
 
-      <!-- Rząd DALEJ / STOP — pojawia się po odpowiedzi -->
-      <div class="actions-dalej" id="actionsDalej">
-        <button class="btn btn-dalej-next" id="btnDalej">DALEJ <span id="dalej-count">5</span></button>
-        <button class="btn ghost btn-stop" id="btnStop">STOP</button>
-      </div>
+      <button id="btnDalej">DALEJ →</button>
+
+      <!-- Rząd DALEJ / STOP — stary (usunięty) -->
 
       <div class="feedback" id="feedback"></div>
 
@@ -2034,9 +2014,6 @@
        ============================================================ */
     const $ = id => document.getElementById(id);
 
-    // FIX: wykryj urządzenie dotykowe (mobile)
-    const isMobile = () => window.innerWidth <= 900 || ('ontouchstart' in window);
-
     function updateHud() {
       $('hudPunkty').textContent = state.punkty;
       $('hudSeria').textContent = state.seria;
@@ -2081,31 +2058,26 @@
        PYTANIE
        ============================================================ */
     function nextQuestion() {
-      hideDalej();
       state.current = pickRandom();
+
+      // Reset podpowiedzi
       state.hintsUsed = { woj: false, letter: false, type: false };
       document.querySelectorAll('.hint-btn').forEach(b => b.disabled = false);
 
+      // Reset inputu
       const inp = $('guessInput');
       inp.value = '';
       inp.disabled = false;
 
-      // *** FIX GŁÓWNY: NIE wywołuj focus() na mobile ***
-      // Na mobile focus() otwiera klawiaturę programmatycznie z setTimeout,
-      // co powoduje resize viewportu i "zacięcie" layoutu.
-      // Użytkownik mobilny sam tapnie w pole gdy będzie gotowy.
-      if (!isMobile()) {
-        inp.focus();
-      } else {
-        // Na mobile: delikatna animacja pulsowania inputu jako sygnał "wpisz tutaj"
-        inp.classList.remove('ready-pulse');
-        void inp.offsetWidth; // reflow
-        inp.classList.add('ready-pulse');
-        // Przewiń panel gry na górę, żeby tablica była widoczna
-        const gamePanel = document.querySelector('aside.game');
-        if (gamePanel) gamePanel.scrollTop = 0;
-      }
+      // Przyciski: pokaż Sprawdź/Pomiń, ukryj DALEJ
+      $('actionsGame').style.display = 'flex';
+      $('btnDalej').style.display = 'none';
 
+      // Wyczyść feedback
+      clearFeedback();
+      hideSuggestions();
+
+      // Ustaw treść pytania
       if (state.mode === 'reverse') {
         $('platePrefix').textContent = '???';
         $('questionLine').innerHTML = `Powiat: <strong>${state.current.nazwa}</strong> — wpisz <strong>kod tablicy</strong>`;
@@ -2116,8 +2088,8 @@
         inp.placeholder = 'np. Kraków, Wałbrzych...';
       }
 
-      hideSuggestions();
-      clearFeedback();
+      // Focus — działa na desktopie, ignorowany na mobile (nie otwiera klawiatury)
+      inp.focus({ preventScroll: true });
     }
 
     function recordResult(kod, good) {
@@ -2146,6 +2118,10 @@
       inp.disabled = true;
       hideSuggestions();
 
+      // Ukryj Sprawdź/Pomiń, pokaż DALEJ
+      $('actionsGame').style.display = 'none';
+      $('btnDalej').style.display = 'block';
+
       if (correct) {
         recordResult(state.current.kod, true);
         state.trafione++;
@@ -2155,18 +2131,15 @@
         const gain = 10 + bonus + (kind === 'fuzzy' ? -2 : 0);
         state.punkty += gain;
         if (state.punkty > state.rekord) state.rekord = state.punkty;
-
         flash('+' + gain, false);
         showCorrectFeedback(state.current, gain, kind === 'fuzzy');
         flyToOnMap(state.current);
-        showDalej();
       } else {
         recordResult(state.current.kod, false);
         state.seria = 0;
         flash('BŁĄD', true);
         showWrongFeedback(state.current, val);
         flyToOnMap(state.current, true);
-        showDalej();
       }
 
       saveState();
@@ -2185,7 +2158,10 @@
       flyToOnMap(state.current, true);
       saveState();
       updateHud();
-      showDalej();
+
+      // Ukryj Sprawdź/Pomiń, pokaż DALEJ
+      $('actionsGame').style.display = 'none';
+      $('btnDalej').style.display = 'block';
     }
 
     function showCorrectFeedback(p, gain, fuzzy) {
@@ -2481,50 +2457,6 @@
     }
 
     /* ============================================================
-       DALEJ — odliczanie 5 sekund
-       ============================================================ */
-    let dalej_timer = null;
-    let dalej_seconds = 5;
-
-    function showDalej() {
-      // Wyczyść poprzedni timer jeśli był
-      clearDalejTimer();
-
-      const wrap = $('actionsDalej');
-      const countEl = $('dalej-count');
-      const btn = $('btnDalej');
-
-      dalej_seconds = 5;
-      countEl.textContent = dalej_seconds;
-      btn.style.setProperty('--progress', '100%');
-      wrap.classList.add('visible');
-
-      // Odliczanie co sekundę
-      dalej_timer = setInterval(() => {
-        dalej_seconds--;
-        countEl.textContent = dalej_seconds;
-        // Pasek cofający się w tle
-        btn.style.setProperty('--progress', (dalej_seconds / 5 * 100) + '%');
-        if (dalej_seconds <= 0) {
-          clearDalejTimer();
-          nextQuestion();
-        }
-      }, 1000);
-    }
-
-    function hideDalej() {
-      clearDalejTimer();
-      $('actionsDalej').classList.remove('visible');
-    }
-
-    function clearDalejTimer() {
-      if (dalej_timer) {
-        clearInterval(dalej_timer);
-        dalej_timer = null;
-      }
-    }
-
-    /* ============================================================
        EVENT LISTENERS
        ============================================================ */
     document.addEventListener('DOMContentLoaded', () => {
@@ -2575,8 +2507,7 @@
 
       $('btnSubmit').addEventListener('click', submitAnswer);
       $('btnSkip').addEventListener('click', skipQuestion);
-      $('btnDalej').addEventListener('click', () => { hideDalej(); nextQuestion(); });
-      $('btnStop').addEventListener('click', () => { clearDalejTimer(); $('dalej-count').textContent = '∞'; });
+      $('btnDalej').addEventListener('click', nextQuestion);
 
       document.querySelectorAll('.hint-btn').forEach(b => {
         b.addEventListener('click', () => useHint(b.dataset.hint));
