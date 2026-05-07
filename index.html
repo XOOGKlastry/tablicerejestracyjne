@@ -1556,9 +1556,9 @@
 
     .rank-row {
       display: grid;
-      grid-template-columns: 28px 1fr 70px 60px;
+      grid-template-columns: 28px 1fr 70px 50px 50px;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       padding: 10px 12px;
       background: var(--asfalt-2);
       border: 1px solid var(--line);
@@ -1630,6 +1630,26 @@
       font-size: 11px;
       color: var(--tekst-mute);
       text-align: right;
+    }
+
+    .rank-extra {
+      font-size: 11px;
+      color: var(--tekst-mute);
+      text-align: right;
+    }
+
+    /* Nagłówek rankingu */
+    .rank-header {
+      display: grid;
+      grid-template-columns: 28px 1fr 70px 50px 50px;
+      gap: 8px;
+      padding: 6px 12px;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--tekst-mute);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 4px;
     }
 
     .rank-empty {
@@ -1880,7 +1900,14 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
+  <!-- Firebase SDK (Realtime Database) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
   <script>
+    /* ============================================================
+       BAZA POLSKICH KODÓW REJESTRACYJNYCH
+       ============================================================ */
     const POWIATY = [
       // ========== DOLNOŚLĄSKIE (D) ==========
       { kod: "DB", nazwa: "Wałbrzych", typ: "miasto", woj: "dolnośląskie", lat: 50.7841, lng: 16.2845, wiki: "Wałbrzych" },
@@ -2314,69 +2341,217 @@
        STAN GRY
        ============================================================ */
     const STORAGE_KEY = 'mistrzTablic_v1';
-    const USERS_KEY = 'mistrzTablic_users_v1';   // obiekt { nick: { rekord, pytania, trafione, najlSeria, ts } }
-    const SESSION_KEY = 'mistrzTablic_session_v1'; // nick bieżącej sesji (sessionStorage)
+    const SESSION_KEY = 'mistrzTablic_session_v1';
+    const USERS_LS = 'mistrzTablic_users_v1'; // klucz localStorage (cache offline)
 
-    /* ---- Zarządzanie użytkownikami ---- */
-    function getUsers() {
-      try { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); } catch (e) { return {}; }
+
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBVj_569NJedwRxn_wgXVLFOo0hCTmkIX4",
+      authDomain: "cotozablachy.firebaseapp.com",
+      databaseURL: "https://cotozablachy-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "cotozablachy",
+      storageBucket: "cotozablachy.firebasestorage.app",
+      messagingSenderId: "993650781543",
+      appId: "1:993650781543:web:cec8aba604bdde3438d3c2",
+      measurementId: "G-E9GBDW2W87"
+    };
+
+    /* ---- Inicjalizacja Firebase ---- */
+    let _db = null;
+    let _rankRef = null;
+
+    function initFirebase() {
+      try {
+        // Jeśli nie skonfigurowano — użyj tylko localStorage
+        if (!FIREBASE_CONFIG.databaseURL || FIREBASE_CONFIG.databaseURL.includes('TWOJ_PROJEKT')) {
+          console.warn('[MistrzTablic] Firebase nie skonfigurowany — tryb lokalny');
+          return false;
+        }
+        if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        _db = firebase.database();
+        _rankRef = _db.ref('ranking');
+        console.info('[MistrzTablic] Firebase połączony ✓');
+        return true;
+      } catch (e) {
+        console.warn('[MistrzTablic] Firebase błąd init:', e.message);
+        return false;
+      }
     }
-    function saveUsers(users) {
-      try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) { }
+
+    const isFirebaseReady = () => !!_rankRef;
+
+    /* ---- localStorage cache ---- */
+    function getLocalUsers() {
+      try { return JSON.parse(localStorage.getItem(USERS_LS) || '{}'); } catch (e) { return {}; }
     }
+    function saveLocalUsers(u) {
+      try { localStorage.setItem(USERS_LS, JSON.stringify(u)); } catch (e) { }
+    }
+
+    /* ---- Scalanie rankingów — wygrywa lepszy wynik ---- */
+    function mergeUsers(a, b) {
+      const out = { ...a };
+      for (const [nick, d] of Object.entries(b || {})) {
+        if (!out[nick]) { out[nick] = d; continue; }
+        out[nick] = {
+          ...out[nick],
+          rekord: Math.max(out[nick].rekord || 0, d.rekord || 0),
+          najlSeria: Math.max(out[nick].najlSeria || 0, d.najlSeria || 0),
+          pytania: Math.max(out[nick].pytania || 0, d.pytania || 0),
+          trafione: Math.max(out[nick].trafione || 0, d.trafione || 0),
+          ts: Math.max(out[nick].ts || 0, d.ts || 0),
+        };
+      }
+      return out;
+    }
+
+    /* ---- Pobierz wszystkich graczy (Firebase lub localStorage) ---- */
+    function getUsers() { return getLocalUsers(); }
+
+    async function fetchUsersFromFirebase() {
+      if (!isFirebaseReady()) return null;
+      try {
+        const snap = await _rankRef.once('value');
+        return snap.val() || {};
+      } catch (e) { return null; }
+    }
+
+    async function pushUsersToFirebase(users) {
+      if (!isFirebaseReady()) return;
+      try { await _rankRef.set(users); } catch (e) { }
+    }
+
+    /* ---- Pełna synchronizacja (Firebase ↔ localStorage) ---- */
+    async function syncUsers() {
+      const local = getLocalUsers();
+      const remote = await fetchUsersFromFirebase();
+      if (remote === null) return local;           // brak Firebase → tylko local
+      const merged = mergeUsers(local, remote);
+      saveLocalUsers(merged);
+      // Zapisz z powrotem do Firebase jeśli local miał coś nowego
+      if (JSON.stringify(merged) !== JSON.stringify(remote)) {
+        pushUsersToFirebase(merged).catch(() => { });
+      }
+      return merged;
+    }
+
+    /* ---- Session ---- */
     function getCurrentNick() {
       return sessionStorage.getItem(SESSION_KEY) || '';
     }
-    function registerNick(nick) {
-      nick = nick.trim().toUpperCase().replace(/[^A-Z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż _-]/gi, '').trim();
+
+    /* ---- Rejestracja nicku ---- */
+    async function registerNick(nick) {
+      nick = nick.trim().toUpperCase()
+        .replace(/[^A-Z0-9ĄĆĘŁŃÓŚŹŻ _-]/gi, '').trim();
       if (!nick) return 'Wpisz nick.';
       if (nick.length < 2) return 'Minimum 2 znaki.';
-      const users = getUsers();
-      if (users[nick]) return 'Ten nick jest już zajęty!';
-      users[nick] = { rekord: 0, pytania: 0, trafione: 0, najlSeria: 0, ts: Date.now() };
-      saveUsers(users);
+      if (nick.length > 16) return 'Maksymalnie 16 znaków.';
+
+      const users = await syncUsers();
+      if (users[nick]) return 'Ten nick jest już zajęty! Wybierz inny.';
+
+      const newEntry = { rekord: 0, pytania: 0, trafione: 0, najlSeria: 0, ts: Date.now() };
+      users[nick] = newEntry;
+      saveLocalUsers(users);
+
+      // Zapisz od razu do Firebase (atomic set konkretnego nicku)
+      if (isFirebaseReady()) {
+        try { await _db.ref(`ranking/${nick}`).set(newEntry); } catch (e) { }
+      }
+
       sessionStorage.setItem(SESSION_KEY, nick);
       return null; // brak błędu
     }
-    function saveRanking() {
+
+    /* ---- Zapisz wyniki gracza ---- */
+    async function saveRanking() {
       const nick = getCurrentNick();
       if (!nick) return;
-      const users = getUsers();
+      const users = getLocalUsers();
       if (!users[nick]) users[nick] = { rekord: 0, pytania: 0, trafione: 0, najlSeria: 0, ts: Date.now() };
-      // aktualizuj tylko jeśli lepszy wynik
-      users[nick].rekord = Math.max(users[nick].rekord, state.rekord);
-      users[nick].najlSeria = Math.max(users[nick].najlSeria, state.najlSeria);
-      users[nick].pytania = state.pytania;
-      users[nick].trafione = state.trafione;
-      users[nick].ts = Date.now();
-      saveUsers(users);
+      const u = users[nick];
+
+      u.rekord = Math.max(u.rekord || 0, state.rekord);
+      u.najlSeria = Math.max(u.najlSeria || 0, state.najlSeria);
+
+      const prevP = u._lastPytania || 0;
+      const prevT = u._lastTrafione || 0;
+      u.pytania = (u.pytania || 0) + Math.max(0, state.pytania - prevP);
+      u.trafione = (u.trafione || 0) + Math.max(0, state.trafione - prevT);
+      u._lastPytania = state.pytania;
+      u._lastTrafione = state.trafione;
+      u.ts = Date.now();
+
+      saveLocalUsers(users);
+
+      // Zapisz tylko dane tego gracza do Firebase (nie blokuj UI)
+      if (isFirebaseReady()) {
+        const { _lastPytania: _p, _lastTrafione: _t, ...clean } = u;
+        _db.ref(`ranking/${nick}`).set(clean).catch(() => { });
+      }
     }
-    function buildRankingModal() {
-      const users = getUsers();
+
+    /* ---- Modal rankingu ---- */
+    async function buildRankingModal() {
+      const isOnline = isFirebaseReady();
+      $('rankList').innerHTML = `
+        <div style="text-align:center;padding:20px 0;color:var(--tekst-mute)">
+          <div style="font-size:22px;margin-bottom:8px">${isOnline ? '☁️' : '📂'}</div>
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase">
+            ${isOnline ? 'Pobieranie rankingu...' : 'Ranking lokalny (brak Firebase)'}
+          </div>
+        </div>`;
+
+      const users = await syncUsers();
       const nick = getCurrentNick();
       const sorted = Object.entries(users)
         .map(([n, d]) => ({ nick: n, ...d }))
-        .filter(u => u.pytania > 0 || u.rekord > 0)
-        .sort((a, b) => b.rekord - a.rekord || b.pytania - a.pytania);
+        .filter(u => (u.pytania || 0) > 0 || (u.rekord || 0) > 0)
+        .sort((a, b) => (b.rekord || 0) - (a.rekord || 0) || (b.najlSeria || 0) - (a.najlSeria || 0));
 
       if (sorted.length === 0) {
-        $('rankList').innerHTML = '<div class="rank-empty">Brak wyników — zagraj kilka rund!</div>';
+        $('rankList').innerHTML = `
+          <div class="rank-empty">Brak wyników — zagraj kilka rund!</div>
+          ${!isOnline ? '<div style="margin-top:10px;font-size:11px;color:var(--tekst-mute)">Firebase nie skonfigurowany — ranking tylko lokalny.<br>Zajrzyj do README w kodzie źródłowym.</div>' : ''}`;
         return;
       }
+
       const medalClass = ['top1', 'top2', 'top3'];
       const medals = ['🥇', '🥈', '🥉'];
-      $('rankList').innerHTML = sorted.slice(0, 20).map((u, i) => {
+
+      const header = `<div class="rank-row" style="background:transparent;border-color:var(--line);pointer-events:none;opacity:.5">
+        <div class="rank-pos">#</div>
+        <div class="rank-name" style="font-family:'Outfit';font-size:10px;letter-spacing:1px;font-weight:400">NICK</div>
+        <div class="rank-pts" style="font-size:10px;font-weight:400;color:var(--tekst-mute)">REKORD</div>
+        <div class="rank-acc" style="font-size:10px">TRAF%&nbsp;/&nbsp;PYTAŃ</div>
+      </div>`;
+
+      const rows = sorted.slice(0, 20).map((u, i) => {
         const isMe = u.nick === nick;
-        const acc = u.pytania > 0 ? Math.round(u.trafione / u.pytania * 100) + '%' : '—';
+        const pytania = u.pytania || 0;
+        const trafione = u.trafione || 0;
+        const acc = pytania > 0 ? Math.round(trafione / pytania * 100) + '%' : '—';
         const posLabel = i < 3 ? medals[i] : (i + 1);
         return `<div class="rank-row ${i < 3 ? medalClass[i] : ''} ${isMe ? 'me' : ''}">
           <div class="rank-pos">${posLabel}</div>
           <div class="rank-name ${isMe ? 'me-label' : ''}">${u.nick}</div>
-          <div class="rank-pts">${u.rekord} <span style="font-size:10px;color:var(--tekst-mute)">pkt</span></div>
-          <div class="rank-acc">${acc}</div>
+          <div class="rank-pts">${u.rekord || 0}<span style="font-size:10px;color:var(--tekst-mute)"> pkt</span></div>
+          <div class="rank-acc">${acc} <span style="color:var(--tekst-mute);font-size:10px">/ ${pytania}</span></div>
         </div>`;
       }).join('');
+
+      const footer = `<div style="margin-top:10px;font-size:10px;letter-spacing:1px;
+          color:${isOnline ? 'var(--zielony)' : 'var(--tekst-mute)'}">
+        ${isOnline
+          ? '☁️ Firebase — ranking globalny, zsynchronizowany na żywo'
+          : '📂 Tryb lokalny — skonfiguruj Firebase aby grać z innymi'}
+      </div>`;
+
+      $('rankList').innerHTML = header + rows + footer;
     }
+
     const state = {
       mode: 'classic',
       regionWoj: null,
@@ -2417,7 +2592,7 @@
           perPowiat: state.perPowiat,
         }));
       } catch (e) { }
-      saveRanking();
+      saveRanking().catch(() => { }); // async — nie blokuj UI
     }
 
     /* ============================================================
@@ -2460,7 +2635,7 @@
 
     function findSuggestions(query, limit = 8) {
       const nq = normalize(query);
-      if (nq.length < 1) return [];
+      if (nq.length < 4) return [];
       const pool = state.mode === 'region' && state.regionWoj
         ? POWIATY.filter(p => p.woj === state.regionWoj)
         : POWIATY;
@@ -3004,6 +3179,7 @@
        EVENT LISTENERS
        ============================================================ */
     document.addEventListener('DOMContentLoaded', () => {
+      initFirebase();
       loadState();
       initMap();
       updateHud();
@@ -3013,22 +3189,31 @@
       const nickInput = $('nickInput');
       const nickError = $('nickError');
 
-      function tryRegisterNick() {
+      async function tryRegisterNick() {
+        $('btnNickOk').disabled = true;
+        $('nickError').textContent = isFirebaseReady() ? '☁️ Sprawdzanie...' : '';
         const raw = nickInput.value.trim();
-        const err = registerNick(raw);
+        const err = await registerNick(raw);
+        $('btnNickOk').disabled = false;
         if (err) {
-          nickError.textContent = err;
+          $('nickError').textContent = err;
           nickInput.classList.add('error');
           nickInput.focus();
           return;
         }
-        // Sukces — zamknij modal i zacznij grę
         nickModal.classList.remove('open');
         updateHud();
         nextQuestion();
       }
 
-      // Jeśli sesja już istnieje (odświeżenie strony), pomiń modal
+      // Pokaż info o trybie storage
+      const storageEl = $('nickStorageInfo');
+      if (storageEl) {
+        storageEl.textContent = isFirebaseReady()
+          ? '☁️ Tryb online — ranking globalny (Firebase)'
+          : '📂 Tryb lokalny — skonfiguruj Firebase aby grać z innymi';
+        storageEl.style.color = isFirebaseReady() ? 'var(--zielony)' : 'var(--tekst-mute)';
+      }
       if (getCurrentNick()) {
         nickModal.classList.remove('open');
         nextQuestion();
@@ -3047,9 +3232,9 @@
       $('btnNickOk').addEventListener('click', tryRegisterNick);
 
       /* ---- Ranking ---- */
-      $('btnRanking').addEventListener('click', () => {
-        buildRankingModal();
+      $('btnRanking').addEventListener('click', async () => {
         $('rankingModal').classList.add('open');
+        await buildRankingModal();
       });
 
       /* ---- Reszta obsługi ---- */
@@ -3146,6 +3331,7 @@
       </div>
       <div class="modal-body">
         <p>Wprowadź unikalną nazwę gracza. Będzie widoczna w rankingu.</p>
+        <p id="nickStorageInfo" style="font-size:11px;margin-top:4px;color:var(--tekst-mute)">📂 Tryb lokalny</p>
         <div class="nick-input-wrap">
           <input type="text" id="nickInput" maxlength="16" autocomplete="off" spellcheck="false"
             placeholder="TWÓJ NICK">
