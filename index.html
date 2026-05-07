@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 
@@ -82,11 +81,25 @@
       height: 100vh;
       gap: 0;
     }
+
     /* Timer bar spans full width above header */
-    .time-bar { grid-column: 1 / -1; grid-row: 1; }
-    header.top { grid-column: 1 / -1; grid-row: 2; }
-    aside.game { grid-row: 3; }
-    main.map-section { grid-row: 3; }
+    .time-bar {
+      grid-column: 1 / -1;
+      grid-row: 1;
+    }
+
+    header.top {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+
+    aside.game {
+      grid-row: 3;
+    }
+
+    main.map-section {
+      grid-row: 3;
+    }
 
     header.top {
       grid-column: 1/-1;
@@ -308,6 +321,7 @@
         transform: translateX(180px) rotateY(20deg);
         opacity: 0
       }
+
       100% {
         transform: translateX(0) rotateY(0);
         opacity: 1
@@ -443,9 +457,20 @@
     }
 
     @keyframes pulse-border {
-      0%   { border-color: var(--line); box-shadow: none; }
-      50%  { border-color: var(--zolty); box-shadow: 0 0 0 3px rgba(255,204,0,0.25); }
-      100% { border-color: var(--line); box-shadow: none; }
+      0% {
+        border-color: var(--line);
+        box-shadow: none;
+      }
+
+      50% {
+        border-color: var(--zolty);
+        box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.25);
+      }
+
+      100% {
+        border-color: var(--line);
+        box-shadow: none;
+      }
     }
 
     .suggestions {
@@ -628,6 +653,7 @@
         opacity: 0;
         transform: translateY(-4px)
       }
+
       to {
         opacity: 1;
         transform: translateY(0)
@@ -783,7 +809,9 @@
       padding: 8px !important;
     }
 
-    .popup { padding: 0 }
+    .popup {
+      padding: 0
+    }
 
     .popup-head {
       background: var(--zolty);
@@ -1024,14 +1052,19 @@
       position: relative;
       overflow: hidden;
     }
-    .time-bar.active { display: flex; }
+
+    .time-bar.active {
+      display: flex;
+    }
 
     /* Pasek postępu w tle */
     .time-bar__progress {
       position: absolute;
-      left: 0; top: 0; bottom: 0;
+      left: 0;
+      top: 0;
+      bottom: 0;
       width: var(--time-pct, 100%);
-      background: linear-gradient(90deg, rgba(255,59,59,0.25), rgba(255,138,26,0.15));
+      background: linear-gradient(90deg, rgba(255, 59, 59, 0.25), rgba(255, 138, 26, 0.15));
       transition: width 1s linear;
       pointer-events: none;
     }
@@ -1043,6 +1076,7 @@
       text-transform: uppercase;
       position: relative;
     }
+
     .time-bar__count {
       font-family: 'Anton', sans-serif;
       font-size: 28px;
@@ -1052,8 +1086,21 @@
       min-width: 60px;
       text-align: center;
     }
-    .time-bar__count.urgent { color: var(--czerwony); animation: tick .5s ease-in-out infinite alternate; }
-    @keyframes tick { from { transform: scale(1); } to { transform: scale(1.08); } }
+
+    .time-bar__count.urgent {
+      color: var(--czerwony);
+      animation: tick .5s ease-in-out infinite alternate;
+    }
+
+    @keyframes tick {
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.08);
+      }
+    }
 
     .time-bar__pts {
       font-family: 'DM Mono', monospace;
@@ -1061,17 +1108,27 @@
       color: var(--tekst-dim);
       position: relative;
     }
-    .time-bar__pts span { color: var(--czerwony); font-weight: 700; }
+
+    .time-bar__pts span {
+      color: var(--czerwony);
+      font-weight: 700;
+    }
 
     /* Na mobile timer bar zajmuje pełną szerokość nad grą */
     @media (max-width: 900px) {
-      .time-bar { padding: 0 12px; }
-      .time-bar__count { font-size: 22px; }
+      .time-bar {
+        padding: 0 12px;
+      }
+
+      .time-bar__count {
+        font-size: 22px;
+      }
     }
 
     /* ============ PRZYCISK DALEJ — inline, zawsze widoczny po odpowiedzi ============ */
     #btnDalej {
-      display: none;           /* ukryty domyślnie */
+      display: none;
+      /* ukryty domyślnie */
       width: 100%;
       padding: 15px;
       background: var(--zielony);
@@ -1082,7 +1139,7 @@
       letter-spacing: 4px;
       text-transform: uppercase;
       cursor: pointer;
-      animation: dalej-pop .2s cubic-bezier(.34,1.56,.64,1);
+      animation: dalej-pop .2s cubic-bezier(.34, 1.56, .64, 1);
     }
 
     #btnDalej:active {
@@ -1090,8 +1147,15 @@
     }
 
     @keyframes dalej-pop {
-      from { opacity:0; transform: scale(.93); }
-      to   { opacity:1; transform: scale(1); }
+      from {
+        opacity: 0;
+        transform: scale(.93);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     @media (max-width: 900px) {
@@ -1127,16 +1191,32 @@
     }
 
     @keyframes flash-anim {
-      0%   { opacity: 0; transform: translate(-50%, -50%) scale(.7) }
-      20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1) }
-      80%  { opacity: 1; transform: translate(-50%, -50%) scale(1) }
-      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.4) }
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.7)
+      }
+
+      20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1)
+      }
+
+      80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1)
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.4)
+      }
     }
 
     /* ============ MOBILE ============ */
     @media (max-width: 900px) {
 
-      html, body {
+      html,
+      body {
         overflow: hidden;
         height: 100%;
         height: -webkit-fill-available;
@@ -1182,7 +1262,9 @@
         text-overflow: ellipsis;
       }
 
-      .brand-sub { display: none; }
+      .brand-sub {
+        display: none;
+      }
 
       /* HUD: poziomy pasek pod logo */
       .hud {
@@ -1205,8 +1287,15 @@
         background: transparent;
       }
 
-      .hud-nick .label { font-size: 7px; letter-spacing: 1px; }
-      .hud-nick .value { font-size: 11px; letter-spacing: 0; }
+      .hud-nick .label {
+        font-size: 7px;
+        letter-spacing: 1px;
+      }
+
+      .hud-nick .value {
+        font-size: 11px;
+        letter-spacing: 0;
+      }
 
       .hud-stat {
         flex: 1 1 50px;
@@ -1217,11 +1306,20 @@
         background: transparent;
       }
 
-      .hud-stat .label { font-size: 7px; letter-spacing: 1px; }
-      .hud-stat .value { font-size: 14px; margin-top: 1px; }
+      .hud-stat .label {
+        font-size: 7px;
+        letter-spacing: 1px;
+      }
+
+      .hud-stat .value {
+        font-size: 14px;
+        margin-top: 1px;
+      }
 
       /* Ukryj Trafność — widoczna w statystykach */
-      .hud-stat:nth-child(4) { display: none; }
+      .hud-stat:nth-child(4) {
+        display: none;
+      }
 
       .hud-icon-btn {
         flex: 0 0 36px;
@@ -1232,7 +1330,10 @@
         background: transparent;
       }
 
-      .hud-icon-btn svg { width: 15px; height: 15px; }
+      .hud-icon-btn svg {
+        width: 15px;
+        height: 15px;
+      }
 
       /* ---- GAME PANEL ---- */
       aside.game {
@@ -1244,7 +1345,9 @@
         min-height: 0;
       }
 
-      main.map-section { display: none !important; }
+      main.map-section {
+        display: none !important;
+      }
 
       /* ---- TRYBY: 2x2 ---- */
       .modes {
@@ -1262,7 +1365,9 @@
       }
 
       /* ---- TABLICA ---- */
-      .plate-wrap { margin: 0; }
+      .plate-wrap {
+        margin: 0;
+      }
 
       .plate {
         font-size: 30px;
@@ -1271,13 +1376,30 @@
         border-width: 2px;
       }
 
-      .plate-eu { width: 34px; padding: 5px 0; }
-      .plate-pl { font-size: 12px; }
-      .plate-rest { font-size: 24px; letter-spacing: 4px; }
-      .plate-stars svg { width: 18px; height: 18px; }
+      .plate-eu {
+        width: 34px;
+        padding: 5px 0;
+      }
+
+      .plate-pl {
+        font-size: 12px;
+      }
+
+      .plate-rest {
+        font-size: 24px;
+        letter-spacing: 4px;
+      }
+
+      .plate-stars svg {
+        width: 18px;
+        height: 18px;
+      }
 
       /* ---- INPUT ---- */
-      .question-line { font-size: 11px; margin: 0; }
+      .question-line {
+        font-size: 11px;
+        margin: 0;
+      }
 
       input.guess {
         padding: 11px 10px;
@@ -1305,15 +1427,36 @@
       }
 
       /* ---- PRZYCISKI ---- */
-      .actions { gap: 5px; }
-      .btn { padding: 10px 6px; font-size: 11px; }
-      #btnDalej { font-size: 20px; padding: 14px; }
+      .actions {
+        gap: 5px;
+      }
+
+      .btn {
+        padding: 10px 6px;
+        font-size: 11px;
+      }
+
+      #btnDalej {
+        font-size: 20px;
+        padding: 14px;
+      }
 
       /* ---- STATS MINI ---- */
-      .stats-mini { padding-top: 6px; }
-      .stat-mini { padding: 6px 4px; }
-      .stat-mini .v { font-size: 14px; }
-      .stat-mini .l { font-size: 8px; }
+      .stats-mini {
+        padding-top: 6px;
+      }
+
+      .stat-mini {
+        padding: 6px 4px;
+      }
+
+      .stat-mini .v {
+        font-size: 14px;
+      }
+
+      .stat-mini .l {
+        font-size: 8px;
+      }
 
       /* ---- AUTOCOMPLETE — nad inputem ---- */
       .suggestions {
@@ -1323,7 +1466,9 @@
       }
 
       /* ---- FLASH ---- */
-      .flash { font-size: 50px; }
+      .flash {
+        font-size: 50px;
+      }
     }
 
     /* ============ NICK / RANKING ============ */
@@ -1338,7 +1483,14 @@
       min-width: 80px;
       max-width: 120px;
     }
-    .hud-nick .label { font-size: 9px; letter-spacing: 2px; color: var(--zolty); text-transform: uppercase; }
+
+    .hud-nick .label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--zolty);
+      text-transform: uppercase;
+    }
+
     .hud-nick .value {
       font-family: 'DM Mono', monospace;
       font-size: 13px;
@@ -1350,9 +1502,20 @@
     }
 
     /* Modal nicku — blokuje całość, bez możliwości zamknięcia */
-    #nickModal .modal-head { background: var(--asfalt); border-bottom: 3px solid var(--zolty); }
-    #nickModal .modal-head span { color: var(--zolty); }
-    .nick-input-wrap { position: relative; margin: 16px 0 8px; }
+    #nickModal .modal-head {
+      background: var(--asfalt);
+      border-bottom: 3px solid var(--zolty);
+    }
+
+    #nickModal .modal-head span {
+      color: var(--zolty);
+    }
+
+    .nick-input-wrap {
+      position: relative;
+      margin: 16px 0 8px;
+    }
+
     .nick-input-wrap input {
       width: 100%;
       padding: 14px 16px;
@@ -1366,8 +1529,15 @@
       outline: none;
       transition: border-color .15s;
     }
-    .nick-input-wrap input:focus { border-color: var(--zolty); }
-    .nick-input-wrap input.error { border-color: var(--czerwony); }
+
+    .nick-input-wrap input:focus {
+      border-color: var(--zolty);
+    }
+
+    .nick-input-wrap input.error {
+      border-color: var(--czerwony);
+    }
+
     .nick-error {
       font-size: 12px;
       color: var(--czerwony);
@@ -1377,7 +1547,13 @@
     }
 
     /* Ranking — wiersze */
-    .rank-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+    .rank-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
     .rank-row {
       display: grid;
       grid-template-columns: 28px 1fr 70px 60px;
@@ -1389,10 +1565,24 @@
       font-size: 13px;
       transition: border-color .15s;
     }
-    .rank-row.me { border-color: var(--zolty); background: rgba(255,204,0,0.06); }
-    .rank-row.top1 { border-color: #ffd700; }
-    .rank-row.top2 { border-color: #c0c0c0; }
-    .rank-row.top3 { border-color: #cd7f32; }
+
+    .rank-row.me {
+      border-color: var(--zolty);
+      background: rgba(255, 204, 0, 0.06);
+    }
+
+    .rank-row.top1 {
+      border-color: #ffd700;
+    }
+
+    .rank-row.top2 {
+      border-color: #c0c0c0;
+    }
+
+    .rank-row.top3 {
+      border-color: #cd7f32;
+    }
+
     .rank-pos {
       font-family: 'DM Mono', monospace;
       font-size: 14px;
@@ -1400,11 +1590,34 @@
       text-align: center;
       color: var(--tekst-mute);
     }
-    .rank-row.top1 .rank-pos { color: #ffd700; }
-    .rank-row.top2 .rank-pos { color: #c0c0c0; }
-    .rank-row.top3 .rank-pos { color: #cd7f32; }
-    .rank-name { font-weight: 600; color: var(--tekst); font-family: 'Anton', sans-serif; letter-spacing: 1px; }
-    .rank-name.me-label::after { content: " (Ty)"; font-family: 'Outfit'; font-size: 10px; color: var(--zolty); font-weight: 400; }
+
+    .rank-row.top1 .rank-pos {
+      color: #ffd700;
+    }
+
+    .rank-row.top2 .rank-pos {
+      color: #c0c0c0;
+    }
+
+    .rank-row.top3 .rank-pos {
+      color: #cd7f32;
+    }
+
+    .rank-name {
+      font-weight: 600;
+      color: var(--tekst);
+      font-family: 'Anton', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    .rank-name.me-label::after {
+      content: " (Ty)";
+      font-family: 'Outfit';
+      font-size: 10px;
+      color: var(--zolty);
+      font-weight: 400;
+    }
+
     .rank-pts {
       font-family: 'DM Mono', monospace;
       font-size: 16px;
@@ -1412,13 +1625,18 @@
       color: var(--zolty);
       text-align: right;
     }
+
     .rank-acc {
       font-size: 11px;
       color: var(--tekst-mute);
       text-align: right;
     }
-    .rank-empty { color: var(--tekst-mute); font-size: 13px; padding: 12px 0; }
 
+    .rank-empty {
+      color: var(--tekst-mute);
+      font-size: 13px;
+      padding: 12px 0;
+    }
   </style>
 </head>
 
@@ -1460,7 +1678,7 @@
         </div>
         <button class="hud-icon-btn" id="btnRanking" title="Ranking">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
           </svg>
         </button>
         <button class="hud-icon-btn" id="btnStats" title="Statystyki">
@@ -1546,7 +1764,9 @@
       </div>
 
       <!-- Podpowiedź literowa — wyświetla odkryte litery -->
-      <div id="hintLettersDisplay" style="display:none; font-family:'Anton',sans-serif; font-size:22px; letter-spacing:6px; color:var(--zolty); text-align:center; padding:4px 0;"></div>
+      <div id="hintLettersDisplay"
+        style="display:none; font-family:'Anton',sans-serif; font-size:22px; letter-spacing:6px; color:var(--zolty); text-align:center; padding:4px 0;">
+      </div>
 
       <!-- Przyciski gry — Sprawdź/Pomiń widoczne przy pytaniu, DALEJ po odpowiedzi -->
       <div class="actions" id="actionsGame">
@@ -1595,13 +1815,15 @@
       </div>
       <div class="modal-body">
         <h3>Tryby</h3>
-        <p><b>Klasyk:</b> widzisz 2-3 literowy prefiks tablicy (np. <span class="kbd">KLI</span>) — wpisz nazwę powiatu.</p>
+        <p><b>Klasyk:</b> widzisz 2-3 literowy prefiks tablicy (np. <span class="kbd">KLI</span>) — wpisz nazwę powiatu.
+        </p>
         <p><b>Odwrotny:</b> dostajesz nazwę powiatu — wpisz prefiks (np. <span class="kbd">Limanowa</span> → KLI).</p>
         <p><b>Na czas:</b> 90 sekund, ile zdążysz.</p>
         <p><b>Region:</b> tylko jedno wybrane województwo.</p>
 
         <h3>Punktacja</h3>
-        <p>Bazowo +10 pkt za poprawną odpowiedź. Mnożnik za serię: każda poprawna z rzędu daje +2 dodatkowe punkty (max +30).</p>
+        <p>Bazowo +10 pkt za poprawną odpowiedź. Mnożnik za serię: każda poprawna z rzędu daje +2 dodatkowe punkty (max
+          +30).</p>
 
         <h3>Skróty klawiaturowe</h3>
         <p><span class="kbd">Enter</span> — sprawdź / zatwierdź podpowiedź<br>
@@ -1611,7 +1833,8 @@
         </p>
 
         <h3>Adaptive learning</h3>
-        <p>Powiaty, które mylisz, pojawiają się <b>częściej</b>. Te które dobrze znasz — rzadziej. Postęp zapisuje się w przeglądarce.</p>
+        <p>Powiaty, które mylisz, pojawiają się <b>częściej</b>. Te które dobrze znasz — rzadziej. Postęp zapisuje się w
+          przeglądarce.</p>
 
         <h3>Hinty</h3>
         <p>Możesz odsłonić wskazówkę kosztem punktów. Hinty nie zerują serii.</p>
@@ -1658,25 +1881,24 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
   <script>
-    /* ============================================================
-       BAZA POLSKICH KODÓW REJESTRACYJNYCH
-       ============================================================ */
     const POWIATY = [
       // ========== DOLNOŚLĄSKIE (D) ==========
       { kod: "DB", nazwa: "Wałbrzych", typ: "miasto", woj: "dolnośląskie", lat: 50.7841, lng: 16.2845, wiki: "Wałbrzych" },
       { kod: "DJ", nazwa: "Jelenia Góra", typ: "miasto", woj: "dolnośląskie", lat: 50.9044, lng: 15.7195, wiki: "Jelenia_Góra" },
       { kod: "DL", nazwa: "Legnica", typ: "miasto", woj: "dolnośląskie", lat: 51.2070, lng: 16.1553, wiki: "Legnica" },
       { kod: "DW", nazwa: "Wrocław", typ: "miasto", woj: "dolnośląskie", lat: 51.1079, lng: 17.0385, wiki: "Wrocław" },
-      { kod: "DBA", nazwa: "Bolesławiec", typ: "ziemski", woj: "dolnośląskie", lat: 51.2615, lng: 15.5697, wiki: "Bolesławiec" },
+      { kod: "DBA", nazwa: "Wałbrzych (powiat)", typ: "ziemski", woj: "dolnośląskie", lat: 50.8000, lng: 16.3000, wiki: "Powiat_wałbrzyski" },
+      { kod: "DBL", nazwa: "Bolesławiec", typ: "ziemski", woj: "dolnośląskie", lat: 51.2615, lng: 15.5697, wiki: "Bolesławiec" },
       { kod: "DDZ", nazwa: "Dzierżoniów", typ: "ziemski", woj: "dolnośląskie", lat: 50.7290, lng: 16.6510, wiki: "Dzierżoniów" },
       { kod: "DGL", nazwa: "Głogów", typ: "ziemski", woj: "dolnośląskie", lat: 51.6566, lng: 16.0848, wiki: "Głogów" },
       { kod: "DGR", nazwa: "Góra", typ: "ziemski", woj: "dolnośląskie", lat: 51.6720, lng: 16.5500, wiki: "Góra_(województwo_dolnośląskie)" },
       { kod: "DJA", nazwa: "Jawor", typ: "ziemski", woj: "dolnośląskie", lat: 51.0510, lng: 16.1932, wiki: "Jawor" },
+      { kod: "DJE", nazwa: "Jelenia Góra (powiat)", typ: "ziemski", woj: "dolnośląskie", lat: 50.9000, lng: 15.7200, wiki: "Powiat_jeleniogórski" },
       { kod: "DKA", nazwa: "Kamienna Góra", typ: "ziemski", woj: "dolnośląskie", lat: 50.7857, lng: 16.0297, wiki: "Kamienna_Góra" },
       { kod: "DKL", nazwa: "Kłodzko", typ: "ziemski", woj: "dolnośląskie", lat: 50.4356, lng: 16.6611, wiki: "Kłodzko" },
-      { kod: "DLB", nazwa: "Lubin", typ: "ziemski", woj: "dolnośląskie", lat: 51.4015, lng: 16.2018, wiki: "Lubin" },
+      { kod: "DLB", nazwa: "Lubań", typ: "ziemski", woj: "dolnośląskie", lat: 51.1208, lng: 15.2920, wiki: "Lubań_(województwo_dolnośląskie)" },
       { kod: "DLE", nazwa: "Legnica (powiat)", typ: "ziemski", woj: "dolnośląskie", lat: 51.1900, lng: 16.0500, wiki: "Powiat_legnicki" },
-      { kod: "DLU", nazwa: "Lubań", typ: "ziemski", woj: "dolnośląskie", lat: 51.1208, lng: 15.2920, wiki: "Lubań_(województwo_dolnośląskie)" },
+      { kod: "DLU", nazwa: "Lubin", typ: "ziemski", woj: "dolnośląskie", lat: 51.4015, lng: 16.2018, wiki: "Lubin" },
       { kod: "DLW", nazwa: "Lwówek Śląski", typ: "ziemski", woj: "dolnośląskie", lat: 51.1083, lng: 15.5806, wiki: "Lwówek_Śląski" },
       { kod: "DMI", nazwa: "Milicz", typ: "ziemski", woj: "dolnośląskie", lat: 51.5275, lng: 17.2769, wiki: "Milicz" },
       { kod: "DOA", nazwa: "Oława", typ: "ziemski", woj: "dolnośląskie", lat: 50.9462, lng: 17.2937, wiki: "Oława" },
@@ -1686,7 +1908,6 @@
       { kod: "DST", nazwa: "Strzelin", typ: "ziemski", woj: "dolnośląskie", lat: 50.7800, lng: 17.0633, wiki: "Strzelin" },
       { kod: "DSW", nazwa: "Świdnica", typ: "ziemski", woj: "dolnośląskie", lat: 50.8434, lng: 16.4892, wiki: "Świdnica" },
       { kod: "DTR", nazwa: "Trzebnica", typ: "ziemski", woj: "dolnośląskie", lat: 51.3107, lng: 17.0633, wiki: "Trzebnica" },
-      { kod: "DWA", nazwa: "Wałbrzych (powiat)", typ: "ziemski", woj: "dolnośląskie", lat: 50.8000, lng: 16.3000, wiki: "Powiat_wałbrzyski" },
       { kod: "DWL", nazwa: "Wołów", typ: "ziemski", woj: "dolnośląskie", lat: 51.3375, lng: 16.6442, wiki: "Wołów" },
       { kod: "DWR", nazwa: "Wrocław (powiat)", typ: "ziemski", woj: "dolnośląskie", lat: 51.1500, lng: 17.0500, wiki: "Powiat_wrocławski" },
       { kod: "DZA", nazwa: "Ząbkowice Śląskie", typ: "ziemski", woj: "dolnośląskie", lat: 50.5839, lng: 16.8128, wiki: "Ząbkowice_Śląskie" },
@@ -1712,8 +1933,8 @@
       { kod: "CRY", nazwa: "Rypin", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.0631, lng: 19.4106, wiki: "Rypin" },
       { kod: "CSE", nazwa: "Sępólno Krajeńskie", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.4561, lng: 17.5328, wiki: "Sępólno_Krajeńskie" },
       { kod: "CSW", nazwa: "Świecie", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.4097, lng: 18.4419, wiki: "Świecie" },
-      { kod: "CTO", nazwa: "Toruń (powiat)", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.0500, lng: 18.6000, wiki: "Powiat_toruński" },
-      { kod: "CTR", nazwa: "Tuchola", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.5867, lng: 17.8606, wiki: "Tuchola" },
+      { kod: "CTR", nazwa: "Toruń (powiat)", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.0500, lng: 18.6000, wiki: "Powiat_toruński" },
+      { kod: "CTU", nazwa: "Tuchola", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.5867, lng: 17.8606, wiki: "Tuchola" },
       { kod: "CWA", nazwa: "Wąbrzeźno", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 53.2786, lng: 18.9522, wiki: "Wąbrzeźno" },
       { kod: "CWL", nazwa: "Włocławek (powiat)", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 52.6500, lng: 19.0500, wiki: "Powiat_włocławski" },
       { kod: "CZN", nazwa: "Żnin", typ: "ziemski", woj: "kujawsko-pomorskie", lat: 52.8497, lng: 17.7172, wiki: "Żnin" },
@@ -1723,15 +1944,15 @@
       { kod: "LC", nazwa: "Chełm", typ: "miasto", woj: "lubelskie", lat: 51.1432, lng: 23.4716, wiki: "Chełm" },
       { kod: "LU", nazwa: "Lublin", typ: "miasto", woj: "lubelskie", lat: 51.2465, lng: 22.5684, wiki: "Lublin" },
       { kod: "LZ", nazwa: "Zamość", typ: "miasto", woj: "lubelskie", lat: 50.7231, lng: 23.2519, wiki: "Zamość" },
-      { kod: "LBI", nazwa: "Biłgoraj", typ: "ziemski", woj: "lubelskie", lat: 50.5413, lng: 22.7227, wiki: "Biłgoraj" },
-      { kod: "LBL", nazwa: "Biała Podlaska (powiat)", typ: "ziemski", woj: "lubelskie", lat: 52.0500, lng: 23.0500, wiki: "Powiat_bialski" },
+      { kod: "LBI", nazwa: "Biała Podlaska (powiat)", typ: "ziemski", woj: "lubelskie", lat: 52.0500, lng: 23.0500, wiki: "Powiat_bialski" },
+      { kod: "LBL", nazwa: "Biłgoraj", typ: "ziemski", woj: "lubelskie", lat: 50.5413, lng: 22.7227, wiki: "Biłgoraj" },
       { kod: "LCH", nazwa: "Chełm (powiat)", typ: "ziemski", woj: "lubelskie", lat: 51.1500, lng: 23.5000, wiki: "Powiat_chełmski" },
       { kod: "LHR", nazwa: "Hrubieszów", typ: "ziemski", woj: "lubelskie", lat: 50.8050, lng: 23.8861, wiki: "Hrubieszów" },
       { kod: "LJA", nazwa: "Janów Lubelski", typ: "ziemski", woj: "lubelskie", lat: 50.7081, lng: 22.4131, wiki: "Janów_Lubelski" },
-      { kod: "LKR", nazwa: "Krasnystaw", typ: "ziemski", woj: "lubelskie", lat: 50.9858, lng: 23.1719, wiki: "Krasnystaw" },
-      { kod: "LKS", nazwa: "Kraśnik", typ: "ziemski", woj: "lubelskie", lat: 50.9242, lng: 22.2256, wiki: "Kraśnik" },
-      { kod: "LLB", nazwa: "Lublin (powiat)", typ: "ziemski", woj: "lubelskie", lat: 51.2500, lng: 22.5500, wiki: "Powiat_lubelski" },
-      { kod: "LLW", nazwa: "Lubartów", typ: "ziemski", woj: "lubelskie", lat: 51.4625, lng: 22.6072, wiki: "Lubartów" },
+      { kod: "LKR", nazwa: "Kraśnik", typ: "ziemski", woj: "lubelskie", lat: 50.9242, lng: 22.2256, wiki: "Kraśnik" },
+      { kod: "LKS", nazwa: "Krasnystaw", typ: "ziemski", woj: "lubelskie", lat: 50.9858, lng: 23.1719, wiki: "Krasnystaw" },
+      { kod: "LLB", nazwa: "Lubartów", typ: "ziemski", woj: "lubelskie", lat: 51.4625, lng: 22.6072, wiki: "Lubartów" },
+      { kod: "LUB", nazwa: "Lublin (powiat)", typ: "ziemski", woj: "lubelskie", lat: 51.2500, lng: 22.5500, wiki: "Powiat_lubelski" },
       { kod: "LLE", nazwa: "Łęczna", typ: "ziemski", woj: "lubelskie", lat: 51.3000, lng: 22.8833, wiki: "Łęczna" },
       { kod: "LLU", nazwa: "Łuków", typ: "ziemski", woj: "lubelskie", lat: 51.9281, lng: 22.3789, wiki: "Łuków" },
       { kod: "LOP", nazwa: "Opole Lubelskie", typ: "ziemski", woj: "lubelskie", lat: 51.1467, lng: 21.9683, wiki: "Opole_Lubelskie" },
@@ -1756,9 +1977,9 @@
       { kod: "FSU", nazwa: "Sulęcin", typ: "ziemski", woj: "lubuskie", lat: 52.4422, lng: 15.1156, wiki: "Sulęcin" },
       { kod: "FSW", nazwa: "Świebodzin", typ: "ziemski", woj: "lubuskie", lat: 52.2492, lng: 15.5333, wiki: "Świebodzin" },
       { kod: "FWS", nazwa: "Wschowa", typ: "ziemski", woj: "lubuskie", lat: 51.8019, lng: 16.3186, wiki: "Wschowa" },
-      { kod: "FZA", nazwa: "Żagań", typ: "ziemski", woj: "lubuskie", lat: 51.6175, lng: 15.3147, wiki: "Żagań" },
-      { kod: "FZG", nazwa: "Zielona Góra (powiat)", typ: "ziemski", woj: "lubuskie", lat: 51.9000, lng: 15.5000, wiki: "Powiat_zielonogórski" },
-      { kod: "FZR", nazwa: "Żary", typ: "ziemski", woj: "lubuskie", lat: 51.6411, lng: 15.1322, wiki: "Żary" },
+      { kod: "FZA", nazwa: "Żary", typ: "ziemski", woj: "lubuskie", lat: 51.6411, lng: 15.1322, wiki: "Żary" },
+      { kod: "FZG", nazwa: "Żagań", typ: "ziemski", woj: "lubuskie", lat: 51.6175, lng: 15.3147, wiki: "Żagań" },
+      { kod: "FZI", nazwa: "Zielona Góra (powiat)", typ: "ziemski", woj: "lubuskie", lat: 51.9000, lng: 15.5000, wiki: "Powiat_zielonogórski" },
 
       // ========== ŁÓDZKIE (E) ==========
       { kod: "EL", nazwa: "Łódź", typ: "miasto", woj: "łódzkie", lat: 51.7592, lng: 19.4560, wiki: "Łódź" },
@@ -1768,9 +1989,9 @@
       { kod: "EBR", nazwa: "Brzeziny", typ: "ziemski", woj: "łódzkie", lat: 51.8081, lng: 19.7497, wiki: "Brzeziny" },
       { kod: "EKU", nazwa: "Kutno", typ: "ziemski", woj: "łódzkie", lat: 52.2306, lng: 19.3653, wiki: "Kutno" },
       { kod: "ELA", nazwa: "Łask", typ: "ziemski", woj: "łódzkie", lat: 51.5908, lng: 19.1342, wiki: "Łask" },
-      { kod: "ELC", nazwa: "Łęczyca", typ: "ziemski", woj: "łódzkie", lat: 52.0586, lng: 19.1969, wiki: "Łęczyca" },
-      { kod: "ELE", nazwa: "Łódź Wschód", typ: "ziemski", woj: "łódzkie", lat: 51.7500, lng: 19.6000, wiki: "Powiat_łódzki_wschodni" },
-      { kod: "ELW", nazwa: "Łowicz", typ: "ziemski", woj: "łódzkie", lat: 52.1075, lng: 19.9444, wiki: "Łowicz" },
+      { kod: "ELC", nazwa: "Łowicz", typ: "ziemski", woj: "łódzkie", lat: 52.1075, lng: 19.9444, wiki: "Łowicz" },
+      { kod: "ELE", nazwa: "Łęczyca", typ: "ziemski", woj: "łódzkie", lat: 52.0586, lng: 19.1969, wiki: "Łęczyca" },
+      { kod: "ELW", nazwa: "Łódź Wschód", typ: "ziemski", woj: "łódzkie", lat: 51.7500, lng: 19.6000, wiki: "Powiat_łódzki_wschodni" },
       { kod: "EOP", nazwa: "Opoczno", typ: "ziemski", woj: "łódzkie", lat: 51.3786, lng: 20.2828, wiki: "Opoczno" },
       { kod: "EPA", nazwa: "Pabianice", typ: "ziemski", woj: "łódzkie", lat: 51.6644, lng: 19.3550, wiki: "Pabianice" },
       { kod: "EPI", nazwa: "Piotrków (powiat)", typ: "ziemski", woj: "łódzkie", lat: 51.4000, lng: 19.7000, wiki: "Powiat_piotrkowski" },
@@ -1781,8 +2002,8 @@
       { kod: "ESI", nazwa: "Sieradz", typ: "ziemski", woj: "łódzkie", lat: 51.5953, lng: 18.7308, wiki: "Sieradz" },
       { kod: "ESK", nazwa: "Skierniewice (powiat)", typ: "ziemski", woj: "łódzkie", lat: 51.9500, lng: 20.1500, wiki: "Powiat_skierniewicki" },
       { kod: "ETM", nazwa: "Tomaszów Mazowiecki", typ: "ziemski", woj: "łódzkie", lat: 51.5325, lng: 20.0089, wiki: "Tomaszów_Mazowiecki" },
-      { kod: "EWE", nazwa: "Wieluń", typ: "ziemski", woj: "łódzkie", lat: 51.2208, lng: 18.5694, wiki: "Wieluń" },
-      { kod: "EWI", nazwa: "Wieruszów", typ: "ziemski", woj: "łódzkie", lat: 51.2917, lng: 18.1572, wiki: "Wieruszów" },
+      { kod: "EWE", nazwa: "Wieruszów", typ: "ziemski", woj: "łódzkie", lat: 51.2917, lng: 18.1572, wiki: "Wieruszów" },
+      { kod: "EWI", nazwa: "Wieluń", typ: "ziemski", woj: "łódzkie", lat: 51.2208, lng: 18.5694, wiki: "Wieluń" },
       { kod: "EZD", nazwa: "Zduńska Wola", typ: "ziemski", woj: "łódzkie", lat: 51.6000, lng: 18.9333, wiki: "Zduńska_Wola" },
       { kod: "EZG", nazwa: "Zgierz", typ: "ziemski", woj: "łódzkie", lat: 51.8556, lng: 19.4053, wiki: "Zgierz" },
 
@@ -1790,12 +2011,12 @@
       { kod: "KR", nazwa: "Kraków", typ: "miasto", woj: "małopolskie", lat: 50.0647, lng: 19.9450, wiki: "Kraków" },
       { kod: "KN", nazwa: "Nowy Sącz", typ: "miasto", woj: "małopolskie", lat: 49.6175, lng: 20.7156, wiki: "Nowy_Sącz" },
       { kod: "KT", nazwa: "Tarnów", typ: "miasto", woj: "małopolskie", lat: 50.0140, lng: 20.9839, wiki: "Tarnów" },
-      { kod: "KBC", nazwa: "Bochnia", typ: "ziemski", woj: "małopolskie", lat: 49.9697, lng: 20.4308, wiki: "Bochnia" },
+      { kod: "KBA", nazwa: "Bochnia", typ: "ziemski", woj: "małopolskie", lat: 49.9697, lng: 20.4308, wiki: "Bochnia" },
       { kod: "KBR", nazwa: "Brzesko", typ: "ziemski", woj: "małopolskie", lat: 49.9706, lng: 20.6056, wiki: "Brzesko" },
       { kod: "KCH", nazwa: "Chrzanów", typ: "ziemski", woj: "małopolskie", lat: 50.1361, lng: 19.4036, wiki: "Chrzanów" },
       { kod: "KDA", nazwa: "Dąbrowa Tarnowska", typ: "ziemski", woj: "małopolskie", lat: 50.1747, lng: 20.9886, wiki: "Dąbrowa_Tarnowska" },
       { kod: "KGR", nazwa: "Gorlice", typ: "ziemski", woj: "małopolskie", lat: 49.6553, lng: 21.1611, wiki: "Gorlice" },
-      { kod: "KKR", nazwa: "Kraków (powiat)", typ: "ziemski", woj: "małopolskie", lat: 50.0500, lng: 20.0000, wiki: "Powiat_krakowski" },
+      { kod: "KRA", nazwa: "Kraków (powiat)", typ: "ziemski", woj: "małopolskie", lat: 50.0500, lng: 20.0000, wiki: "Powiat_krakowski" },
       { kod: "KLI", nazwa: "Limanowa", typ: "ziemski", woj: "małopolskie", lat: 49.7050, lng: 20.4253, wiki: "Limanowa" },
       { kod: "KMI", nazwa: "Miechów", typ: "ziemski", woj: "małopolskie", lat: 50.3578, lng: 20.0297, wiki: "Miechów" },
       { kod: "KMY", nazwa: "Myślenice", typ: "ziemski", woj: "małopolskie", lat: 49.8344, lng: 19.9389, wiki: "Myślenice" },
@@ -1812,31 +2033,31 @@
 
       // ========== MAZOWIECKIE (W) ==========
       { kod: "WA", nazwa: "Warszawa - Białołęka", typ: "miasto", woj: "mazowieckie", lat: 52.3211, lng: 20.9700, wiki: "Białołęka" },
-      { kod: "WB", nazwa: "Warszawa - Bielany", typ: "miasto", woj: "mazowieckie", lat: 52.2900, lng: 20.9400, wiki: "Bielany_(Warszawa)" },
-      { kod: "WD", nazwa: "Warszawa - Mokotów", typ: "miasto", woj: "mazowieckie", lat: 52.1900, lng: 21.0400, wiki: "Mokotów" },
-      { kod: "WE", nazwa: "Warszawa - Praga Płd.", typ: "miasto", woj: "mazowieckie", lat: 52.2400, lng: 21.0900, wiki: "Praga-Południe" },
-      { kod: "WF", nazwa: "Warszawa - Praga Płn.", typ: "miasto", woj: "mazowieckie", lat: 52.2600, lng: 21.0500, wiki: "Praga-Północ" },
-      { kod: "WH", nazwa: "Warszawa - Śródmieście", typ: "miasto", woj: "mazowieckie", lat: 52.2297, lng: 21.0122, wiki: "Śródmieście_(Warszawa)" },
-      { kod: "WI", nazwa: "Warszawa - Wola", typ: "miasto", woj: "mazowieckie", lat: 52.2370, lng: 20.9700, wiki: "Wola_(Warszawa)" },
-      { kod: "WJ", nazwa: "Warszawa - Ochota", typ: "miasto", woj: "mazowieckie", lat: 52.2050, lng: 20.9700, wiki: "Ochota" },
-      { kod: "WK", nazwa: "Warszawa - Wawer", typ: "miasto", woj: "mazowieckie", lat: 52.2000, lng: 21.1500, wiki: "Wawer" },
-      { kod: "WN", nazwa: "Warszawa - Targówek", typ: "miasto", woj: "mazowieckie", lat: 52.2900, lng: 21.0700, wiki: "Targówek" },
-      { kod: "WT", nazwa: "Warszawa - Ursus", typ: "miasto", woj: "mazowieckie", lat: 52.1950, lng: 20.8850, wiki: "Ursus_(Warszawa)" },
-      { kod: "WU", nazwa: "Warszawa - Ursynów", typ: "miasto", woj: "mazowieckie", lat: 52.1500, lng: 21.0500, wiki: "Ursynów" },
-      { kod: "WW", nazwa: "Warszawa - Wilanów", typ: "miasto", woj: "mazowieckie", lat: 52.1650, lng: 21.0900, wiki: "Wilanów" },
-      { kod: "WX", nazwa: "Warszawa - Włochy", typ: "miasto", woj: "mazowieckie", lat: 52.1900, lng: 20.9400, wiki: "Włochy_(Warszawa)" },
-      { kod: "WY", nazwa: "Warszawa - Bemowo", typ: "miasto", woj: "mazowieckie", lat: 52.2500, lng: 20.9100, wiki: "Bemowo" },
+      { kod: "WB", nazwa: "Warszawa - Bemowo", typ: "miasto", woj: "mazowieckie", lat: 52.2500, lng: 20.9100, wiki: "Bemowo" },
+      { kod: "WD", nazwa: "Warszawa - Bielany", typ: "miasto", woj: "mazowieckie", lat: 52.2900, lng: 20.9400, wiki: "Bielany_(Warszawa)" },
+      { kod: "WE", nazwa: "Warszawa - Mokotów", typ: "miasto", woj: "mazowieckie", lat: 52.1900, lng: 21.0400, wiki: "Mokotów" },
+      { kod: "WF", nazwa: "Warszawa - Praga Płd.", typ: "miasto", woj: "mazowieckie", lat: 52.2400, lng: 21.0900, wiki: "Praga-Południe" },
+      { kod: "WH", nazwa: "Warszawa - Praga Płn.", typ: "miasto", woj: "mazowieckie", lat: 52.2600, lng: 21.0500, wiki: "Praga-Północ" },
+      { kod: "WI", nazwa: "Warszawa - Śródmieście", typ: "miasto", woj: "mazowieckie", lat: 52.2297, lng: 21.0122, wiki: "Śródmieście_(Warszawa)" },
+      { kod: "WJ", nazwa: "Warszawa - Targówek", typ: "miasto", woj: "mazowieckie", lat: 52.2900, lng: 21.0700, wiki: "Targówek" },
+      { kod: "WK", nazwa: "Warszawa - Ursus", typ: "miasto", woj: "mazowieckie", lat: 52.1950, lng: 20.8850, wiki: "Ursus_(Warszawa)" },
+      { kod: "WN", nazwa: "Warszawa - Ursynów", typ: "miasto", woj: "mazowieckie", lat: 52.1500, lng: 21.0500, wiki: "Ursynów" },
+      { kod: "WT", nazwa: "Warszawa - Wawer", typ: "miasto", woj: "mazowieckie", lat: 52.2000, lng: 21.1500, wiki: "Wawer" },
+      { kod: "WU", nazwa: "Warszawa - Ochota", typ: "miasto", woj: "mazowieckie", lat: 52.2050, lng: 20.9700, wiki: "Ochota" },
+      { kod: "WW", nazwa: "Warszawa - Rembertów/Wilanów/Włochy", typ: "miasto", woj: "mazowieckie", lat: 52.1650, lng: 21.0900, wiki: "Wilanów" },
+      { kod: "WX", nazwa: "Warszawa - Wesoła/Żoliborz", typ: "miasto", woj: "mazowieckie", lat: 52.2700, lng: 20.9800, wiki: "Żoliborz" },
+      { kod: "WY", nazwa: "Warszawa - Wola", typ: "miasto", woj: "mazowieckie", lat: 52.2370, lng: 20.9700, wiki: "Wola_(Warszawa)" },
       { kod: "WO", nazwa: "Ostrołęka", typ: "miasto", woj: "mazowieckie", lat: 53.0865, lng: 21.5742, wiki: "Ostrołęka" },
       { kod: "WP", nazwa: "Płock", typ: "miasto", woj: "mazowieckie", lat: 52.5463, lng: 19.7065, wiki: "Płock" },
       { kod: "WR", nazwa: "Radom", typ: "miasto", woj: "mazowieckie", lat: 51.4027, lng: 21.1471, wiki: "Radom" },
       { kod: "WS", nazwa: "Siedlce", typ: "miasto", woj: "mazowieckie", lat: 52.1676, lng: 22.2902, wiki: "Siedlce" },
-      { kod: "WBI", nazwa: "Białobrzegi", typ: "ziemski", woj: "mazowieckie", lat: 51.6442, lng: 20.9569, wiki: "Białobrzegi" },
+      { kod: "WBR", nazwa: "Białobrzegi", typ: "ziemski", woj: "mazowieckie", lat: 51.6442, lng: 20.9569, wiki: "Białobrzegi" },
       { kod: "WCI", nazwa: "Ciechanów", typ: "ziemski", woj: "mazowieckie", lat: 52.8814, lng: 20.6175, wiki: "Ciechanów" },
-      { kod: "WGM", nazwa: "Garwolin", typ: "ziemski", woj: "mazowieckie", lat: 51.8967, lng: 21.6122, wiki: "Garwolin" },
+      { kod: "WG", nazwa: "Garwolin", typ: "ziemski", woj: "mazowieckie", lat: 51.8967, lng: 21.6122, wiki: "Garwolin" },
       { kod: "WGS", nazwa: "Gostynin", typ: "ziemski", woj: "mazowieckie", lat: 52.4314, lng: 19.4658, wiki: "Gostynin" },
-      { kod: "WGR", nazwa: "Grodzisk Mazowiecki", typ: "ziemski", woj: "mazowieckie", lat: 52.1083, lng: 20.6250, wiki: "Grodzisk_Mazowiecki" },
-      { kod: "WGJ", nazwa: "Grójec", typ: "ziemski", woj: "mazowieckie", lat: 51.8628, lng: 20.8678, wiki: "Grójec" },
-      { kod: "WKB", nazwa: "Kozienice", typ: "ziemski", woj: "mazowieckie", lat: 51.5808, lng: 21.5500, wiki: "Kozienice" },
+      { kod: "WGM", nazwa: "Grodzisk Mazowiecki", typ: "ziemski", woj: "mazowieckie", lat: 52.1083, lng: 20.6250, wiki: "Grodzisk_Mazowiecki" },
+      { kod: "WGR", nazwa: "Grójec", typ: "ziemski", woj: "mazowieckie", lat: 51.8628, lng: 20.8678, wiki: "Grójec" },
+      { kod: "WKZ", nazwa: "Kozienice", typ: "ziemski", woj: "mazowieckie", lat: 51.5808, lng: 21.5500, wiki: "Kozienice" },
       { kod: "WL", nazwa: "Legionowo", typ: "ziemski", woj: "mazowieckie", lat: 52.4044, lng: 20.9233, wiki: "Legionowo" },
       { kod: "WLI", nazwa: "Lipsko", typ: "ziemski", woj: "mazowieckie", lat: 51.1592, lng: 21.6500, wiki: "Lipsko" },
       { kod: "WLS", nazwa: "Łosice", typ: "ziemski", woj: "mazowieckie", lat: 52.2117, lng: 22.7222, wiki: "Łosice" },
@@ -1850,20 +2071,20 @@
       { kod: "WPI", nazwa: "Piaseczno", typ: "ziemski", woj: "mazowieckie", lat: 52.0808, lng: 21.0233, wiki: "Piaseczno" },
       { kod: "WPL", nazwa: "Płock (powiat)", typ: "ziemski", woj: "mazowieckie", lat: 52.5500, lng: 19.7000, wiki: "Powiat_płocki" },
       { kod: "WPN", nazwa: "Płońsk", typ: "ziemski", woj: "mazowieckie", lat: 52.6258, lng: 20.3789, wiki: "Płońsk" },
-      { kod: "WPR", nazwa: "Pruszków", typ: "ziemski", woj: "mazowieckie", lat: 52.1700, lng: 20.8000, wiki: "Pruszków" },
-      { kod: "WPU", nazwa: "Przasnysz", typ: "ziemski", woj: "mazowieckie", lat: 53.0214, lng: 20.8786, wiki: "Przasnysz" },
+      { kod: "WPP", nazwa: "Pruszków", typ: "ziemski", woj: "mazowieckie", lat: 52.1700, lng: 20.8000, wiki: "Pruszków" },
+      { kod: "WPU", nazwa: "Pułtusk", typ: "ziemski", woj: "mazowieckie", lat: 52.7058, lng: 21.0867, wiki: "Pułtusk" },
       { kod: "WPY", nazwa: "Przysucha", typ: "ziemski", woj: "mazowieckie", lat: 51.3578, lng: 20.6311, wiki: "Przysucha" },
-      { kod: "WPZ", nazwa: "Pułtusk", typ: "ziemski", woj: "mazowieckie", lat: 52.7058, lng: 21.0867, wiki: "Pułtusk" },
+      { kod: "WPZ", nazwa: "Przasnysz", typ: "ziemski", woj: "mazowieckie", lat: 53.0214, lng: 20.8786, wiki: "Przasnysz" },
       { kod: "WRA", nazwa: "Radom (powiat)", typ: "ziemski", woj: "mazowieckie", lat: 51.4000, lng: 21.1500, wiki: "Powiat_radomski" },
       { kod: "WSC", nazwa: "Sochaczew", typ: "ziemski", woj: "mazowieckie", lat: 52.2289, lng: 20.2400, wiki: "Sochaczew" },
-      { kod: "WSE", nazwa: "Siedlce (powiat)", typ: "ziemski", woj: "mazowieckie", lat: 52.1500, lng: 22.3000, wiki: "Powiat_siedlecki" },
-      { kod: "WSI", nazwa: "Sierpc", typ: "ziemski", woj: "mazowieckie", lat: 52.8589, lng: 19.6692, wiki: "Sierpc" },
-      { kod: "WSO", nazwa: "Sokołów Podlaski", typ: "ziemski", woj: "mazowieckie", lat: 52.4106, lng: 22.2469, wiki: "Sokołów_Podlaski" },
+      { kod: "WSE", nazwa: "Sierpc", typ: "ziemski", woj: "mazowieckie", lat: 52.8589, lng: 19.6692, wiki: "Sierpc" },
+      { kod: "WSI", nazwa: "Siedlce (powiat)", typ: "ziemski", woj: "mazowieckie", lat: 52.1500, lng: 22.3000, wiki: "Powiat_siedlecki" },
+      { kod: "WSK", nazwa: "Sokołów Podlaski", typ: "ziemski", woj: "mazowieckie", lat: 52.4106, lng: 22.2469, wiki: "Sokołów_Podlaski" },
       { kod: "WSZ", nazwa: "Szydłowiec", typ: "ziemski", woj: "mazowieckie", lat: 51.2356, lng: 20.8508, wiki: "Szydłowiec" },
       { kod: "WWE", nazwa: "Węgrów", typ: "ziemski", woj: "mazowieckie", lat: 52.4067, lng: 22.0094, wiki: "Węgrów" },
       { kod: "WWL", nazwa: "Wołomin", typ: "ziemski", woj: "mazowieckie", lat: 52.3414, lng: 21.2406, wiki: "Wołomin" },
       { kod: "WWY", nazwa: "Wyszków", typ: "ziemski", woj: "mazowieckie", lat: 52.5917, lng: 21.4631, wiki: "Wyszków" },
-      { kod: "WZ", nazwa: "Warszawa Zachodnia (Ożarów)", typ: "ziemski", woj: "mazowieckie", lat: 52.2089, lng: 20.7239, wiki: "Powiat_warszawski_zachodni" },
+      { kod: "WZ", nazwa: "warszawski zachodni (Ożarów)", typ: "ziemski", woj: "mazowieckie", lat: 52.2089, lng: 20.7239, wiki: "Powiat_warszawski_zachodni" },
       { kod: "WZW", nazwa: "Zwoleń", typ: "ziemski", woj: "mazowieckie", lat: 51.3611, lng: 21.5844, wiki: "Zwoleń" },
       { kod: "WZU", nazwa: "Żuromin", typ: "ziemski", woj: "mazowieckie", lat: 53.0653, lng: 19.9100, wiki: "Żuromin" },
       { kod: "WZY", nazwa: "Żyrardów", typ: "ziemski", woj: "mazowieckie", lat: 52.0489, lng: 20.4456, wiki: "Żyrardów" },
@@ -1871,7 +2092,7 @@
       // ========== OPOLSKIE (O) ==========
       { kod: "OP", nazwa: "Opole", typ: "miasto", woj: "opolskie", lat: 50.6751, lng: 17.9213, wiki: "Opole" },
       { kod: "OB", nazwa: "Brzeg", typ: "ziemski", woj: "opolskie", lat: 50.8606, lng: 17.4683, wiki: "Brzeg" },
-      { kod: "OG", nazwa: "Głubczyce", typ: "ziemski", woj: "opolskie", lat: 50.2017, lng: 17.8264, wiki: "Głubczyce" },
+      { kod: "OGL", nazwa: "Głubczyce", typ: "ziemski", woj: "opolskie", lat: 50.2017, lng: 17.8264, wiki: "Głubczyce" },
       { kod: "OK", nazwa: "Kędzierzyn-Koźle", typ: "ziemski", woj: "opolskie", lat: 50.3494, lng: 18.2261, wiki: "Kędzierzyn-Koźle" },
       { kod: "OKL", nazwa: "Kluczbork", typ: "ziemski", woj: "opolskie", lat: 50.9714, lng: 18.2208, wiki: "Kluczbork" },
       { kod: "OKR", nazwa: "Krapkowice", typ: "ziemski", woj: "opolskie", lat: 50.4761, lng: 17.9656, wiki: "Krapkowice" },
@@ -1894,16 +2115,16 @@
       { kod: "RJS", nazwa: "Jasło", typ: "ziemski", woj: "podkarpackie", lat: 49.7456, lng: 21.4717, wiki: "Jasło" },
       { kod: "RKL", nazwa: "Kolbuszowa", typ: "ziemski", woj: "podkarpackie", lat: 50.2469, lng: 21.7783, wiki: "Kolbuszowa" },
       { kod: "RKR", nazwa: "Krosno (powiat)", typ: "ziemski", woj: "podkarpackie", lat: 49.6500, lng: 21.7500, wiki: "Powiat_krośnieński_(województwo_podkarpackie)" },
-      { kod: "RLA", nazwa: "Lesko", typ: "ziemski", woj: "podkarpackie", lat: 49.4694, lng: 22.3306, wiki: "Lesko" },
+      { kod: "RLA", nazwa: "Łańcut", typ: "ziemski", woj: "podkarpackie", lat: 50.0683, lng: 22.2300, wiki: "Łańcut" },
+      { kod: "RLS", nazwa: "Lesko", typ: "ziemski", woj: "podkarpackie", lat: 49.4694, lng: 22.3306, wiki: "Lesko" },
       { kod: "RLE", nazwa: "Leżajsk", typ: "ziemski", woj: "podkarpackie", lat: 50.2647, lng: 22.4194, wiki: "Leżajsk" },
       { kod: "RLU", nazwa: "Lubaczów", typ: "ziemski", woj: "podkarpackie", lat: 50.1567, lng: 23.1186, wiki: "Lubaczów" },
-      { kod: "RLW", nazwa: "Łańcut", typ: "ziemski", woj: "podkarpackie", lat: 50.0683, lng: 22.2300, wiki: "Łańcut" },
       { kod: "RMI", nazwa: "Mielec", typ: "ziemski", woj: "podkarpackie", lat: 50.2872, lng: 21.4239, wiki: "Mielec" },
       { kod: "RNI", nazwa: "Nisko", typ: "ziemski", woj: "podkarpackie", lat: 50.5217, lng: 22.1431, wiki: "Nisko" },
       { kod: "RPR", nazwa: "Przemyśl (powiat)", typ: "ziemski", woj: "podkarpackie", lat: 49.7800, lng: 22.7500, wiki: "Powiat_przemyski" },
       { kod: "RPZ", nazwa: "Przeworsk", typ: "ziemski", woj: "podkarpackie", lat: 50.0589, lng: 22.4944, wiki: "Przeworsk" },
       { kod: "RRS", nazwa: "Ropczyce-Sędziszów", typ: "ziemski", woj: "podkarpackie", lat: 50.0539, lng: 21.6072, wiki: "Powiat_ropczycko-sędziszowski" },
-      { kod: "RRZ", nazwa: "Rzeszów (powiat)", typ: "ziemski", woj: "podkarpackie", lat: 50.0500, lng: 22.0000, wiki: "Powiat_rzeszowski" },
+      { kod: "RZE", nazwa: "Rzeszów (powiat)", typ: "ziemski", woj: "podkarpackie", lat: 50.0500, lng: 22.0000, wiki: "Powiat_rzeszowski" },
       { kod: "RSA", nazwa: "Sanok", typ: "ziemski", woj: "podkarpackie", lat: 49.5556, lng: 22.2058, wiki: "Sanok" },
       { kod: "RST", nazwa: "Stalowa Wola", typ: "ziemski", woj: "podkarpackie", lat: 50.5811, lng: 22.0539, wiki: "Stalowa_Wola" },
       { kod: "RSR", nazwa: "Strzyżów", typ: "ziemski", woj: "podkarpackie", lat: 49.8722, lng: 21.7944, wiki: "Strzyżów" },
@@ -1914,8 +2135,8 @@
       { kod: "BL", nazwa: "Łomża", typ: "miasto", woj: "podlaskie", lat: 53.1781, lng: 22.0589, wiki: "Łomża" },
       { kod: "BS", nazwa: "Suwałki", typ: "miasto", woj: "podlaskie", lat: 54.1117, lng: 22.9306, wiki: "Suwałki" },
       { kod: "BAU", nazwa: "Augustów", typ: "ziemski", woj: "podlaskie", lat: 53.8439, lng: 22.9794, wiki: "Augustów" },
-      { kod: "BBI", nazwa: "Białystok (powiat)", typ: "ziemski", woj: "podlaskie", lat: 53.1500, lng: 23.1500, wiki: "Powiat_białostocki" },
-      { kod: "BBL", nazwa: "Bielsk Podlaski", typ: "ziemski", woj: "podlaskie", lat: 52.7672, lng: 23.1872, wiki: "Bielsk_Podlaski" },
+      { kod: "BBI", nazwa: "Bielsk Podlaski", typ: "ziemski", woj: "podlaskie", lat: 52.7672, lng: 23.1872, wiki: "Bielsk_Podlaski" },
+      { kod: "BIA", nazwa: "Białystok (powiat)", typ: "ziemski", woj: "podlaskie", lat: 53.1500, lng: 23.1500, wiki: "Powiat_białostocki" },
       { kod: "BGR", nazwa: "Grajewo", typ: "ziemski", woj: "podlaskie", lat: 53.6483, lng: 22.4567, wiki: "Grajewo" },
       { kod: "BHA", nazwa: "Hajnówka", typ: "ziemski", woj: "podlaskie", lat: 52.7378, lng: 23.5750, wiki: "Hajnówka" },
       { kod: "BKL", nazwa: "Kolno", typ: "ziemski", woj: "podlaskie", lat: 53.4128, lng: 21.9258, wiki: "Kolno_(województwo_podlaskie)" },
@@ -1942,7 +2163,7 @@
       { kod: "GKW", nazwa: "Kwidzyn", typ: "ziemski", woj: "pomorskie", lat: 53.7297, lng: 18.9303, wiki: "Kwidzyn" },
       { kod: "GLE", nazwa: "Lębork", typ: "ziemski", woj: "pomorskie", lat: 54.5417, lng: 17.7522, wiki: "Lębork" },
       { kod: "GMB", nazwa: "Malbork", typ: "ziemski", woj: "pomorskie", lat: 54.0356, lng: 19.0264, wiki: "Malbork" },
-      { kod: "GNM", nazwa: "Nowy Dwór Gdański", typ: "ziemski", woj: "pomorskie", lat: 54.2117, lng: 19.1206, wiki: "Nowy_Dwór_Gdański" },
+      { kod: "GND", nazwa: "Nowy Dwór Gdański", typ: "ziemski", woj: "pomorskie", lat: 54.2117, lng: 19.1206, wiki: "Nowy_Dwór_Gdański" },
       { kod: "GPU", nazwa: "Puck", typ: "ziemski", woj: "pomorskie", lat: 54.7186, lng: 18.4097, wiki: "Puck" },
       { kod: "GSL", nazwa: "Słupsk (powiat)", typ: "ziemski", woj: "pomorskie", lat: 54.4500, lng: 17.0500, wiki: "Powiat_słupski" },
       { kod: "GST", nazwa: "Starogard Gdański", typ: "ziemski", woj: "pomorskie", lat: 53.9722, lng: 18.5300, wiki: "Starogard_Gdański" },
@@ -1953,22 +2174,22 @@
       // ========== ŚLĄSKIE (S) ==========
       { kod: "SK", nazwa: "Katowice", typ: "miasto", woj: "śląskie", lat: 50.2649, lng: 19.0238, wiki: "Katowice" },
       { kod: "SY", nazwa: "Bytom", typ: "miasto", woj: "śląskie", lat: 50.3478, lng: 18.9275, wiki: "Bytom" },
-      { kod: "SC", nazwa: "Chorzów", typ: "miasto", woj: "śląskie", lat: 50.2972, lng: 18.9544, wiki: "Chorzów" },
-      { kod: "SCB", nazwa: "Częstochowa", typ: "miasto", woj: "śląskie", lat: 50.8118, lng: 19.1203, wiki: "Częstochowa" },
+      { kod: "SH", nazwa: "Chorzów", typ: "miasto", woj: "śląskie", lat: 50.2972, lng: 18.9544, wiki: "Chorzów" },
+      { kod: "SC", nazwa: "Częstochowa", typ: "miasto", woj: "śląskie", lat: 50.8118, lng: 19.1203, wiki: "Częstochowa" },
       { kod: "SD", nazwa: "Dąbrowa Górnicza", typ: "miasto", woj: "śląskie", lat: 50.3247, lng: 19.1956, wiki: "Dąbrowa_Górnicza" },
       { kod: "SG", nazwa: "Gliwice", typ: "miasto", woj: "śląskie", lat: 50.2945, lng: 18.6714, wiki: "Gliwice" },
-      { kod: "SJ", nazwa: "Jastrzębie-Zdrój", typ: "miasto", woj: "śląskie", lat: 49.9498, lng: 18.5760, wiki: "Jastrzębie-Zdrój" },
-      { kod: "SJZ", nazwa: "Jaworzno", typ: "miasto", woj: "śląskie", lat: 50.2049, lng: 19.2747, wiki: "Jaworzno" },
+      { kod: "SJZ", nazwa: "Jastrzębie-Zdrój", typ: "miasto", woj: "śląskie", lat: 49.9498, lng: 18.5760, wiki: "Jastrzębie-Zdrój" },
+      { kod: "SJ", nazwa: "Jaworzno", typ: "miasto", woj: "śląskie", lat: 50.2049, lng: 19.2747, wiki: "Jaworzno" },
       { kod: "SM", nazwa: "Mysłowice", typ: "miasto", woj: "śląskie", lat: 50.2415, lng: 19.1356, wiki: "Mysłowice" },
       { kod: "SO", nazwa: "Sosnowiec", typ: "miasto", woj: "śląskie", lat: 50.2860, lng: 19.1042, wiki: "Sosnowiec" },
-      { kod: "SP", nazwa: "Piekary Śląskie", typ: "miasto", woj: "śląskie", lat: 50.3892, lng: 18.9300, wiki: "Piekary_Śląskie" },
-      { kod: "SR", nazwa: "Ruda Śląska", typ: "miasto", woj: "śląskie", lat: 50.2585, lng: 18.8567, wiki: "Ruda_Śląska" },
-      { kod: "SRS", nazwa: "Rybnik", typ: "miasto", woj: "śląskie", lat: 50.0971, lng: 18.5410, wiki: "Rybnik" },
+      { kod: "SPI", nazwa: "Piekary Śląskie", typ: "miasto", woj: "śląskie", lat: 50.3892, lng: 18.9300, wiki: "Piekary_Śląskie" },
+      { kod: "SL", nazwa: "Ruda Śląska", typ: "miasto", woj: "śląskie", lat: 50.2585, lng: 18.8567, wiki: "Ruda_Śląska" },
+      { kod: "SR", nazwa: "Rybnik", typ: "miasto", woj: "śląskie", lat: 50.0971, lng: 18.5410, wiki: "Rybnik" },
       { kod: "SI", nazwa: "Siemianowice Śląskie", typ: "miasto", woj: "śląskie", lat: 50.3108, lng: 19.0225, wiki: "Siemianowice_Śląskie" },
-      { kod: "SS", nazwa: "Świętochłowice", typ: "miasto", woj: "śląskie", lat: 50.3017, lng: 18.9189, wiki: "Świętochłowice" },
+      { kod: "SW", nazwa: "Świętochłowice", typ: "miasto", woj: "śląskie", lat: 50.3017, lng: 18.9189, wiki: "Świętochłowice" },
       { kod: "ST", nazwa: "Tychy", typ: "miasto", woj: "śląskie", lat: 50.1357, lng: 18.9985, wiki: "Tychy" },
       { kod: "SZ", nazwa: "Zabrze", typ: "miasto", woj: "śląskie", lat: 50.3249, lng: 18.7857, wiki: "Zabrze" },
-      { kod: "SW", nazwa: "Żory", typ: "miasto", woj: "śląskie", lat: 50.0453, lng: 18.7008, wiki: "Żory" },
+      { kod: "SZO", nazwa: "Żory", typ: "miasto", woj: "śląskie", lat: 50.0453, lng: 18.7008, wiki: "Żory" },
       { kod: "SB", nazwa: "Bielsko-Biała", typ: "miasto", woj: "śląskie", lat: 49.8224, lng: 19.0447, wiki: "Bielsko-Biała" },
       { kod: "SBE", nazwa: "Będzin", typ: "ziemski", woj: "śląskie", lat: 50.3267, lng: 19.1308, wiki: "Będzin" },
       { kod: "SBI", nazwa: "Bielsko (powiat)", typ: "ziemski", woj: "śląskie", lat: 49.8000, lng: 19.0500, wiki: "Powiat_bielski_(województwo_śląskie)" },
@@ -1981,10 +2202,10 @@
       { kod: "SMI", nazwa: "Mikołów", typ: "ziemski", woj: "śląskie", lat: 50.1722, lng: 18.9061, wiki: "Mikołów" },
       { kod: "SMY", nazwa: "Myszków", typ: "ziemski", woj: "śląskie", lat: 50.5644, lng: 19.3306, wiki: "Myszków" },
       { kod: "SPS", nazwa: "Pszczyna", typ: "ziemski", woj: "śląskie", lat: 49.9817, lng: 18.9442, wiki: "Pszczyna" },
-      { kod: "SRA", nazwa: "Racibórz", typ: "ziemski", woj: "śląskie", lat: 50.0917, lng: 18.2192, wiki: "Racibórz" },
-      { kod: "SRC", nazwa: "Rybnik (powiat)", typ: "ziemski", woj: "śląskie", lat: 50.1000, lng: 18.5000, wiki: "Powiat_rybnicki" },
+      { kod: "SRC", nazwa: "Racibórz", typ: "ziemski", woj: "śląskie", lat: 50.0917, lng: 18.2192, wiki: "Racibórz" },
+      { kod: "SRB", nazwa: "Rybnik (powiat)", typ: "ziemski", woj: "śląskie", lat: 50.1000, lng: 18.5000, wiki: "Powiat_rybnicki" },
       { kod: "STA", nazwa: "Tarnowskie Góry", typ: "ziemski", woj: "śląskie", lat: 50.4458, lng: 18.8606, wiki: "Tarnowskie_Góry" },
-      { kod: "SWA", nazwa: "Wodzisław Śląski", typ: "ziemski", woj: "śląskie", lat: 50.0036, lng: 18.4636, wiki: "Wodzisław_Śląski" },
+      { kod: "SWD", nazwa: "Wodzisław Śląski", typ: "ziemski", woj: "śląskie", lat: 50.0036, lng: 18.4636, wiki: "Wodzisław_Śląski" },
       { kod: "SZA", nazwa: "Zawiercie", typ: "ziemski", woj: "śląskie", lat: 50.4881, lng: 19.4156, wiki: "Zawiercie" },
       { kod: "SZY", nazwa: "Żywiec", typ: "ziemski", woj: "śląskie", lat: 49.6856, lng: 19.1925, wiki: "Żywiec" },
 
@@ -1994,7 +2215,7 @@
       { kod: "TJE", nazwa: "Jędrzejów", typ: "ziemski", woj: "świętokrzyskie", lat: 50.6481, lng: 20.3019, wiki: "Jędrzejów" },
       { kod: "TKA", nazwa: "Kazimierza Wielka", typ: "ziemski", woj: "świętokrzyskie", lat: 50.2675, lng: 20.4942, wiki: "Kazimierza_Wielka" },
       { kod: "TKI", nazwa: "Kielce (powiat)", typ: "ziemski", woj: "świętokrzyskie", lat: 50.8500, lng: 20.6500, wiki: "Powiat_kielecki" },
-      { kod: "TKO", nazwa: "Końskie", typ: "ziemski", woj: "świętokrzyskie", lat: 51.1908, lng: 20.4067, wiki: "Końskie" },
+      { kod: "TKN", nazwa: "Końskie", typ: "ziemski", woj: "świętokrzyskie", lat: 51.1908, lng: 20.4067, wiki: "Końskie" },
       { kod: "TOP", nazwa: "Opatów", typ: "ziemski", woj: "świętokrzyskie", lat: 50.8042, lng: 21.4286, wiki: "Opatów" },
       { kod: "TOS", nazwa: "Ostrowiec Świętokrzyski", typ: "ziemski", woj: "świętokrzyskie", lat: 50.9292, lng: 21.3858, wiki: "Ostrowiec_Świętokrzyski" },
       { kod: "TPI", nazwa: "Pińczów", typ: "ziemski", woj: "świętokrzyskie", lat: 50.5217, lng: 20.5256, wiki: "Pińczów" },
@@ -2002,7 +2223,7 @@
       { kod: "TSK", nazwa: "Skarżysko-Kamienna", typ: "ziemski", woj: "świętokrzyskie", lat: 51.1106, lng: 20.8728, wiki: "Skarżysko-Kamienna" },
       { kod: "TST", nazwa: "Starachowice", typ: "ziemski", woj: "świętokrzyskie", lat: 51.0383, lng: 21.0728, wiki: "Starachowice" },
       { kod: "TSZ", nazwa: "Staszów", typ: "ziemski", woj: "świętokrzyskie", lat: 50.5594, lng: 21.1672, wiki: "Staszów" },
-      { kod: "TWL", nazwa: "Włoszczowa", typ: "ziemski", woj: "świętokrzyskie", lat: 50.8511, lng: 19.9697, wiki: "Włoszczowa" },
+      { kod: "TLW", nazwa: "Włoszczowa", typ: "ziemski", woj: "świętokrzyskie", lat: 50.8511, lng: 19.9697, wiki: "Włoszczowa" },
 
       // ========== WARMIŃSKO-MAZURSKIE (N) ==========
       { kod: "NO", nazwa: "Olsztyn", typ: "miasto", woj: "warmińsko-mazurskie", lat: 53.7784, lng: 20.4801, wiki: "Olsztyn" },
@@ -2033,10 +2254,10 @@
       { kod: "PN", nazwa: "Konin", typ: "miasto", woj: "wielkopolskie", lat: 52.2231, lng: 18.2511, wiki: "Konin" },
       { kod: "PL", nazwa: "Leszno", typ: "miasto", woj: "wielkopolskie", lat: 51.8403, lng: 16.5750, wiki: "Leszno" },
       { kod: "PCH", nazwa: "Chodzież", typ: "ziemski", woj: "wielkopolskie", lat: 52.9947, lng: 16.9189, wiki: "Chodzież" },
-      { kod: "PCZ", nazwa: "Czarnków-Trzcianka", typ: "ziemski", woj: "wielkopolskie", lat: 52.9036, lng: 16.5683, wiki: "Powiat_czarnkowsko-trzcianecki" },
+      { kod: "PCT", nazwa: "Czarnków-Trzcianka", typ: "ziemski", woj: "wielkopolskie", lat: 52.9036, lng: 16.5683, wiki: "Powiat_czarnkowsko-trzcianecki" },
       { kod: "PGN", nazwa: "Gniezno", typ: "ziemski", woj: "wielkopolskie", lat: 52.5347, lng: 17.5961, wiki: "Gniezno" },
-      { kod: "PGO", nazwa: "Gostyń", typ: "ziemski", woj: "wielkopolskie", lat: 51.8825, lng: 17.0119, wiki: "Gostyń" },
-      { kod: "PGR", nazwa: "Grodzisk Wielkopolski", typ: "ziemski", woj: "wielkopolskie", lat: 52.2381, lng: 16.3547, wiki: "Grodzisk_Wielkopolski" },
+      { kod: "PGO", nazwa: "Grodzisk Wielkopolski", typ: "ziemski", woj: "wielkopolskie", lat: 52.2381, lng: 16.3547, wiki: "Grodzisk_Wielkopolski" },
+      { kod: "PGS", nazwa: "Gostyń", typ: "ziemski", woj: "wielkopolskie", lat: 51.8825, lng: 17.0119, wiki: "Gostyń" },
       { kod: "PJA", nazwa: "Jarocin", typ: "ziemski", woj: "wielkopolskie", lat: 51.9700, lng: 17.5044, wiki: "Jarocin" },
       { kod: "PKA", nazwa: "Kalisz (powiat)", typ: "ziemski", woj: "wielkopolskie", lat: 51.7600, lng: 18.0500, wiki: "Powiat_kaliski" },
       { kod: "PKE", nazwa: "Kępno", typ: "ziemski", woj: "wielkopolskie", lat: 51.2806, lng: 17.9897, wiki: "Kępno" },
@@ -2050,19 +2271,19 @@
       { kod: "POB", nazwa: "Oborniki", typ: "ziemski", woj: "wielkopolskie", lat: 52.6469, lng: 16.8131, wiki: "Oborniki" },
       { kod: "POS", nazwa: "Ostrów Wielkopolski", typ: "ziemski", woj: "wielkopolskie", lat: 51.6500, lng: 17.8081, wiki: "Ostrów_Wielkopolski" },
       { kod: "POT", nazwa: "Ostrzeszów", typ: "ziemski", woj: "wielkopolskie", lat: 51.4264, lng: 17.9381, wiki: "Ostrzeszów" },
-      { kod: "PPI", nazwa: "Piła", typ: "ziemski", woj: "wielkopolskie", lat: 53.1511, lng: 16.7383, wiki: "Piła" },
+      { kod: "PP", nazwa: "Piła", typ: "ziemski", woj: "wielkopolskie", lat: 53.1511, lng: 16.7383, wiki: "Piła" },
       { kod: "PPL", nazwa: "Pleszew", typ: "ziemski", woj: "wielkopolskie", lat: 51.8939, lng: 17.7894, wiki: "Pleszew" },
-      { kod: "PP", nazwa: "Poznań (powiat)", typ: "ziemski", woj: "wielkopolskie", lat: 52.4000, lng: 16.9000, wiki: "Powiat_poznański" },
+      { kod: "PZ", nazwa: "Poznań (powiat)", typ: "ziemski", woj: "wielkopolskie", lat: 52.4000, lng: 16.9000, wiki: "Powiat_poznański" },
       { kod: "PRA", nazwa: "Rawicz", typ: "ziemski", woj: "wielkopolskie", lat: 51.6097, lng: 16.8589, wiki: "Rawicz" },
       { kod: "PSL", nazwa: "Słupca", typ: "ziemski", woj: "wielkopolskie", lat: 52.2856, lng: 17.8717, wiki: "Słupca" },
-      { kod: "PSE", nazwa: "Szamotuły", typ: "ziemski", woj: "wielkopolskie", lat: 52.6125, lng: 16.5764, wiki: "Szamotuły" },
+      { kod: "PSZ", nazwa: "Szamotuły", typ: "ziemski", woj: "wielkopolskie", lat: 52.6125, lng: 16.5764, wiki: "Szamotuły" },
       { kod: "PSR", nazwa: "Środa Wielkopolska", typ: "ziemski", woj: "wielkopolskie", lat: 52.2289, lng: 17.2792, wiki: "Środa_Wielkopolska" },
-      { kod: "PSD", nazwa: "Śrem", typ: "ziemski", woj: "wielkopolskie", lat: 52.0894, lng: 17.0144, wiki: "Śrem" },
+      { kod: "PSE", nazwa: "Śrem", typ: "ziemski", woj: "wielkopolskie", lat: 52.0894, lng: 17.0144, wiki: "Śrem" },
       { kod: "PTU", nazwa: "Turek", typ: "ziemski", woj: "wielkopolskie", lat: 52.0142, lng: 18.5006, wiki: "Turek_(miasto)" },
       { kod: "PWA", nazwa: "Wągrowiec", typ: "ziemski", woj: "wielkopolskie", lat: 52.8081, lng: 17.2014, wiki: "Wągrowiec" },
-      { kod: "PWO", nazwa: "Wolsztyn", typ: "ziemski", woj: "wielkopolskie", lat: 52.1108, lng: 16.1117, wiki: "Wolsztyn" },
+      { kod: "PWL", nazwa: "Wolsztyn", typ: "ziemski", woj: "wielkopolskie", lat: 52.1108, lng: 16.1117, wiki: "Wolsztyn" },
       { kod: "PWR", nazwa: "Września", typ: "ziemski", woj: "wielkopolskie", lat: 52.3247, lng: 17.5675, wiki: "Września" },
-      { kod: "PZ", nazwa: "Złotów", typ: "ziemski", woj: "wielkopolskie", lat: 53.3636, lng: 17.0339, wiki: "Złotów" },
+      { kod: "PZL", nazwa: "Złotów", typ: "ziemski", woj: "wielkopolskie", lat: 53.3636, lng: 17.0339, wiki: "Złotów" },
 
       // ========== ZACHODNIOPOMORSKIE (Z) ==========
       { kod: "ZS", nazwa: "Szczecin", typ: "miasto", woj: "zachodniopomorskie", lat: 53.4285, lng: 14.5528, wiki: "Szczecin" },
@@ -2072,8 +2293,8 @@
       { kod: "ZCH", nazwa: "Choszczno", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.1683, lng: 15.4203, wiki: "Choszczno" },
       { kod: "ZDR", nazwa: "Drawsko Pomorskie", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.5253, lng: 15.8108, wiki: "Drawsko_Pomorskie" },
       { kod: "ZGL", nazwa: "Goleniów", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.5658, lng: 14.8275, wiki: "Goleniów" },
-      { kod: "ZGR", nazwa: "Gryfice", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.9158, lng: 15.2031, wiki: "Gryfice" },
-      { kod: "ZGY", nazwa: "Gryfino", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.2522, lng: 14.4878, wiki: "Gryfino" },
+      { kod: "ZGR", nazwa: "Gryfino", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.2522, lng: 14.4878, wiki: "Gryfino" },
+      { kod: "ZGY", nazwa: "Gryfice", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.9158, lng: 15.2031, wiki: "Gryfice" },
       { kod: "ZKA", nazwa: "Kamień Pomorski", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.9694, lng: 14.7681, wiki: "Kamień_Pomorski" },
       { kod: "ZKL", nazwa: "Kołobrzeg", typ: "ziemski", woj: "zachodniopomorskie", lat: 54.1758, lng: 15.5836, wiki: "Kołobrzeg" },
       { kod: "ZKO", nazwa: "Koszalin (powiat)", typ: "ziemski", woj: "zachodniopomorskie", lat: 54.1900, lng: 16.1700, wiki: "Powiat_koszaliński" },
@@ -2082,25 +2303,26 @@
       { kod: "ZPL", nazwa: "Police", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.5497, lng: 14.5722, wiki: "Police_(miasto)" },
       { kod: "ZPY", nazwa: "Pyrzyce", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.1497, lng: 14.8911, wiki: "Pyrzyce" },
       { kod: "ZSL", nazwa: "Sławno", typ: "ziemski", woj: "zachodniopomorskie", lat: 54.3625, lng: 16.6789, wiki: "Sławno" },
-      { kod: "ZSZ", nazwa: "Szczecin (powiat - Szczecinek)", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.7100, lng: 16.6986, wiki: "Szczecinek" },
+      { kod: "ZSZ", nazwa: "Szczecinek", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.7100, lng: 16.6986, wiki: "Szczecinek" },
       { kod: "ZST", nazwa: "Stargard", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.3367, lng: 15.0500, wiki: "Stargard" },
       { kod: "ZSD", nazwa: "Świdwin", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.7733, lng: 15.7728, wiki: "Świdwin" },
       { kod: "ZWA", nazwa: "Wałcz", typ: "ziemski", woj: "zachodniopomorskie", lat: 53.2722, lng: 16.4711, wiki: "Wałcz" },
     ];
 
+
     /* ============================================================
        STAN GRY
        ============================================================ */
-    const STORAGE_KEY   = 'mistrzTablic_v1';
-    const USERS_KEY     = 'mistrzTablic_users_v1';   // obiekt { nick: { rekord, pytania, trafione, najlSeria, ts } }
-    const SESSION_KEY   = 'mistrzTablic_session_v1'; // nick bieżącej sesji (sessionStorage)
+    const STORAGE_KEY = 'mistrzTablic_v1';
+    const USERS_KEY = 'mistrzTablic_users_v1';   // obiekt { nick: { rekord, pytania, trafione, najlSeria, ts } }
+    const SESSION_KEY = 'mistrzTablic_session_v1'; // nick bieżącej sesji (sessionStorage)
 
     /* ---- Zarządzanie użytkownikami ---- */
     function getUsers() {
-      try { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); } catch(e) { return {}; }
+      try { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); } catch (e) { return {}; }
     }
     function saveUsers(users) {
-      try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch(e) {}
+      try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) { }
     }
     function getCurrentNick() {
       return sessionStorage.getItem(SESSION_KEY) || '';
@@ -2122,16 +2344,16 @@
       const users = getUsers();
       if (!users[nick]) users[nick] = { rekord: 0, pytania: 0, trafione: 0, najlSeria: 0, ts: Date.now() };
       // aktualizuj tylko jeśli lepszy wynik
-      users[nick].rekord    = Math.max(users[nick].rekord,    state.rekord);
+      users[nick].rekord = Math.max(users[nick].rekord, state.rekord);
       users[nick].najlSeria = Math.max(users[nick].najlSeria, state.najlSeria);
-      users[nick].pytania   = state.pytania;
-      users[nick].trafione  = state.trafione;
-      users[nick].ts        = Date.now();
+      users[nick].pytania = state.pytania;
+      users[nick].trafione = state.trafione;
+      users[nick].ts = Date.now();
       saveUsers(users);
     }
     function buildRankingModal() {
       const users = getUsers();
-      const nick  = getCurrentNick();
+      const nick = getCurrentNick();
       const sorted = Object.entries(users)
         .map(([n, d]) => ({ nick: n, ...d }))
         .filter(u => u.pytania > 0 || u.rekord > 0)
@@ -2141,11 +2363,11 @@
         $('rankList').innerHTML = '<div class="rank-empty">Brak wyników — zagraj kilka rund!</div>';
         return;
       }
-      const medalClass = ['top1','top2','top3'];
-      const medals = ['🥇','🥈','🥉'];
+      const medalClass = ['top1', 'top2', 'top3'];
+      const medals = ['🥇', '🥈', '🥉'];
       $('rankList').innerHTML = sorted.slice(0, 20).map((u, i) => {
         const isMe = u.nick === nick;
-        const acc  = u.pytania > 0 ? Math.round(u.trafione / u.pytania * 100) + '%' : '—';
+        const acc = u.pytania > 0 ? Math.round(u.trafione / u.pytania * 100) + '%' : '—';
         const posLabel = i < 3 ? medals[i] : (i + 1);
         return `<div class="rank-row ${i < 3 ? medalClass[i] : ''} ${isMe ? 'me' : ''}">
           <div class="rank-pos">${posLabel}</div>
@@ -2467,9 +2689,9 @@
         <div class="feedback-head">${skipped ? '↷ Pominięte' : '✗ Błąd'}</div>
         <div class="feedback-body">
           ${state.mode === 'reverse'
-            ? `Prawidłowy kod dla <strong>${p.nazwa}</strong> to <strong>${p.kod}</strong>.`
-            : `Kod <strong>${p.kod}</strong> oznacza <strong>${p.nazwa}</strong> (woj. ${p.woj}).`
-          }
+          ? `Prawidłowy kod dla <strong>${p.nazwa}</strong> to <strong>${p.kod}</strong>.`
+          : `Kod <strong>${p.kod}</strong> oznacza <strong>${p.nazwa}</strong> (woj. ${p.woj}).`
+        }
           ${given ? `<br><span style="color:var(--tekst-mute)">Twoja odpowiedź: "${given}"</span>` : ''}
         </div>
         <div class="feedback-meta">
@@ -2631,8 +2853,8 @@
       // Reset stanu — timer NIE startuje od razu
       if (state.timer) { clearInterval(state.timer); state.timer = null; }
       state.timeLeft = TIME_TOTAL;
-      state.punkty   = 0;
-      state.seria    = 0;
+      state.punkty = 0;
+      state.seria = 0;
       // Pokaż bar ale z myślnikiem (czeka na pierwszą odpowiedź)
       const bar = $('timeBar');
       bar.classList.add('active');
@@ -2925,7 +3147,8 @@
       <div class="modal-body">
         <p>Wprowadź unikalną nazwę gracza. Będzie widoczna w rankingu.</p>
         <div class="nick-input-wrap">
-          <input type="text" id="nickInput" maxlength="16" autocomplete="off" spellcheck="false" placeholder="TWÓJ NICK">
+          <input type="text" id="nickInput" maxlength="16" autocomplete="off" spellcheck="false"
+            placeholder="TWÓJ NICK">
         </div>
         <div class="nick-error" id="nickError"></div>
         <button class="btn" id="btnNickOk" style="width:100%">Zagraj →</button>
