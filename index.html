@@ -1,1913 +1,379 @@
 <!DOCTYPE html>
 <html lang="pl">
-
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>MISTRZ TABLIC — gra w polskie tablice rejestracyjne</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+  <title>TABLICE PL — Quiz Tablic Rejestracyjnych</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;900&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <style>
-    :root {
-      --asfalt: #0e0e10;
-      --asfalt-2: #16161a;
-      --panel: #1c1c20;
-      --panel-2: #26262c;
-      --line: #2c2c33;
-      --tekst: #f5f5f5;
-      --tekst-dim: #a8a8b0;
-      --tekst-mute: #6b6b75;
-      --zolty: #ffcc00;
-      --zolty-dim: #b8930a;
-      --niebieski-eu: #003399;
-      --zielony: #1bd96a;
-      --czerwony: #ff3b3b;
-      --pomaranczowy: #ff8a1a;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box
-    }
-
-    html,
-    body {
-      height: 100%;
-      overflow: hidden
-    }
-
-    body {
-      font-family: 'Outfit', -apple-system, sans-serif;
-      background: var(--asfalt);
-      color: var(--tekst);
-      -webkit-font-smoothing: antialiased;
-      position: relative;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background-image:
-        radial-gradient(circle at 25% 25%, rgba(255, 204, 0, 0.03) 0%, transparent 40%),
-        radial-gradient(circle at 75% 75%, rgba(0, 51, 153, 0.04) 0%, transparent 40%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='0.4'/></svg>");
-      opacity: 0.025;
-      pointer-events: none;
-      z-index: 1;
-      mix-blend-mode: overlay;
-    }
-
-    /* ============ LAYOUT ============ */
-    .app {
-      position: relative;
-      z-index: 2;
-      display: grid;
-      grid-template-columns: 420px 1fr;
-      grid-template-rows: auto 64px 1fr;
-      height: 100vh;
-      gap: 0;
-    }
-
-    /* Timer bar spans full width above header */
-    .time-bar {
-      grid-column: 1 / -1;
-      grid-row: 1;
-    }
-
-    header.top {
-      grid-column: 1 / -1;
-      grid-row: 2;
-    }
-
-    aside.game {
-      grid-row: 3;
-    }
-
-    main.map-section {
-      grid-row: 3;
-    }
-
-    header.top {
-      grid-column: 1/-1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      background: linear-gradient(180deg, #0a0a0c 0%, #16161a 100%);
-      border-bottom: 1px solid var(--line);
-      position: relative;
-    }
-
-    header.top::after {
-      content: "";
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: repeating-linear-gradient(90deg,
-          var(--zolty) 0 32px,
-          transparent 32px 56px);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px
-    }
-
-    .brand-mark {
-      width: 40px;
-      height: 40px;
-      background: var(--zolty);
-      color: #000;
-      display: grid;
-      place-items: center;
-      font-family: 'Anton', sans-serif;
-      font-size: 22px;
-      letter-spacing: 1px;
-      transform: skewX(-8deg);
-      box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
-    }
-
-    .brand-mark span {
-      transform: skewX(8deg)
-    }
-
-    .brand-title {
-      font-family: 'Anton', sans-serif;
-      font-size: 24px;
-      letter-spacing: 3px;
-      color: var(--tekst);
-      line-height: 1;
-    }
-
-    .brand-sub {
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: var(--zolty);
-      font-weight: 600;
-      text-transform: uppercase;
-      margin-top: 4px;
-    }
-
-    .hud {
-      display: flex;
-      gap: 8px;
-      align-items: center
-    }
-
-    .hud-stat {
-      display: flex;
-      flex-direction: column;
-      padding: 6px 14px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      min-width: 80px;
-    }
-
-    .hud-stat .label {
-      font-size: 9px;
-      letter-spacing: 2px;
-      color: var(--tekst-mute);
-      text-transform: uppercase;
-    }
-
-    .hud-stat .value {
-      font-family: 'DM Mono', monospace;
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--tekst);
-      line-height: 1;
-      margin-top: 2px;
-    }
-
-    .hud-stat.hot .value {
-      color: var(--zolty)
-    }
-
-    .hud-stat.streak .value {
-      color: var(--pomaranczowy)
-    }
-
-    .hud-icon-btn {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      color: var(--tekst-dim);
-      padding: 10px;
-      cursor: pointer;
-      transition: all .15s;
-      display: grid;
-      place-items: center;
-    }
-
-    .hud-icon-btn:hover {
-      border-color: var(--zolty);
-      color: var(--zolty);
-    }
-
-    .hud-icon-btn svg {
-      width: 18px;
-      height: 18px
-    }
-
-    /* ============ PANEL GRY (lewy) ============ */
-    aside.game {
-      background: linear-gradient(180deg, var(--panel) 0%, var(--asfalt-2) 100%);
-      border-right: 1px solid var(--line);
-      overflow-y: auto;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    aside.game::-webkit-scrollbar {
-      width: 6px
-    }
-
-    aside.game::-webkit-scrollbar-track {
-      background: var(--asfalt-2)
-    }
-
-    aside.game::-webkit-scrollbar-thumb {
-      background: var(--line);
-      border-radius: 3px
-    }
-
-    /* Tryb gry - pills */
-    .modes {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-
-    .mode-btn {
-      padding: 10px 8px;
-      background: var(--asfalt-2);
-      border: 1px solid var(--line);
-      color: var(--tekst-dim);
-      font-family: 'Outfit';
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all .15s;
-    }
-
-    .mode-btn:hover {
-      border-color: var(--zolty);
-      color: var(--tekst)
-    }
-
-    .mode-btn.active {
-      background: var(--zolty);
-      color: #000;
-      border-color: var(--zolty);
-      font-weight: 700;
-    }
-
-    /* TABLICA */
-    .plate-wrap {
-      margin: 8px 0;
-      perspective: 1000px;
-    }
-
-    .plate {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 520/110;
-      background: #fff;
-      border: 3px solid #000;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      padding: 0 12px 0 56px;
-      font-family: 'Anton', sans-serif;
-      font-size: 54px;
-      letter-spacing: 8px;
-      color: #000;
-      box-shadow:
-        0 0 0 3px #000,
-        0 8px 24px rgba(0, 0, 0, 0.6),
-        inset 0 0 0 2px #fff,
-        inset 0 0 30px rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-      user-select: none;
-      transition: transform .4s cubic-bezier(.25, 1, .4, 1);
-    }
-
-    .plate.rolling {
-      animation: plate-roll .5s cubic-bezier(.25, 1, .4, 1)
-    }
-
-    @keyframes plate-roll {
-      0% {
-        transform: translateX(180px) rotateY(20deg);
-        opacity: 0
-      }
-
-      100% {
-        transform: translateX(0) rotateY(0);
-        opacity: 1
-      }
-    }
-
-    .plate-eu {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 42px;
-      background: #003399;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 12px 0;
-      gap: 4px;
-    }
-
-    .plate-stars {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      height: 30px;
-    }
-
-    .plate-stars svg {
-      filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.2));
-      width: 24px;
-      height: 24px;
-    }
-
-    .plate-pl {
-      color: #fff;
-      font-family: 'Anton', sans-serif;
-      font-size: 18px;
-      letter-spacing: 2px;
-    }
-
-    .plate-text {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      width: 100%;
-      justify-content: center;
-    }
-
-    .plate-prefix {
-      color: #000
-    }
-
-    .plate-rest {
-      color: #bcbcbc;
-      font-size: 42px;
-      letter-spacing: 6px;
-    }
-
-    .plate-screw {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      background: radial-gradient(circle, #666 30%, #222 70%);
-      border-radius: 50%;
-    }
-
-    .plate-screw.tl {
-      top: 8px;
-      right: 8px
-    }
-
-    .plate-screw.bl {
-      bottom: 8px;
-      right: 8px
-    }
-
-    /* Pytanie pod tablicą */
-    .question-line {
-      text-align: center;
-      font-size: 13px;
-      color: var(--tekst-dim);
-      letter-spacing: 1px;
-      margin-top: 4px;
-      text-transform: uppercase;
-    }
-
-    .question-line strong {
-      color: var(--zolty);
-      font-weight: 600
-    }
-
-    /* Input */
-    .input-wrap {
-      position: relative;
-    }
-
-    input.guess {
-      width: 100%;
-      padding: 14px 16px;
-      background: var(--asfalt);
-      border: 2px solid var(--line);
-      color: var(--tekst);
-      font-family: 'Outfit';
-      font-size: 16px;
-      font-weight: 500;
-      letter-spacing: .5px;
-      outline: none;
-      transition: all .15s;
-    }
-
-    input.guess:focus {
-      border-color: var(--zolty);
-      box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.15);
-    }
-
-    input.guess:focus::placeholder {
-      color: transparent;
-    }
-
-    input.guess::placeholder {
-      color: var(--tekst-mute)
-    }
-
-    input.guess:disabled {
-      opacity: .5
-    }
-
-    /* FIX: Pulsowanie inputu na mobile gdy czeka na odpowiedź */
-    input.guess.ready-pulse {
-      animation: pulse-border .6s ease-out 2;
-    }
-
-    @keyframes pulse-border {
-      0% {
-        border-color: var(--line);
-        box-shadow: none;
-      }
-
-      50% {
-        border-color: var(--zolty);
-        box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.25);
-      }
-
-      100% {
-        border-color: var(--line);
-        box-shadow: none;
-      }
-    }
-
-    .suggestions {
-      position: absolute;
-      top: calc(100% + 4px);
-      left: 0;
-      right: 0;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-      max-height: 280px;
-      overflow-y: auto;
-      z-index: 20;
-      display: none;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, .5);
-    }
-
-    .suggestions.open {
-      display: block
-    }
-
-    .suggestion {
-      padding: 10px 16px;
-      cursor: pointer;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      transition: background .1s;
-    }
-
-    .suggestion:last-child {
-      border-bottom: none
-    }
-
-    .suggestion:hover,
-    .suggestion.hl {
-      background: var(--asfalt-2)
-    }
-
-    .suggestion .nazwa {
-      color: var(--tekst)
-    }
-
-    .suggestion .nazwa b {
-      color: var(--zolty);
-      font-weight: 700
-    }
-
-    .suggestion .meta {
-      font-size: 10px;
-      color: var(--tekst-mute);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    /* Akcje */
-    .actions {
-      display: flex;
-      gap: 8px
-    }
-
-    .btn {
-      flex: 1;
-      padding: 12px 14px;
-      background: var(--zolty);
-      border: none;
-      color: #000;
-      font-family: 'Outfit';
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all .15s;
-    }
-
-    .btn:hover {
-      background: #fff;
-      transform: translateY(-1px)
-    }
-
-    .btn:disabled {
-      opacity: .4;
-      cursor: not-allowed;
-      transform: none
-    }
-
-    .btn.ghost {
-      background: transparent;
-      border: 1px solid var(--line);
-      color: var(--tekst-dim);
-    }
-
-    .btn.ghost:hover {
-      background: var(--panel);
-      color: var(--tekst);
-      border-color: var(--zolty);
-    }
-
-    .btn.danger {
-      background: var(--czerwony);
-      color: #fff
-    }
-
-    .btn.danger:hover {
-      background: #ff5252
-    }
-
-    /* Hint bar */
-    .hints {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .hint-btn {
-      padding: 7px 11px;
-      background: transparent;
-      border: 1px dashed var(--line);
-      color: var(--tekst-mute);
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all .15s;
-      font-family: 'Outfit';
-    }
-
-    .hint-btn:hover:not(:disabled) {
-      border-color: var(--pomaranczowy);
-      border-style: solid;
-      color: var(--pomaranczowy);
-    }
-
-    .hint-btn:disabled {
-      opacity: .3;
-      cursor: not-allowed
-    }
-
-    .hint-btn .cost {
-      color: var(--zolty);
-      font-family: 'DM Mono';
-      margin-left: 4px;
-    }
-
-    /* Panel feedbacku */
-    .feedback {
-      padding: 14px 16px;
-      border: 1px solid var(--line);
-      background: var(--asfalt-2);
-      display: none;
-      animation: slide-in .25s ease-out;
-    }
-
-    .feedback.show {
-      display: block
-    }
-
-    .feedback.correct {
-      border-left: 4px solid var(--zielony);
-      background: linear-gradient(90deg, rgba(27, 217, 106, 0.1), var(--asfalt-2) 50%);
-    }
-
-    .feedback.wrong {
-      border-left: 4px solid var(--czerwony);
-      background: linear-gradient(90deg, rgba(255, 59, 59, 0.1), var(--asfalt-2) 50%);
-    }
-
-    .feedback.hint {
-      border-left: 4px solid var(--pomaranczowy);
-      background: linear-gradient(90deg, rgba(255, 138, 26, 0.1), var(--asfalt-2) 50%);
-    }
-
-    @keyframes slide-in {
-      from {
-        opacity: 0;
-        transform: translateY(-4px)
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0)
-      }
-    }
-
-    .feedback-head {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .feedback.correct .feedback-head {
-      color: var(--zielony)
-    }
-
-    .feedback.wrong .feedback-head {
-      color: var(--czerwony)
-    }
-
-    .feedback.hint .feedback-head {
-      color: var(--pomaranczowy)
-    }
-
-    .feedback-body {
-      font-size: 14px;
-      line-height: 1.5
-    }
-
-    .feedback-body strong {
-      color: var(--zolty)
-    }
-
-    .feedback-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 10px;
-    }
-
-    .chip {
-      padding: 4px 10px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      font-size: 11px;
-      letter-spacing: 1px;
-      color: var(--tekst-dim);
-      text-transform: uppercase;
-    }
-
-    .chip a {
-      color: var(--zolty);
-      text-decoration: none
-    }
-
-    .chip a:hover {
-      text-decoration: underline
-    }
-
-    /* Mini statystyki */
-    .stats-mini {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-top: auto;
-      padding-top: 12px;
-      border-top: 1px solid var(--line);
-    }
-
-    .stat-mini {
-      text-align: center;
-      padding: 8px 6px;
-      background: var(--asfalt-2);
-    }
-
-    .stat-mini .l {
-      font-size: 9px;
-      color: var(--tekst-mute);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
-
-    .stat-mini .v {
-      font-family: 'DM Mono';
-      font-size: 16px;
-      color: var(--tekst);
-      font-weight: 500;
-      margin-top: 2px;
-    }
-
-    /* ============ MAPA ============ */
-    main.map-section {
-      position: relative;
-      background: var(--asfalt-2);
-    }
-
-    #map {
-      width: 100%;
-      height: 100%;
-      background: #0a0a0c;
-      z-index: 1;
-    }
-
-    .map-overlay-top {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      z-index: 500;
-      background: rgba(28, 28, 32, 0.92);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--line);
-      padding: 10px 14px;
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      color: var(--tekst-dim);
-      text-transform: uppercase;
-      pointer-events: none;
-    }
-
-    .map-overlay-top strong {
-      color: var(--zolty)
-    }
-
-    /* Popup leaflet */
-    .leaflet-popup-content-wrapper {
-      background: var(--panel) !important;
-      color: var(--tekst) !important;
-      border: 1px solid var(--zolty);
-      border-radius: 0 !important;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, .7) !important;
-      padding: 0 !important;
-    }
-
-    .leaflet-popup-content {
-      margin: 0 !important;
-      width: 280px !important;
-      font-family: 'Outfit', sans-serif !important;
-    }
-
-    .leaflet-popup-tip {
-      background: var(--panel) !important;
-      border: 1px solid var(--zolty);
-    }
-
-    .leaflet-popup-close-button {
-      color: var(--tekst-dim) !important;
-      font-size: 20px !important;
-      padding: 8px !important;
-    }
-
-    .popup {
-      padding: 0
-    }
-
-    .popup-head {
-      background: var(--zolty);
-      color: #000;
-      padding: 10px 14px;
-      font-family: 'Anton', sans-serif;
-      letter-spacing: 2px;
-      font-size: 18px;
-    }
-
-    .popup-head .kod {
-      background: #000;
-      color: var(--zolty);
-      padding: 2px 8px;
-      margin-right: 8px;
-      font-size: 14px;
-    }
-
-    .popup-body {
-      padding: 12px 14px
-    }
-
-    .popup-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      padding: 6px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .popup-row:last-of-type {
-      border-bottom: none
-    }
-
-    .popup-row .l {
-      color: var(--tekst-mute);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-size: 10px
-    }
-
-    .popup-row .v {
-      color: var(--tekst);
-      font-weight: 500
-    }
-
-    .popup-links {
-      display: flex;
-      gap: 6px;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid var(--line);
-    }
-
-    .popup-link {
-      flex: 1;
-      padding: 7px;
-      background: var(--asfalt-2);
-      color: var(--tekst);
-      text-align: center;
-      font-size: 11px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      text-decoration: none;
-      border: 1px solid var(--line);
-      transition: all .15s;
-      font-weight: 600;
-    }
-
-    .popup-link:hover {
-      background: var(--zolty);
-      color: #000;
-      border-color: var(--zolty);
-    }
-
-    /* Custom marker */
-    .tag-marker {
-      background: var(--zolty);
-      color: #000;
-      padding: 6px 10px;
-      font-family: 'Anton', sans-serif;
-      font-size: 14px;
-      letter-spacing: 2px;
-      border: 2px solid #000;
-      white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, .6);
-      transform: translateY(-100%);
-      position: relative;
-    }
-
-    .tag-marker::after {
-      content: "";
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
-      border-top: 8px solid var(--zolty);
-    }
-
-    /* ============ MODAL ============ */
-    .modal-bg {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .75);
-      backdrop-filter: blur(4px);
-      z-index: 1000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .modal-bg.open {
-      display: flex
-    }
-
-    .modal {
-      background: var(--panel);
-      border: 1px solid var(--zolty);
-      max-width: 560px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .modal-head {
-      background: var(--zolty);
-      color: #000;
-      padding: 14px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: 'Anton', sans-serif;
-      font-size: 22px;
-      letter-spacing: 3px;
-    }
-
-    .modal-close {
-      background: transparent;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: #000;
-      font-weight: bold;
-      padding: 0 4px;
-    }
-
-    .modal-body {
-      padding: 20px
-    }
-
-    .modal h3 {
-      font-family: 'Anton', sans-serif;
-      font-size: 16px;
-      letter-spacing: 2px;
-      color: var(--zolty);
-      margin: 16px 0 8px;
-      text-transform: uppercase;
-    }
-
-    .modal h3:first-child {
-      margin-top: 0
-    }
-
-    .modal p {
-      color: var(--tekst-dim);
-      font-size: 14px;
-      line-height: 1.6;
-      margin-bottom: 8px;
-    }
-
-    .woj-stats-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 8px
-    }
-
-    .woj-bar {
-      display: grid;
-      grid-template-columns: 140px 1fr 60px;
-      align-items: center;
-      gap: 10px;
-      font-size: 12px;
-    }
-
-    .woj-bar .name {
-      color: var(--tekst-dim);
-      text-transform: capitalize;
-      letter-spacing: .5px;
-    }
-
-    .woj-bar .track {
-      height: 6px;
-      background: var(--asfalt-2);
-      position: relative;
-    }
-
-    .woj-bar .fill {
-      position: absolute;
-      inset: 0 auto 0 0;
-      background: linear-gradient(90deg, var(--czerwony) 0%, var(--pomaranczowy) 50%, var(--zielony) 100%);
-      background-size: 200% 100%;
-    }
-
-    .woj-bar .pct {
-      font-family: 'DM Mono';
-      color: var(--tekst);
-      text-align: right;
-    }
-
-    .kbd {
-      display: inline-block;
-      padding: 2px 6px;
-      background: var(--asfalt-2);
-      border: 1px solid var(--line);
-      font-family: 'DM Mono';
-      font-size: 11px;
-      color: var(--zolty);
-      margin: 0 2px;
-    }
-
-    /* ============ TIMER NA CZAS ============ */
-    .time-bar {
-      display: none;
-      grid-column: 1 / -1;
-      background: var(--asfalt-2);
-      border-bottom: 1px solid var(--line);
-      padding: 0 24px;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      height: 48px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .time-bar.active {
-      display: flex;
-    }
-
-    /* Pasek postępu w tle */
-    .time-bar__progress {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: var(--time-pct, 100%);
-      background: linear-gradient(90deg, rgba(255, 59, 59, 0.25), rgba(255, 138, 26, 0.15));
-      transition: width 1s linear;
-      pointer-events: none;
-    }
-
-    .time-bar__label {
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: var(--tekst-mute);
-      text-transform: uppercase;
-      position: relative;
-    }
-
-    .time-bar__count {
-      font-family: 'Anton', sans-serif;
-      font-size: 28px;
-      letter-spacing: 4px;
-      color: var(--zolty);
-      position: relative;
-      min-width: 60px;
-      text-align: center;
-    }
-
-    .time-bar__count.urgent {
-      color: var(--czerwony);
-      animation: tick .5s ease-in-out infinite alternate;
-    }
-
-    @keyframes tick {
-      from {
-        transform: scale(1);
-      }
-
-      to {
-        transform: scale(1.08);
-      }
-    }
-
-    .time-bar__pts {
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-      color: var(--tekst-dim);
-      position: relative;
-    }
-
-    .time-bar__pts span {
-      color: var(--czerwony);
-      font-weight: 700;
-    }
-
-    /* Na mobile timer bar zajmuje pełną szerokość nad grą */
-    @media (max-width: 900px) {
-      .time-bar {
-        padding: 0 12px;
-      }
-
-      .time-bar__count {
-        font-size: 22px;
-      }
-    }
-
-    /* ============ PRZYCISK DALEJ — inline, zawsze widoczny po odpowiedzi ============ */
-    #btnDalej {
-      display: none;
-      /* ukryty domyślnie */
-      width: 100%;
-      padding: 15px;
-      background: var(--zielony);
-      border: none;
-      color: #000;
-      font-family: 'Anton', sans-serif;
-      font-size: 22px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      cursor: pointer;
-      animation: dalej-pop .2s cubic-bezier(.34, 1.56, .64, 1);
-    }
-
-    #btnDalej:active {
-      transform: scale(.97);
-    }
-
-    @keyframes dalej-pop {
-      from {
-        opacity: 0;
-        transform: scale(.93);
-      }
-
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    @media (max-width: 900px) {
-      #btnDalej {
-        padding: 18px;
-        font-size: 24px;
-      }
-    }
-
-    /* ============ FLASH ============ */
-    .flash {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      z-index: 900;
-      font-family: 'Anton', sans-serif;
-      font-size: 90px;
-      letter-spacing: 6px;
-      color: var(--zielony);
-      text-shadow: 0 0 30px currentColor, 0 0 60px currentColor;
-      opacity: 0;
-    }
-
-    .flash.show {
-      animation: flash-anim 1s ease-out forwards;
-    }
-
-    .flash.bad {
-      color: var(--czerwony);
-      text-shadow: 0 0 30px var(--czerwony), 0 0 60px rgba(255, 59, 59, 0.5);
-    }
-
-    @keyframes flash-anim {
-      0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(.7)
-      }
-
-      20% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.1)
-      }
-
-      80% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1)
-      }
-
-      100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(1.4)
-      }
-    }
-
-    /* ============ MOBILE ============ */
-    @media (max-width: 900px) {
-
-      html,
-      body {
-        overflow: hidden;
-        height: 100%;
-        height: -webkit-fill-available;
-      }
-
-      .app {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto 1fr;
-        height: 100vh;
-        height: 100dvh;
-        min-height: -webkit-fill-available;
-        overflow-x: hidden;
-        width: 100%;
-      }
-
-      /* ---- HEADER: 2-rzędowy layout ---- */
-      header.top {
-        padding: 0;
-        height: auto;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0;
-      }
-
-      header.top .brand {
-        padding: 7px 10px;
-        gap: 8px;
-        overflow: hidden;
-      }
-
-      .brand-mark {
-        width: 28px;
-        height: 28px;
-        font-size: 13px;
-        flex-shrink: 0;
-      }
-
-      .brand-title {
-        font-size: 12px;
-        letter-spacing: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .brand-sub {
-        display: none;
-      }
-
-      /* HUD: poziomy pasek pod logo */
-      .hud {
-        display: flex;
-        flex-direction: row;
-        align-items: stretch;
-        gap: 0;
-        border-top: 1px solid var(--line);
-        background: var(--asfalt-2);
-        overflow: hidden;
-      }
-
-      .hud-nick {
-        flex: 1 1 80px;
-        min-width: 0;
-        max-width: 90px;
-        padding: 4px 8px;
-        border: none;
-        border-right: 1px solid var(--line);
-        background: transparent;
-      }
-
-      .hud-nick .label {
-        font-size: 7px;
-        letter-spacing: 1px;
-      }
-
-      .hud-nick .value {
-        font-size: 11px;
-        letter-spacing: 0;
-      }
-
-      .hud-stat {
-        flex: 1 1 50px;
-        min-width: 0;
-        padding: 4px 6px;
-        border: none;
-        border-right: 1px solid var(--line);
-        background: transparent;
-      }
-
-      .hud-stat .label {
-        font-size: 7px;
-        letter-spacing: 1px;
-      }
-
-      .hud-stat .value {
-        font-size: 14px;
-        margin-top: 1px;
-      }
-
-      /* Ukryj Trafność — widoczna w statystykach */
-      .hud-stat:nth-child(4) {
-        display: none;
-      }
-
-      .hud-icon-btn {
-        flex: 0 0 36px;
-        padding: 0;
-        width: 36px;
-        border: none;
-        border-left: 1px solid var(--line);
-        background: transparent;
-      }
-
-      .hud-icon-btn svg {
-        width: 15px;
-        height: 15px;
-      }
-
-      /* ---- GAME PANEL ---- */
-      aside.game {
-        padding: 10px 10px;
-        gap: 10px;
-        border-right: none;
-        overflow-y: auto;
-        overflow-x: hidden;
-        min-height: 0;
-      }
-
-      main.map-section {
-        display: none !important;
-      }
-
-      /* ---- TRYBY: 2x2 ---- */
-      .modes {
-        grid-template-columns: 1fr 1fr;
-        gap: 5px;
-      }
-
-      .mode-btn {
-        font-size: 10px;
-        padding: 9px 4px;
-        letter-spacing: 0.8px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      /* ---- TABLICA ---- */
-      .plate-wrap {
-        margin: 0;
-      }
-
-      .plate {
-        font-size: 30px;
-        letter-spacing: 5px;
-        padding: 0 6px 0 42px;
-        border-width: 2px;
-      }
-
-      .plate-eu {
-        width: 34px;
-        padding: 5px 0;
-      }
-
-      .plate-pl {
-        font-size: 12px;
-      }
-
-      .plate-rest {
-        font-size: 24px;
-        letter-spacing: 4px;
-      }
-
-      .plate-stars svg {
-        width: 18px;
-        height: 18px;
-      }
-
-      /* ---- INPUT ---- */
-      .question-line {
-        font-size: 11px;
-        margin: 0;
-      }
-
-      input.guess {
-        padding: 11px 10px;
-        font-size: 16px;
-      }
-
-      /* ---- HINTY ---- */
-      .hints {
-        gap: 3px;
-      }
-
-      .hint-btn {
-        flex: 1;
-        padding: 7px 2px;
-        font-size: 9px;
-        letter-spacing: 0;
-        min-width: 0;
-        text-align: center;
-      }
-
-      .hint-btn .cost {
-        display: block;
-        font-size: 8px;
-        margin: 0;
-      }
-
-      /* ---- PRZYCISKI ---- */
-      .actions {
-        gap: 5px;
-      }
-
-      .btn {
-        padding: 10px 6px;
-        font-size: 11px;
-      }
-
-      #btnDalej {
-        font-size: 20px;
-        padding: 14px;
-      }
-
-      /* ---- STATS MINI ---- */
-      .stats-mini {
-        padding-top: 6px;
-      }
-
-      .stat-mini {
-        padding: 6px 4px;
-      }
-
-      .stat-mini .v {
-        font-size: 14px;
-      }
-
-      .stat-mini .l {
-        font-size: 8px;
-      }
-
-      /* ---- AUTOCOMPLETE — nad inputem ---- */
-      .suggestions {
-        bottom: 100%;
-        top: auto;
-        max-height: 180px;
-      }
-
-      /* ---- FLASH ---- */
-      .flash {
-        font-size: 50px;
-      }
-    }
-
-    /* ============ NICK / RANKING ============ */
-
-    /* Gracz w HUD */
-    .hud-nick {
-      display: flex;
-      flex-direction: column;
-      padding: 6px 14px;
-      background: var(--panel);
-      border: 1px solid var(--zolty);
-      min-width: 80px;
-      max-width: 120px;
-    }
-
-    .hud-nick .label {
-      font-size: 9px;
-      letter-spacing: 2px;
-      color: var(--zolty);
-      text-transform: uppercase;
-    }
-
-    .hud-nick .value {
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--tekst);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* Modal nicku — blokuje całość, bez możliwości zamknięcia */
-    #nickModal .modal-head {
-      background: var(--asfalt);
-      border-bottom: 3px solid var(--zolty);
-    }
-
-    #nickModal .modal-head span {
-      color: var(--zolty);
-    }
-
-    .nick-input-wrap {
-      position: relative;
-      margin: 16px 0 8px;
-    }
-
-    .nick-input-wrap input {
-      width: 100%;
-      padding: 14px 16px;
-      background: var(--asfalt);
-      border: 2px solid var(--line);
-      color: var(--tekst);
-      font-family: 'Anton', sans-serif;
-      font-size: 22px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      outline: none;
-      transition: border-color .15s;
-    }
-
-    .nick-input-wrap input:focus {
-      border-color: var(--zolty);
-    }
-
-    .nick-input-wrap input.error {
-      border-color: var(--czerwony);
-    }
-
-    .nick-error {
-      font-size: 12px;
-      color: var(--czerwony);
-      letter-spacing: 1px;
-      min-height: 18px;
-      margin-bottom: 6px;
-    }
-
-    /* Ranking — wiersze */
-    .rank-list {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-top: 8px;
-    }
-
-    .rank-row {
-      display: grid;
-      grid-template-columns: 28px 1fr 70px 50px 50px;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      background: var(--asfalt-2);
-      border: 1px solid var(--line);
-      font-size: 13px;
-      transition: border-color .15s;
-    }
-
-    .rank-row.me {
-      border-color: var(--zolty);
-      background: rgba(255, 204, 0, 0.06);
-    }
-
-    .rank-row.top1 {
-      border-color: #ffd700;
-    }
-
-    .rank-row.top2 {
-      border-color: #c0c0c0;
-    }
-
-    .rank-row.top3 {
-      border-color: #cd7f32;
-    }
-
-    .rank-pos {
-      font-family: 'DM Mono', monospace;
-      font-size: 14px;
-      font-weight: 700;
-      text-align: center;
-      color: var(--tekst-mute);
-    }
-
-    .rank-row.top1 .rank-pos {
-      color: #ffd700;
-    }
-
-    .rank-row.top2 .rank-pos {
-      color: #c0c0c0;
-    }
-
-    .rank-row.top3 .rank-pos {
-      color: #cd7f32;
-    }
-
-    .rank-name {
-      font-weight: 600;
-      color: var(--tekst);
-      font-family: 'Anton', sans-serif;
-      letter-spacing: 1px;
-    }
-
-    .rank-name.me-label::after {
-      content: " (Ty)";
-      font-family: 'Outfit';
-      font-size: 10px;
-      color: var(--zolty);
-      font-weight: 400;
-    }
-
-    .rank-pts {
-      font-family: 'DM Mono', monospace;
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--zolty);
-      text-align: right;
-    }
-
-    .rank-acc {
-      font-size: 11px;
-      color: var(--tekst-mute);
-      text-align: right;
-    }
-
-    .rank-extra {
-      font-size: 11px;
-      color: var(--tekst-mute);
-      text-align: right;
-    }
-
-    /* Nagłówek rankingu */
-    .rank-header {
-      display: grid;
-      grid-template-columns: 28px 1fr 70px 50px 50px;
-      gap: 8px;
-      padding: 6px 12px;
-      font-size: 9px;
-      letter-spacing: 1.5px;
-      color: var(--tekst-mute);
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--line);
-      margin-bottom: 4px;
-    }
-
-    .rank-empty {
-      color: var(--tekst-mute);
-      font-size: 13px;
-      padding: 12px 0;
-    }
+  :root{--bg:#0b0c0f;--bg2:#111318;--bg3:#181b22;--surface:#1e2129;--border:#2a2d38;--border2:#363a4a;--text:#eef0f6;--text2:#8b90a4;--text3:#50546a;--yellow:#f5c400;--yellow2:#ffd740;--yellow-bg:rgba(245,196,0,.08);--green:#00e676;--green-bg:rgba(0,230,118,.08);--red:#ff3d5a;--red-bg:rgba(255,61,90,.08);--orange:#ff8c42;--blue:#4d9eff;--eu-blue:#003399;--r:4px;--r2:8px}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+  body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.025;mix-blend-mode:overlay}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+  .app{display:grid;grid-template-columns:400px 1fr;grid-template-rows:auto auto 1fr;height:100vh;height:100dvh}
+  .time-bar{display:none;grid-column:1/-1;grid-row:1;background:var(--bg2);border-bottom:1px solid var(--border);height:44px;align-items:center;justify-content:center;gap:12px;position:relative;overflow:hidden}
+  .time-bar.active{display:flex}
+  .time-bar__progress{position:absolute;left:0;top:0;bottom:0;width:var(--time-pct,100%);background:linear-gradient(90deg,rgba(255,61,90,.2),rgba(255,140,66,.1));transition:width 1s linear;pointer-events:none}
+  .time-bar__label{font-family:'Inter',system-ui,sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);font-weight:600;position:relative}
+  .time-bar__count{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--yellow);position:relative;min-width:48px;text-align:center}
+  .time-bar__count.urgent{color:var(--red);animation:urgentPulse .4s ease-in-out infinite alternate}
+  @keyframes urgentPulse{to{transform:scale(1.06)}}
+  .time-bar__pts{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);position:relative}
+  .time-bar__pts span{color:var(--red)}
+  .topbar{grid-column:1/-1;grid-row:2;display:flex;align-items:center;height:56px;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;gap:0;position:relative}
+  .topbar::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow)}
+  .logo{display:flex;align-items:center;gap:10px;padding-right:20px;border-right:1px solid var(--border);flex-shrink:0}
+  .logo-badge{width:32px;height:32px;background:var(--yellow);color:#000;font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:14px;letter-spacing:0;display:grid;place-items:center;clip-path:polygon(8% 0%,92% 0%,100% 8%,100% 92%,92% 100%,8% 100%,0% 92%,0% 8%)}
+  .logo-text{font-family:'Inter',system-ui,sans-serif;font-weight:900;font-size:15px;letter-spacing:1.5px;color:var(--text);text-transform:uppercase}
+  .logo-sub{font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-top:1px}
+  .hud{display:flex;align-items:stretch;flex:1;overflow:hidden}
+  .hud-item{display:flex;flex-direction:column;justify-content:center;padding:0 16px;border-right:1px solid var(--border);min-width:0}
+  .hud-item:first-child{border-left:1px solid var(--border);margin-left:16px}
+  .hud-item.accent{background:var(--yellow-bg);border-color:rgba(245,196,0,.2)}
+  .hud-label{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);line-height:1;margin-bottom:3px}
+  .hud-val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;line-height:1;color:var(--text)}
+  .hud-item.accent .hud-val{color:var(--yellow)}
+  .hud-item.streak .hud-val{color:var(--orange)}
+  .hud-nick-val{font-family:'Inter',system-ui,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.5px;color:var(--yellow);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
+  .hud-actions{display:flex;align-items:center;gap:4px;margin-left:auto;padding-left:12px}
+  .icon-btn{width:36px;height:36px;background:transparent;border:1px solid var(--border);color:var(--text2);cursor:pointer;display:grid;place-items:center;border-radius:var(--r);transition:all .15s}
+  .icon-btn:hover{border-color:var(--yellow);color:var(--yellow);background:var(--yellow-bg)}
+  .icon-btn svg{width:15px;height:15px}
+  .sidebar{grid-row:3;grid-column:1;min-height:0;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:12px;padding:16px}
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r2);padding:4px}
+  .mode-btn{padding:8px 4px;background:transparent;border:none;color:var(--text2);font-family:'Inter',system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:var(--r);transition:all .15s}
+  .mode-btn:hover{color:var(--text);background:var(--surface)}
+  .mode-btn.active{background:var(--yellow);color:#000}
+  .plate-wrap{position:relative}
+  .plate{position:relative;width:100%;aspect-ratio:520/110;background:#f7f7f5;border:2px solid #111;border-radius:5px;display:flex;align-items:center;padding:0 clamp(8px,2vw,14px) 0 clamp(40px,10vw,56px);font-family:'Inter',system-ui,sans-serif;font-weight:900;color:#111;overflow:hidden;user-select:none;box-shadow:0 2px 0 0 #555,0 4px 20px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.6);transition:transform .35s cubic-bezier(.22,1,.36,1)}
+  .plate.rolling{animation:plateIn .45s cubic-bezier(.22,1,.36,1) both}
+  @keyframes plateIn{from{opacity:0;transform:translateX(40px) scale(.97)}to{opacity:1;transform:translateX(0) scale(1)}}
+  .plate-eu{position:absolute;left:0;top:0;bottom:0;width:clamp(34px,8vw,44px);background:var(--eu-blue);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 0;gap:2px}
+  .plate-stars{display:flex;align-items:center;justify-content:center;flex:1;width:100%;min-height:0}
+  .plate-stars svg{width:clamp(14px,3.5vw,22px);height:clamp(14px,3.5vw,22px);flex-shrink:0;filter:drop-shadow(0 0 1px rgba(0,0,0,.3))}
+  .plate-pl{color:#fff;font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:clamp(9px,2.2vw,14px);letter-spacing:0.5px;line-height:1;padding-bottom:3px;flex-shrink:0}
+  .plate-text{display:flex;align-items:center;gap:clamp(10px,2vw,18px);width:100%;justify-content:center;line-height:1}
+  .plate-prefix{color:#111;font-size:clamp(26px,5.5vw,52px);font-weight:900;letter-spacing:clamp(2px,0.5vw,4px);white-space:nowrap}
+  .plate-rest{color:#c0c0c0;font-size:clamp(26px,5.5vw,52px);font-weight:900;letter-spacing:clamp(2px,0.5vw,4px);white-space:nowrap}
+  .plate-screw{position:absolute;width:clamp(5px,1vw,8px);height:clamp(5px,1vw,8px);background:radial-gradient(circle at 35% 35%,#888 20%,#333 70%);border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.4)}
+  .plate-screw.tl{top:clamp(5px,1vw,8px);right:clamp(5px,1vw,8px)}
+  .plate-screw.bl{bottom:clamp(5px,1vw,8px);right:clamp(5px,1vw,8px)}
+  .question-line{text-align:center;font-size:11px;letter-spacing:2px;color:var(--text3);text-transform:uppercase}
+  .question-line strong{color:var(--yellow);font-weight:600}
+  .combo-bar{display:flex;align-items:center;gap:6px;height:28px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:0 10px;overflow:hidden}
+  .combo-dots{display:flex;gap:4px;flex:1}
+  .combo-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:background .2s,transform .2s;flex-shrink:0}
+  .combo-dot.lit{background:var(--yellow);transform:scale(1.2)}
+  .combo-dot.lit.streak3{background:var(--orange)}
+  .combo-dot.lit.streak5{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .combo-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);white-space:nowrap}
+  .combo-label.hot{color:var(--orange)}
+  .combo-label.fire{color:var(--green)}
+  .input-wrap{position:relative}
+  input.guess{width:100%;padding:13px 14px;background:var(--bg);border:2px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;letter-spacing:0.3px;outline:none;transition:border-color .15s,box-shadow .15s}
+  input.guess:focus{border-color:var(--yellow);box-shadow:0 0 0 3px rgba(245,196,0,.12)}
+  input.guess::placeholder{color:var(--text3);font-weight:400;font-size:14px;letter-spacing:.5px}
+  input.guess:disabled{opacity:.45}
+  .suggestions{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);max-height:260px;overflow-y:auto;z-index:50;display:none;box-shadow:0 16px 40px rgba(0,0,0,.6)}
+  .suggestions.open{display:block}
+  .suggestion{padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px;border-bottom:1px solid var(--border);transition:background .08s}
+  .suggestion:last-child{border-bottom:none}
+  .suggestion:hover,.suggestion.hl{background:var(--bg2)}
+  .suggestion .nazwa{color:var(--text);font-family:'Inter',system-ui,sans-serif;font-weight:600;letter-spacing:.5px}
+  .suggestion .nazwa b{color:var(--yellow)}
+  .suggestion .meta{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+  .hints{display:flex;gap:4px}
+  .hint-btn{flex:1;padding:8px 4px;background:transparent;border:1px dashed var(--border2);border-radius:var(--r);color:var(--text3);font-family:'Inter',system-ui,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;transition:all .15s;text-align:center}
+  .hint-btn:hover:not(:disabled){border-style:solid;border-color:var(--orange);color:var(--orange);background:rgba(255,140,66,.06)}
+  .hint-btn:disabled{opacity:.25;cursor:not-allowed}
+  .hint-btn .cost{display:block;font-size:9px;color:var(--red);letter-spacing:0;margin-top:1px}
+  #hintLettersDisplay{display:none;font-family:'JetBrains Mono',monospace;font-size:20px;letter-spacing:8px;color:var(--yellow);text-align:center;padding:6px 0;background:var(--yellow-bg);border-radius:var(--r);border:1px solid rgba(245,196,0,.2)}
+  .actions{display:flex;gap:6px}
+  .btn{flex:1;padding:12px 12px;background:var(--yellow);border:none;border-radius:var(--r);color:#000;font-family:'Inter',system-ui,sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s}
+  .btn:hover{background:var(--yellow2);transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+  .btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+  .btn.ghost:hover{border-color:var(--yellow);color:var(--yellow);background:var(--yellow-bg)}
+  #btnDalej{display:none;width:100%;padding:14px;background:var(--green);border:none;border-radius:var(--r);color:#000;font-family:'Inter',system-ui,sans-serif;font-size:17px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;animation:popIn .2s cubic-bezier(.34,1.56,.64,1)}
+  #btnDalej:hover{background:#00ff88}
+  #btnDalej:active{transform:scale(.98)}
+  @keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+  .feedback{display:none;border-radius:var(--r);border:1px solid var(--border);overflow:hidden;animation:feedIn .2s ease-out}
+  .feedback.show{display:block}
+  @keyframes feedIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+  .feedback.correct{border-color:rgba(0,230,118,.3);background:var(--green-bg)}
+  .feedback.wrong{border-color:rgba(255,61,90,.3);background:var(--red-bg)}
+  .feedback.hint{border-color:rgba(255,140,66,.3);background:rgba(255,140,66,.06)}
+  .feedback-head{display:flex;align-items:center;gap:6px;padding:8px 12px;font-family:'Inter',system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+  .feedback.correct .feedback-head{color:var(--green);background:rgba(0,230,118,.07)}
+  .feedback.wrong .feedback-head{color:var(--red);background:rgba(255,61,90,.07)}
+  .feedback.hint .feedback-head{color:var(--orange);background:rgba(255,140,66,.07)}
+  .feedback-body{padding:10px 12px;font-size:14px;line-height:1.5}
+  .feedback-body strong{color:var(--yellow)}
+  .feedback-meta{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 10px}
+  .chip{padding:3px 9px;background:var(--bg);border:1px solid var(--border);border-radius:100px;font-size:10px;letter-spacing:1px;color:var(--text2);text-transform:uppercase}
+  .chip a{color:var(--yellow);text-decoration:none}
+  .chip a:hover{text-decoration:underline}
+  .stats-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:auto;padding-top:8px;border-top:1px solid var(--border)}
+  .stat-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:8px;text-align:center}
+  .stat-box .l{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+  .stat-box .v{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--text);margin-top:2px}
+  .map-section{grid-row:3;grid-column:2;min-height:0;position:relative;background:var(--bg)}
+  #map{width:100%;height:100%}
+  .map-hint{position:absolute;top:16px;left:16px;z-index:500;background:rgba(17,19,24,.9);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);pointer-events:none}
+  .map-hint strong{color:var(--yellow)}
+  .leaflet-popup-content-wrapper{background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--yellow)!important;border-radius:var(--r2)!important;box-shadow:0 12px 40px rgba(0,0,0,.8)!important;padding:0!important}
+  .leaflet-popup-content{margin:0!important;width:280px!important;font-family:'Inter',system-ui,sans-serif!important}
+  .leaflet-popup-tip{background:var(--surface)!important}
+  .leaflet-popup-close-button{color:var(--text2)!important;font-size:18px!important;padding:8px!important}
+  .popup-head{background:var(--yellow);color:#000;padding:8px 12px;font-family:'Inter',system-ui,sans-serif;font-weight:900;letter-spacing:2px;font-size:17px;border-radius:var(--r2) var(--r2) 0 0}
+  .popup-head .kod{background:#000;color:var(--yellow);padding:1px 6px;margin-right:6px;font-size:13px;border-radius:3px}
+  .popup-body{padding:10px 12px}
+  .popup-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)}
+  .popup-row:last-of-type{border-bottom:none}
+  .popup-row .l{color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-size:10px}
+  .popup-row .v{color:var(--text);font-weight:600}
+  .popup-links{display:flex;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+  .popup-link{flex:1;padding:6px;text-align:center;text-decoration:none;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;transition:all .15s}
+  .popup-link:hover{background:var(--yellow);color:#000;border-color:var(--yellow)}
+  .tag-marker{background:var(--yellow);color:#000;padding:5px 9px;font-family:'Inter',system-ui,sans-serif;font-weight:900;font-size:13px;letter-spacing:2px;border:2px solid #000;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.6);transform:translateY(-100%);position:relative;border-radius:3px}
+  .tag-marker::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--yellow);border-bottom:none}
+  .flash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:900;font-family:'Inter',system-ui,sans-serif;font-weight:900;font-size:80px;letter-spacing:6px;color:var(--green);text-shadow:0 0 30px currentColor;opacity:0}
+  .flash.show{animation:flashPop 1s ease-out forwards}
+  .flash.bad{color:var(--red)}
+  .flash.streak-streak{color:var(--orange);font-size:64px;text-shadow:0 0 40px var(--orange)}
+  .flash.streak-fire{color:var(--green);font-size:60px;text-shadow:0 0 50px var(--green),0 0 80px rgba(0,230,118,.4)}
+  @keyframes flashPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.3)}}
+  @keyframes flashPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.3)}}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-bg.open{display:flex}
+  .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.8)}
+  .modal-head{background:var(--yellow);color:#000;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;font-family:'Inter',system-ui,sans-serif;font-weight:900;font-size:20px;letter-spacing:3px;text-transform:uppercase;border-radius:var(--r2) var(--r2) 0 0}
+  .modal-close{background:transparent;border:none;font-size:22px;cursor:pointer;color:rgba(0,0,0,.6);padding:0 4px;transition:color .1s}
+  .modal-close:hover{color:#000}
+  .modal-body{padding:20px}
+  .modal h3{font-family:'Inter',system-ui,sans-serif;font-weight:700;font-size:13px;letter-spacing:2.5px;text-transform:uppercase;color:var(--yellow);margin:18px 0 8px}
+  .modal h3:first-child{margin-top:0}
+  .modal p{color:var(--text2);font-size:14px;line-height:1.6;margin-bottom:6px}
+  .kbd{display:inline-block;padding:1px 6px;background:var(--bg);border:1px solid var(--border2);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--yellow)}
+  .woj-stats-list{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+  .woj-bar{display:grid;grid-template-columns:140px 1fr 60px;align-items:center;gap:10px;font-size:12px}
+  .woj-bar .name{color:var(--text2);letter-spacing:.5px}
+  .woj-bar .track{height:4px;background:var(--bg);border-radius:2px;position:relative;overflow:hidden}
+  .woj-bar .fill{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--red),var(--orange),var(--green));background-size:200% 100%;border-radius:2px}
+  .woj-bar .pct{font-family:'JetBrains Mono',monospace;color:var(--text);text-align:right}
+  .rank-tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border)}
+  .rank-tab{flex:1;padding:10px 8px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text3);font-family:'Inter',system-ui,sans-serif;font-size:12px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;transition:all .15s;margin-bottom:-1px}
+  .rank-tab:hover{color:var(--text2)}
+  .rank-tab.active{color:var(--yellow);border-bottom-color:var(--yellow)}
+  .rank-list{display:flex;flex-direction:column;gap:3px;margin-top:8px}
+  .rank-row{display:grid;grid-template-columns:28px 1fr 70px 50px 50px;align-items:center;gap:8px;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);font-size:13px;transition:border-color .15s}
+  .rank-row.me{border-color:rgba(245,196,0,.4);background:var(--yellow-bg)}
+  .rank-row.top1{border-color:rgba(255,215,0,.5)}
+  .rank-row.top2{border-color:rgba(192,192,192,.4)}
+  .rank-row.top3{border-color:rgba(205,127,50,.4)}
+  .rank-pos{font-family:'JetBrains Mono',monospace;font-weight:700;text-align:center;color:var(--text3)}
+  .rank-row.top1 .rank-pos{color:#ffd700}.rank-row.top2 .rank-pos{color:#c0c0c0}.rank-row.top3 .rank-pos{color:#cd7f32}
+  .rank-name{font-family:'Inter',system-ui,sans-serif;font-weight:700;letter-spacing:1px;color:var(--text)}
+  .rank-name.me-label::after{content:" (Ty)";font-family:'Inter',system-ui,sans-serif;font-size:10px;color:var(--yellow);font-weight:400}
+  .rank-pts{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--yellow);text-align:right}
+  .rank-acc{font-size:11px;color:var(--text3);text-align:right}
+  .rank-empty{color:var(--text2);font-size:13px;padding:12px 0}
+  #nickModal .modal-head{background:var(--bg3);border-bottom:2px solid var(--yellow);color:var(--yellow);border-radius:var(--r2) var(--r2) 0 0}
+  .nick-input-wrap{margin:14px 0 6px}
+  .nick-input-wrap input{width:100%;padding:14px 16px;background:var(--bg);border:2px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:26px;font-weight:700;letter-spacing:4px;text-transform:uppercase;outline:none;transition:border-color .15s}
+  .nick-input-wrap input:focus{border-color:var(--yellow)}.nick-input-wrap input.error{border-color:var(--red)}
+  .nick-error{font-size:12px;color:var(--red);letter-spacing:1px;min-height:16px;margin-bottom:8px}
+  @media(max-width:860px){
+    html,body{height:100%;height:-webkit-fill-available}
+    .app{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;height:100vh;height:100dvh;overflow-x:hidden}
+    .topbar{height:auto;flex-direction:column;padding:0;gap:0}
+    .topbar::before{width:100%;height:3px;right:0;bottom:auto}
+    .logo{padding:8px 12px;border-right:none;border-bottom:1px solid var(--border);width:100%}
+    .logo-text{font-size:15px}.logo-sub{display:none}
+    .hud{width:100%;padding:0;overflow:hidden}
+    .hud-item:first-child{margin-left:0;border-left:none}
+    .hud-item{padding:6px 10px}
+    .hud-item:nth-child(4){display:none}
+    .hud-label{font-size:7px}.hud-val{font-size:14px}
+    .hud-nick-val{font-size:12px;max-width:70px}
+    .hud-actions{padding-left:6px;gap:2px}
+    .icon-btn{width:32px;height:32px}.icon-btn svg{width:13px;height:13px}
+    .map-section{display:none!important}
+    .sidebar{padding:10px;gap:9px;background:var(--bg)}
+    .mode-btn{font-size:11px;padding:8px 3px}
+    input.guess{font-size:16px;padding:12px 12px}
+    .hint-btn{font-size:10px;padding:7px 2px}
+    .btn{padding:11px 8px;font-size:13px}
+    #btnDalej{font-size:17px;padding:13px}
+    .stats-bar{padding-top:6px;margin-top:0}.stat-box .v{font-size:16px}
+    .suggestions{bottom:100%;top:auto;max-height:200px}
+    .flash{font-size:52px}
+    .combo-bar{height:36px;gap:8px}
+    .combo-dot{width:12px;height:12px}
+    .combo-label{font-size:12px;letter-spacing:0}
+  }
   </style>
 </head>
-
 <body>
-
-  <div class="app">
-    <!-- Timer bar — pojawia się tylko w trybie "na czas" -->
-    <div class="time-bar" id="timeBar">
-      <div class="time-bar__progress" id="timeProgress"></div>
-      <div class="time-bar__label">Czas</div>
-      <div class="time-bar__count" id="timeCount">—</div>
-      <div class="time-bar__pts">−5 pkt/<span>sek</span></div>
+<div class="app">
+  <div class="time-bar" id="timeBar">
+    <div class="time-bar__progress" id="timeProgress"></div>
+    <div class="time-bar__label">Czas</div>
+    <div class="time-bar__count" id="timeCount">—</div>
+    <div class="time-bar__pts">−5 pkt/<span>sek</span></div>
+  </div>
+  <header class="topbar">
+    <div class="logo">
+      <div class="logo-badge">PL</div>
+      <div><div class="logo-text">Tablice Rejestracyjne</div><div class="logo-sub">Quiz — Polska</div></div>
     </div>
-
-    <header class="top">
-      <div class="brand">
-        <div class="brand-mark"><span>JP</span></div>
-        <div>
-          <div class="brand-title">TABLCE REJESTRACYJNE QUIZ</div>
-          <div class="brand-sub">— SPRAWDZ SWOJĄ WIEDZE O POLSKICH TABLICACH REJESTRACYJNYCH</div>
-        </div>
-      </div>
-      <div class="hud">
-        <div class="hud-nick">
-          <div class="label">Gracz</div>
-          <div class="value" id="hudNick">—</div>
-        </div>
-        <div class="hud-stat hot">
-          <div class="label">Punkty</div>
-          <div class="value" id="hudPunkty">0</div>
-        </div>
-        <div class="hud-stat streak">
-          <div class="label">Seria</div>
-          <div class="value" id="hudSeria">0</div>
-        </div>
-        <div class="hud-stat" style="border-bottom: 2px solid var(--niebieski-eu);">
-          <div class="label">Trafność</div>
-          <div class="value" id="hudTraf" style="color: var(--niebieski-eu);">—</div>
-        </div>
-        <button class="hud-icon-btn" id="btnRanking" title="Ranking">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-          </svg>
-        </button>
-        <button class="hud-icon-btn" id="btnStats" title="Statystyki">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 3v18h18" />
-            <rect x="7" y="13" width="3" height="5" />
-            <rect x="12" y="9" width="3" height="9" />
-            <rect x="17" y="6" width="3" height="12" />
-          </svg>
-        </button>
-        <button class="hud-icon-btn" id="btnHelp" title="Pomoc">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
-          </svg>
-        </button>
-      </div>
-    </header>
-
-    <aside class="game">
-      <div class="modes">
-        <button class="mode-btn active" data-mode="classic">Klasyk</button>
-        <button class="mode-btn" data-mode="reverse">Odwrotny</button>
-        <button class="mode-btn" data-mode="time">Na czas</button>
-        <button class="mode-btn" data-mode="region">Region</button>
-      </div>
-
-      <div class="plate-wrap">
-        <div class="plate" id="plate">
-          <div class="plate-eu">
-            <div class="plate-stars">
-              <svg viewBox="0 0 120 120" width="30" height="30">
-                <defs>
-                  <polygon id="star" points="0,-10 2,-3 9,-3 3,1 6,8 0,4 -6,8 -3,1 -9,-3 -2,-3" fill="#ffcc00" />
-                </defs>
-                <g transform="translate(60,60)">
-                  <use xlink:href="#star" y="-40" />
-                  <use xlink:href="#star" y="-40" transform="rotate(30)" />
-                  <use xlink:href="#star" y="-40" transform="rotate(60)" />
-                  <use xlink:href="#star" y="-40" transform="rotate(90)" />
-                  <use xlink:href="#star" y="-40" transform="rotate(120)" />
-                  <use xlink:href="#star" y="-40" transform="rotate(150)" />
-                  <use xlink:href="#star" y="-40" transform="rotate(180)" />
-                  <use xlink:href="#star" y="-40" transform="rotate(210)" />
-                  <use xlink:href="#star" y="-40" transform="rotate(240)" />
-                  <use xlink:href="#star" y="-40" transform="rotate(270)" />
-                  <use xlink:href="#star" y="-40" transform="rotate(300)" />
-                  <use xlink:href="#star" y="-40" transform="rotate(330)" />
-                </g>
-              </svg>
-            </div>
-            <div class="plate-pl">PL</div>
+    <div class="hud">
+      <div class="hud-item"><div class="hud-label">Gracz</div><div class="hud-nick-val" id="hudNick">—</div></div>
+      <div class="hud-item accent"><div class="hud-label">Punkty</div><div class="hud-val" id="hudPunkty">0</div></div>
+      <div class="hud-item streak"><div class="hud-label">Seria</div><div class="hud-val" id="hudSeria">0</div></div>
+      <div class="hud-item"><div class="hud-label">Trafność</div><div class="hud-val" id="hudTraf" style="color:var(--blue)">—</div></div>
+    </div>
+    <div class="hud-actions">
+      <button class="icon-btn" id="btnRanking" title="Ranking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+      <button class="icon-btn" id="btnStats" title="Statystyki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="13" width="3" height="5"/><rect x="12" y="9" width="3" height="9"/><rect x="17" y="6" width="3" height="12"/></svg></button>
+      <button class="icon-btn" id="btnHelp" title="Pomoc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
+    </div>
+  </header>
+  <aside class="sidebar">
+    <div class="modes">
+      <button class="mode-btn active" data-mode="classic">Klasyk</button>
+      <button class="mode-btn" data-mode="reverse">Odwrotny</button>
+      <button class="mode-btn" data-mode="time">Na czas</button>
+      <button class="mode-btn" data-mode="region">Region</button>
+    </div>
+    <div class="plate-wrap">
+      <div class="plate" id="plate">
+        <div class="plate-eu">
+          <div class="plate-stars">
+            <svg viewBox="0 0 120 120"><defs><polygon id="s" points="0,-10 2,-3 9,-3 3,1 6,8 0,4 -6,8 -3,1 -9,-3 -2,-3" fill="#ffcc00"/></defs><g transform="translate(60,60)"><use href="#s" y="-40"/><use href="#s" y="-40" transform="rotate(30)"/><use href="#s" y="-40" transform="rotate(60)"/><use href="#s" y="-40" transform="rotate(90)"/><use href="#s" y="-40" transform="rotate(120)"/><use href="#s" y="-40" transform="rotate(150)"/><use href="#s" y="-40" transform="rotate(180)"/><use href="#s" y="-40" transform="rotate(210)"/><use href="#s" y="-40" transform="rotate(240)"/><use href="#s" y="-40" transform="rotate(270)"/><use href="#s" y="-40" transform="rotate(300)"/><use href="#s" y="-40" transform="rotate(330)"/></g></svg>
           </div>
-          <div class="plate-text">
-            <span class="plate-prefix" id="platePrefix">KR</span><span class="plate-rest">12345</span>
-          </div>
-          <div class="plate-screw tl"></div>
-          <div class="plate-screw bl"></div>
+          <div class="plate-pl">PL</div>
         </div>
-      </div>
-
-      <div class="question-line" id="questionLine">
-        Jaki to <strong>powiat</strong>? Wpisz nazwę.
-      </div>
-
-      <div class="input-wrap">
-        <input class="guess" id="guessInput" type="text" autocomplete="off" placeholder="np. Kraków, Wałbrzych..."
-          spellcheck="false">
-        <div class="suggestions" id="suggestions"></div>
-      </div>
-
-      <div class="hints">
-        <button class="hint-btn" id="hintL1" data-hint="l1">
-          1. litera<span class="cost">−5 pkt</span>
-        </button>
-        <button class="hint-btn" id="hintL2" data-hint="l2">
-          2. litera<span class="cost">−10 pkt</span>
-        </button>
-        <button class="hint-btn" id="hintL3" data-hint="l3">
-          3. litera<span class="cost">−15 pkt</span>
-        </button>
-      </div>
-
-      <!-- Podpowiedź literowa — wyświetla odkryte litery -->
-      <div id="hintLettersDisplay"
-        style="display:none; font-family:'Anton',sans-serif; font-size:22px; letter-spacing:6px; color:var(--zolty); text-align:center; padding:4px 0;">
-      </div>
-
-      <!-- Przyciski gry — Sprawdź/Pomiń widoczne przy pytaniu, DALEJ po odpowiedzi -->
-      <div class="actions" id="actionsGame">
-        <button class="btn" id="btnSubmit">Sprawdź</button>
-        <button class="btn ghost" id="btnSkip">Pomiń</button>
-      </div>
-
-      <button id="btnDalej">DALEJ →</button>
-
-      <!-- Rząd DALEJ / STOP — stary (usunięty) -->
-
-      <div class="feedback" id="feedback"></div>
-
-      <div class="stats-mini">
-        <div class="stat-mini">
-          <div class="l">Pytania</div>
-          <div class="v" id="miniQ">0</div>
-        </div>
-        <div class="stat-mini">
-          <div class="l">Najl. seria</div>
-          <div class="v" id="miniBest">0</div>
-        </div>
-        <div class="stat-mini">
-          <div class="l">Rekord</div>
-          <div class="v" id="miniRec">0</div>
-        </div>
-      </div>
-    </aside>
-
-    <main class="map-section">
-      <div id="map"></div>
-      <div class="map-overlay-top" id="mapHint">
-        🗺️ Trafiona lokalizacja pojawi się <strong>tutaj</strong>
-      </div>
-    </main>
-  </div>
-
-  <div class="flash" id="flash"></div>
-
-  <!-- Modal pomocy -->
-  <div class="modal-bg" id="helpModal">
-    <div class="modal">
-      <div class="modal-head">
-        <span>Jak grać</span>
-        <button class="modal-close" data-close>×</button>
-      </div>
-      <div class="modal-body">
-        <h3>Tryby</h3>
-        <p><b>Klasyk:</b> widzisz 2-3 literowy prefiks tablicy (np. <span class="kbd">KLI</span>) — wpisz nazwę powiatu.
-        </p>
-        <p><b>Odwrotny:</b> dostajesz nazwę powiatu — wpisz prefiks (np. <span class="kbd">Limanowa</span> → KLI).</p>
-        <p><b>Na czas:</b> 90 sekund, ile zdążysz.</p>
-        <p><b>Region:</b> tylko jedno wybrane województwo.</p>
-
-        <h3>Punktacja</h3>
-        <p>Bazowo +10 pkt za poprawną odpowiedź. Mnożnik za serię: każda poprawna z rzędu daje +2 dodatkowe punkty (max
-          +30).</p>
-
-        <h3>Skróty klawiaturowe</h3>
-        <p><span class="kbd">Enter</span> — sprawdź / zatwierdź podpowiedź<br>
-          <span class="kbd">↑</span> <span class="kbd">↓</span> — nawigacja po podpowiedziach<br>
-          <span class="kbd">Tab</span> — uzupełnij najlepszą podpowiedź<br>
-          <span class="kbd">Esc</span> — pomiń pytanie
-        </p>
-
-        <h3>Adaptive learning</h3>
-        <p>Powiaty, które mylisz, pojawiają się <b>częściej</b>. Te które dobrze znasz — rzadziej. Postęp zapisuje się w
-          przeglądarce.</p>
-
-        <h3>Hinty</h3>
-        <p>Możesz odsłonić wskazówkę kosztem punktów. Hinty nie zerują serii.</p>
+        <div class="plate-text"><span class="plate-prefix" id="platePrefix">KR</span><span class="plate-rest">12345</span></div>
+        <div class="plate-screw tl"></div><div class="plate-screw bl"></div>
       </div>
     </div>
-  </div>
-
-  <!-- Modal statystyk -->
-  <div class="modal-bg" id="statsModal">
-    <div class="modal">
-      <div class="modal-head">
-        <span>Statystyki</span>
-        <button class="modal-close" data-close>×</button>
-      </div>
-      <div class="modal-body">
-        <h3>Po województwach</h3>
-        <div class="woj-stats-list" id="wojStatsList"></div>
-
-        <h3>Top 5 najczęściej mylonych</h3>
-        <div id="topWrongList" style="margin-top:8px;font-size:13px;color:var(--tekst-dim)"></div>
-
-        <h3>Akcje</h3>
-        <div class="actions" style="margin-top:8px">
-          <button class="btn ghost" id="btnReset">Wyzeruj postęp</button>
-        </div>
-      </div>
+    <div class="question-line" id="questionLine">Jaki to <strong>powiat</strong>? Wpisz nazwę.</div>
+    <div class="combo-bar" id="comboBar">
+      <div class="combo-dots" id="comboDots"></div>
+      <div class="combo-label" id="comboLabel">SERIA</div>
     </div>
-  </div>
-
-  <!-- Modal regionu -->
-  <div class="modal-bg" id="regionModal">
-    <div class="modal">
-      <div class="modal-head">
-        <span>Wybierz region</span>
-        <button class="modal-close" data-close>×</button>
-      </div>
-      <div class="modal-body">
-        <p>Tryb regionalny — gra losuje powiaty tylko z wybranego województwa.</p>
-        <div id="regionList" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px"></div>
-      </div>
+    <div class="input-wrap">
+      <input class="guess" id="guessInput" type="text" autocomplete="off" spellcheck="false" placeholder="Wpisz nazwę powiatu...">
+      <div class="suggestions" id="suggestions"></div>
     </div>
-  </div>
+    <div id="hintLettersDisplay"></div>
+    <div class="hints">
+      <button class="hint-btn" id="hintL1" data-hint="l1">1. litera<span class="cost">−5 pkt</span></button>
+      <button class="hint-btn" id="hintL2" data-hint="l2">2. litera<span class="cost">−10 pkt</span></button>
+      <button class="hint-btn" id="hintL3" data-hint="l3">3. litera<span class="cost">−15 pkt</span></button>
+    </div>
+    <div class="actions" id="actionsGame">
+      <button class="btn" id="btnSubmit">Sprawdź</button>
+      <button class="btn ghost" id="btnSkip">Pomiń</button>
+    </div>
+    <button id="btnDalej">DALEJ →</button>
+    <div class="feedback" id="feedback"></div>
+    <div class="stats-bar">
+      <div class="stat-box"><div class="l">Pytania</div><div class="v" id="miniQ">0</div></div>
+      <div class="stat-box"><div class="l">Najl. seria</div><div class="v" id="miniBest">0</div></div>
+      <div class="stat-box"><div class="l">Rekord</div><div class="v" id="miniRec">0</div></div>
+    </div>
+  </aside>
+  <main class="map-section">
+    <div id="map"></div>
+    <div class="map-hint" id="mapHint">🗺️ Trafiona lokalizacja pojawi się <strong>tutaj</strong></div>
+  </main>
+</div>
+<div class="flash" id="flash"></div>
+<div class="modal-bg" id="helpModal">
+  <div class="modal"><div class="modal-head"><span>Jak grać</span><button class="modal-close" data-close>×</button></div>
+  <div class="modal-body">
+    <h3>Tryby gry</h3>
+    <p><b>Klasyk:</b> widzisz prefiks tablicy (np. <span class="kbd">KLI</span>) — wpisz nazwę powiatu.</p>
+    <p><b>Odwrotny:</b> widzisz powiat — wpisz prefiks tablicy.</p>
+    <p><b>Na czas:</b> 60 sekund od pierwszej odpowiedzi, −5 pkt/sek.</p>
+    <p><b>Region:</b> tylko wybrane województwo.</p>
+    <h3>Punktacja</h3>
+    <p>Bazowo <strong>+25 pkt</strong> za poprawną odpowiedź. Seria poprawnych odpowiedzi daje bonus:</p>
+    <p>×3 → +10 &nbsp;|&nbsp; ×5 → +20 &nbsp;|&nbsp; ×8 → +30 &nbsp;|&nbsp; ×10 → +50</p>
+    <p>Podpowiedzi: 1. litera −5 | 2. litera −10 | 3. litera −15 pkt.</p>
+    <p style="margin-top:6px;line-height:2">
+      Seria 3–4: <strong style="color:var(--orange)">+5 pkt ⚡</strong><br>
+      Seria 5–9: <strong style="color:var(--orange)">+10 pkt 🔥</strong><br>
+      Seria 10+: <strong style="color:var(--green)">+15 pkt 💥</strong>
+    </p>
+    <p style="margin-top:6px">Błąd lub pominięcie resetuje serię do zera.</p>
+    <p>Podpowiedzi: −5 / −10 / −15 pkt za kolejne litery nazwy.</p>
+    <h3>Skróty</h3>
+    <p><span class="kbd">Enter</span> Sprawdź &nbsp; <span class="kbd">Spacja</span> Dalej &nbsp; <span class="kbd">Esc</span> Pomiń</p>
+    <p><span class="kbd">↑↓</span> Podpowiedzi &nbsp; <span class="kbd">Tab</span> Uzupełnij pierwsze</p>
+    <h3>Adaptive learning</h3>
+    <p>Powiaty które mylisz pojawiają się częściej!</p>
+  </div></div>
+</div>
+<div class="modal-bg" id="statsModal">
+  <div class="modal"><div class="modal-head"><span>Statystyki</span><button class="modal-close" data-close>×</button></div>
+  <div class="modal-body">
+    <h3>Wg województw</h3><div class="woj-stats-list" id="wojStatsList"></div>
+    <h3>Najczęściej mylone</h3><div id="topWrongList" style="margin-top:6px;font-size:13px;color:var(--text2)"></div>
+    <h3>Akcje</h3><div class="actions" style="margin-top:8px"><button class="btn ghost" id="btnReset">Wyzeruj postęp</button></div>
+  </div></div>
+</div>
+<div class="modal-bg" id="rankingModal">
+  <div class="modal"><div class="modal-head"><span>🏆 Ranking</span><button class="modal-close" data-close>×</button></div>
+  <div class="modal-body">
+    <div class="rank-tabs" id="rankTabs">
+      <button class="rank-tab active" data-tab="classic">Klasyk</button>
+      <button class="rank-tab" data-tab="reverse">Odwrotny</button>
+      <button class="rank-tab" data-tab="time">Na czas</button>
+    </div>
+    <div class="rank-list" id="rankList"></div>
+    <p style="margin-top:12px;font-size:10px;color:var(--text3)">Ranking przez Firebase Realtime Database. Każdy tryb gry ma osobną klasyfikację.</p>
+  </div></div>
+</div>
+<div class="modal-bg" id="regionModal">
+  <div class="modal"><div class="modal-head"><span>Wybierz region</span><button class="modal-close" data-close>×</button></div>
+  <div class="modal-body"><p>Gra losuje powiaty tylko z wybranego województwa.</p>
+  <div id="regionList" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:14px"></div>
+  </div></div>
+</div>
+<div class="modal-bg open" id="nickModal" style="z-index:1100">
+  <div class="modal" style="max-width:420px"><div class="modal-head"><span>Podaj nick</span></div>
+  <div class="modal-body">
+    <p>Wprowadź unikalną nazwę gracza. Będzie widoczna w rankingu.</p>
+    <p id="nickStorageInfo" style="font-size:11px;margin-top:4px;color:var(--text3)">📂 Tryb lokalny</p>
+    <div class="nick-input-wrap"><input type="text" id="nickInput" maxlength="16" autocomplete="off" spellcheck="false" placeholder="NICK"></div>
+    <div class="nick-error" id="nickError"></div>
+    <button class="btn" id="btnNickOk" style="width:100%">Zagraj →</button>
+  </div></div>
+</div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<!-- Konfiguracja Firebase — plik lokalny, NIE w repozytorium (patrz .gitignore) -->
+  <!-- Bez tego pliku gra działa w trybie offline (tylko localStorage)           -->
+  <script src="firebase-config.js"></script>
 
   <!-- Firebase SDK (Realtime Database) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
-  <script>
-    /* ============================================================
-       BAZA POLSKICH KODÓW REJESTRACYJNYCH
-       ============================================================ */
+  <!-- Konfiguracja Firebase — plik lokalny, NIE commitowany do repozytorium.
+       Skopiuj firebase-config.example.js → firebase-config.js i uzupełnij dane. -->
+  <script src="firebase-config.js" onerror="console.warn('[MistrzTablic] firebase-config.js nie znaleziony — tryb offline')"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
     const POWIATY = [
       // ========== DOLNOŚLĄSKIE (D) ==========
       { kod: "DB", nazwa: "Wałbrzych", typ: "miasto", woj: "dolnośląskie", lat: 50.7841, lng: 16.2845, wiki: "Wałbrzych" },
@@ -2111,7 +577,7 @@
       { kod: "WWE", nazwa: "Węgrów", typ: "ziemski", woj: "mazowieckie", lat: 52.4067, lng: 22.0094, wiki: "Węgrów" },
       { kod: "WWL", nazwa: "Wołomin", typ: "ziemski", woj: "mazowieckie", lat: 52.3414, lng: 21.2406, wiki: "Wołomin" },
       { kod: "WWY", nazwa: "Wyszków", typ: "ziemski", woj: "mazowieckie", lat: 52.5917, lng: 21.4631, wiki: "Wyszków" },
-      { kod: "WZ", nazwa: "warszawski zachodni (Ożarów)", typ: "ziemski", woj: "mazowieckie", lat: 52.2089, lng: 20.7239, wiki: "Powiat_warszawski_zachodni" },
+      { kod: "WZ", nazwa: "Warszawa Zachodnia (Ożarów)", typ: "ziemski", woj: "mazowieckie", lat: 52.2089, lng: 20.7239, wiki: "Powiat_warszawski_zachodni" },
       { kod: "WZW", nazwa: "Zwoleń", typ: "ziemski", woj: "mazowieckie", lat: 51.3611, lng: 21.5844, wiki: "Zwoleń" },
       { kod: "WZU", nazwa: "Żuromin", typ: "ziemski", woj: "mazowieckie", lat: 53.0653, lng: 19.9100, wiki: "Żuromin" },
       { kod: "WZY", nazwa: "Żyrardów", typ: "ziemski", woj: "mazowieckie", lat: 52.0489, lng: 20.4456, wiki: "Żyrardów" },
@@ -2342,20 +808,41 @@
        ============================================================ */
     const STORAGE_KEY = 'mistrzTablic_v1';
     const SESSION_KEY = 'mistrzTablic_session_v1';
-    const USERS_LS = 'mistrzTablic_users_v1'; // klucz localStorage (cache offline)
+    const USERS_LS    = 'mistrzTablic_users_v1'; // klucz localStorage (cache offline)
 
+    /* ============================================================
+       ██████╗  █████╗ ███╗   ██╗██╗  ██╗██╗███╗   ██╗ ██████╗
+       ██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝██║████╗  ██║██╔════╝
+       ██████╔╝███████║██╔██╗ ██║█████╔╝ ██║██╔██╗ ██║██║  ███╗
+       ██╔══██╗██╔══██║██║╚██╗██║██╔═██╗ ██║██║╚██╗██║██║   ██║
+       ██║  ██║██║  ██║██║ ╚████║██║  ██╗██║██║ ╚████║╚██████╔╝
+       ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝
 
+       SETUP (5 minut):
+       1. Wejdź na https://console.firebase.google.com/
+       2. "Add project" → podaj nazwę → wyłącz Analytics → Create
+       3. Kliknij "</>" (Web) → zarejestruj app → skopiuj firebaseConfig
+       4. Idź do "Realtime Database" → Create database → Start in TEST mode
+       5. Wklej swój firebaseConfig poniżej (zastąp wartości w FIREBASE_CONFIG)
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBVj_569NJedwRxn_wgXVLFOo0hCTmkIX4",
-      authDomain: "cotozablachy.firebaseapp.com",
-      databaseURL: "https://cotozablachy-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "cotozablachy",
-      storageBucket: "cotozablachy.firebasestorage.app",
-      messagingSenderId: "993650781543",
-      appId: "1:993650781543:web:cec8aba604bdde3438d3c2",
-      measurementId: "G-E9GBDW2W87"
-    };
+       REGUŁY BAZY (opcjonalne zabezpieczenie po testach):
+       W Firebase Console → Realtime Database → Rules wklej:
+       {
+         "rules": {
+           "ranking": {
+             ".read": true,
+             "$nick": { ".write": true }
+           }
+         }
+       }
+    ============================================================ */
+
+    /* Konfiguracja ładowana z firebase-config.js (plik lokalny, NIE w repozytorium).
+       Jeśli plik nie istnieje — gra działa w trybie offline (localStorage).
+       Szablon: firebase-config.example.js                                        */
+    const FIREBASE_CONFIG = (typeof window.FIREBASE_CONFIG !== 'undefined')
+      ? window.FIREBASE_CONFIG
+      : null;
 
     /* ---- Inicjalizacja Firebase ---- */
     let _db = null;
@@ -2363,17 +850,16 @@
 
     function initFirebase() {
       try {
-        // Jeśli nie skonfigurowano — użyj tylko localStorage
-        if (!FIREBASE_CONFIG.databaseURL || FIREBASE_CONFIG.databaseURL.includes('TWOJ_PROJEKT')) {
-          console.warn('[MistrzTablic] Firebase nie skonfigurowany — tryb lokalny');
+        if (!FIREBASE_CONFIG || !FIREBASE_CONFIG.databaseURL) {
+          console.warn('[MistrzTablic] Brak firebase-config.js — tryb offline (localStorage)');
           return false;
         }
         if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-        _db = firebase.database();
+        _db      = firebase.database();
         _rankRef = _db.ref('ranking');
         console.info('[MistrzTablic] Firebase połączony ✓');
         return true;
-      } catch (e) {
+      } catch(e) {
         console.warn('[MistrzTablic] Firebase błąd init:', e.message);
         return false;
       }
@@ -2383,10 +869,10 @@
 
     /* ---- localStorage cache ---- */
     function getLocalUsers() {
-      try { return JSON.parse(localStorage.getItem(USERS_LS) || '{}'); } catch (e) { return {}; }
+      try { return JSON.parse(localStorage.getItem(USERS_LS) || '{}'); } catch(e) { return {}; }
     }
     function saveLocalUsers(u) {
-      try { localStorage.setItem(USERS_LS, JSON.stringify(u)); } catch (e) { }
+      try { localStorage.setItem(USERS_LS, JSON.stringify(u)); } catch(e) {}
     }
 
     /* ---- Scalanie rankingów — wygrywa lepszy wynik ---- */
@@ -2394,14 +880,26 @@
       const out = { ...a };
       for (const [nick, d] of Object.entries(b || {})) {
         if (!out[nick]) { out[nick] = d; continue; }
-        out[nick] = {
-          ...out[nick],
-          rekord: Math.max(out[nick].rekord || 0, d.rekord || 0),
-          najlSeria: Math.max(out[nick].najlSeria || 0, d.najlSeria || 0),
-          pytania: Math.max(out[nick].pytania || 0, d.pytania || 0),
-          trafione: Math.max(out[nick].trafione || 0, d.trafione || 0),
-          ts: Math.max(out[nick].ts || 0, d.ts || 0),
-        };
+        // Migruj stary format do nowego (per-mode)
+        if (!out[nick].stats) {
+          out[nick] = { stats: { classic: emptyStats(), reverse: emptyStats(), time: emptyStats() }, ts: out[nick].ts || 0 };
+        }
+        if (!d.stats) {
+          d.stats = { classic: emptyStats(), reverse: emptyStats(), time: emptyStats() };
+        }
+        const merged = { ...out[nick], ts: Math.max(out[nick].ts || 0, d.ts || 0), stats: {} };
+        for (const m of GAME_MODES) {
+          const A = out[nick].stats[m] || emptyStats();
+          const B = d.stats[m] || emptyStats();
+          merged.stats[m] = {
+            rekord:    Math.max(A.rekord    || 0, B.rekord    || 0),
+            najlSeria: Math.max(A.najlSeria || 0, B.najlSeria || 0),
+            pytania:   Math.max(A.pytania   || 0, B.pytania   || 0),
+            trafione:  Math.max(A.trafione  || 0, B.trafione  || 0),
+            ts:        Math.max(A.ts        || 0, B.ts        || 0),
+          };
+        }
+        out[nick] = merged;
       }
       return out;
     }
@@ -2414,24 +912,24 @@
       try {
         const snap = await _rankRef.once('value');
         return snap.val() || {};
-      } catch (e) { return null; }
+      } catch(e) { return null; }
     }
 
     async function pushUsersToFirebase(users) {
       if (!isFirebaseReady()) return;
-      try { await _rankRef.set(users); } catch (e) { }
+      try { await _rankRef.set(users); } catch(e) {}
     }
 
     /* ---- Pełna synchronizacja (Firebase ↔ localStorage) ---- */
     async function syncUsers() {
-      const local = getLocalUsers();
-      const remote = await fetchUsersFromFirebase();
+      const local   = getLocalUsers();
+      const remote  = await fetchUsersFromFirebase();
       if (remote === null) return local;           // brak Firebase → tylko local
       const merged = mergeUsers(local, remote);
       saveLocalUsers(merged);
       // Zapisz z powrotem do Firebase jeśli local miał coś nowego
       if (JSON.stringify(merged) !== JSON.stringify(remote)) {
-        pushUsersToFirebase(merged).catch(() => { });
+        pushUsersToFirebase(merged).catch(() => {});
       }
       return merged;
     }
@@ -2445,111 +943,152 @@
     async function registerNick(nick) {
       nick = nick.trim().toUpperCase()
         .replace(/[^A-Z0-9ĄĆĘŁŃÓŚŹŻ _-]/gi, '').trim();
-      if (!nick) return 'Wpisz nick.';
+      if (!nick)         return 'Wpisz nick.';
       if (nick.length < 2) return 'Minimum 2 znaki.';
       if (nick.length > 16) return 'Maksymalnie 16 znaków.';
 
       const users = await syncUsers();
       if (users[nick]) return 'Ten nick jest już zajęty! Wybierz inny.';
 
-      const newEntry = { rekord: 0, pytania: 0, trafione: 0, najlSeria: 0, ts: Date.now() };
+      const newEntry = {
+        stats: { classic: emptyStats(), reverse: emptyStats(), time: emptyStats() },
+        ts: Date.now(),
+      };
       users[nick] = newEntry;
       saveLocalUsers(users);
 
       // Zapisz od razu do Firebase (atomic set konkretnego nicku)
       if (isFirebaseReady()) {
-        try { await _db.ref(`ranking/${nick}`).set(newEntry); } catch (e) { }
+        try { await _db.ref(`ranking/${nick}`).set(newEntry); } catch(e) {}
       }
 
       sessionStorage.setItem(SESSION_KEY, nick);
       return null; // brak błędu
     }
 
-    /* ---- Zapisz wyniki gracza ---- */
+    /* ---- Zapisz wyniki gracza (per tryb) ---- */
     async function saveRanking() {
       const nick = getCurrentNick();
       if (!nick) return;
       const users = getLocalUsers();
-      if (!users[nick]) users[nick] = { rekord: 0, pytania: 0, trafione: 0, najlSeria: 0, ts: Date.now() };
-      const u = users[nick];
+      if (!users[nick]) {
+        users[nick] = {
+          stats: { classic: emptyStats(), reverse: emptyStats(), time: emptyStats() },
+          ts: Date.now(),
+        };
+      }
+      // Zapewnij strukturę stats (migracja ze starych danych)
+      if (!users[nick].stats) {
+        users[nick].stats = { classic: emptyStats(), reverse: emptyStats(), time: emptyStats() };
+      }
+      for (const m of GAME_MODES) {
+        if (!users[nick].stats[m]) users[nick].stats[m] = emptyStats();
+      }
 
-      u.rekord = Math.max(u.rekord || 0, state.rekord);
-      u.najlSeria = Math.max(u.najlSeria || 0, state.najlSeria);
-
-      const prevP = u._lastPytania || 0;
-      const prevT = u._lastTrafione || 0;
-      u.pytania = (u.pytania || 0) + Math.max(0, state.pytania - prevP);
-      u.trafione = (u.trafione || 0) + Math.max(0, state.trafione - prevT);
-      u._lastPytania = state.pytania;
-      u._lastTrafione = state.trafione;
-      u.ts = Date.now();
+      // Aktualizuj statystyki dla każdego trybu z state.modeStats
+      for (const m of GAME_MODES) {
+        const local = state.modeStats[m] || emptyStats();
+        const remote = users[nick].stats[m];
+        users[nick].stats[m] = {
+          rekord:    Math.max(remote.rekord    || 0, local.rekord    || 0),
+          najlSeria: Math.max(remote.najlSeria || 0, local.najlSeria || 0),
+          pytania:   Math.max(remote.pytania   || 0, local.pytania   || 0),
+          trafione:  Math.max(remote.trafione  || 0, local.trafione  || 0),
+          ts:        Math.max(remote.ts        || 0, local.ts        || 0),
+        };
+      }
+      users[nick].ts = Date.now();
 
       saveLocalUsers(users);
 
-      // Zapisz tylko dane tego gracza do Firebase (nie blokuj UI)
       if (isFirebaseReady()) {
-        const { _lastPytania: _p, _lastTrafione: _t, ...clean } = u;
-        _db.ref(`ranking/${nick}`).set(clean).catch(() => { });
+        _db.ref(`ranking/${nick}`).set(users[nick]).catch(() => {});
       }
     }
 
-    /* ---- Modal rankingu ---- */
-    async function buildRankingModal() {
+    /* ---- Aktywna zakładka rankingu ---- */
+    let _activeRankTab = 'classic';
+
+    /* ---- Modal rankingu (per tryb) ---- */
+    async function buildRankingModal(mode = _activeRankTab) {
+      _activeRankTab = mode;
+      // Odśwież aktywne taby
+      document.querySelectorAll('.rank-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === mode);
+      });
+
       const isOnline = isFirebaseReady();
       $('rankList').innerHTML = `
-        <div style="text-align:center;padding:20px 0;color:var(--tekst-mute)">
+        <div style="text-align:center;padding:20px 0;color:var(--text3)">
           <div style="font-size:22px;margin-bottom:8px">${isOnline ? '☁️' : '📂'}</div>
-          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase">
+          <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600">
             ${isOnline ? 'Pobieranie rankingu...' : 'Ranking lokalny (brak Firebase)'}
           </div>
         </div>`;
 
-      const users = await syncUsers();
-      const nick = getCurrentNick();
+      const users  = await syncUsers();
+      const nick   = getCurrentNick();
+
+      // Sortuj po rekordzie z wybranego trybu
       const sorted = Object.entries(users)
-        .map(([n, d]) => ({ nick: n, ...d }))
+        .map(([n, d]) => {
+          const stats = (d.stats && d.stats[mode]) ? d.stats[mode] : emptyStats();
+          return { nick: n, ...stats };
+        })
         .filter(u => (u.pytania || 0) > 0 || (u.rekord || 0) > 0)
-        .sort((a, b) => (b.rekord || 0) - (a.rekord || 0) || (b.najlSeria || 0) - (a.najlSeria || 0));
+        .sort((a, b) => (b.rekord||0) - (a.rekord||0) || (b.najlSeria||0) - (a.najlSeria||0));
 
       if (sorted.length === 0) {
         $('rankList').innerHTML = `
-          <div class="rank-empty">Brak wyników — zagraj kilka rund!</div>
-          ${!isOnline ? '<div style="margin-top:10px;font-size:11px;color:var(--tekst-mute)">Firebase nie skonfigurowany — ranking tylko lokalny.<br>Zajrzyj do README w kodzie źródłowym.</div>' : ''}`;
+          <div class="rank-empty">Brak wyników dla trybu „${MODE_LABELS[mode]}" — zagraj kilka rund w tym trybie!</div>
+          ${!isOnline ? '<div style="margin-top:10px;font-size:11px;color:var(--text3)">Firebase nie skonfigurowany — ranking tylko lokalny.</div>' : ''}`;
         return;
       }
 
-      const medalClass = ['top1', 'top2', 'top3'];
-      const medals = ['🥇', '🥈', '🥉'];
+      const medalClass = ['top1','top2','top3'];
+      const medals     = ['🥇','🥈','🥉'];
 
-      const header = `<div class="rank-row" style="background:transparent;border-color:var(--line);pointer-events:none;opacity:.5">
+      const header = `<div class="rank-row" style="background:transparent;border-color:var(--border);pointer-events:none;opacity:.5">
         <div class="rank-pos">#</div>
-        <div class="rank-name" style="font-family:'Outfit';font-size:10px;letter-spacing:1px;font-weight:400">NICK</div>
-        <div class="rank-pts" style="font-size:10px;font-weight:400;color:var(--tekst-mute)">REKORD</div>
-        <div class="rank-acc" style="font-size:10px">TRAF%&nbsp;/&nbsp;PYTAŃ</div>
+        <div class="rank-name" style="font-family:'Inter';font-size:10px;letter-spacing:1px;font-weight:500">NICK</div>
+        <div class="rank-pts" style="font-size:10px;font-weight:500;color:var(--text3)">REKORD</div>
+        <div class="rank-acc" style="font-size:10px">TRAF% / SERIA</div>
       </div>`;
 
       const rows = sorted.slice(0, 20).map((u, i) => {
-        const isMe = u.nick === nick;
-        const pytania = u.pytania || 0;
+        const isMe     = u.nick === nick;
+        const pytania  = u.pytania  || 0;
         const trafione = u.trafione || 0;
-        const acc = pytania > 0 ? Math.round(trafione / pytania * 100) + '%' : '—';
+        const acc      = pytania > 0 ? Math.round(trafione / pytania * 100) + '%' : '—';
         const posLabel = i < 3 ? medals[i] : (i + 1);
         return `<div class="rank-row ${i < 3 ? medalClass[i] : ''} ${isMe ? 'me' : ''}">
           <div class="rank-pos">${posLabel}</div>
           <div class="rank-name ${isMe ? 'me-label' : ''}">${u.nick}</div>
-          <div class="rank-pts">${u.rekord || 0}<span style="font-size:10px;color:var(--tekst-mute)"> pkt</span></div>
-          <div class="rank-acc">${acc} <span style="color:var(--tekst-mute);font-size:10px">/ ${pytania}</span></div>
+          <div class="rank-pts">${u.rekord||0}<span style="font-size:10px;color:var(--text3)"> pkt</span></div>
+          <div class="rank-acc">${acc} <span style="color:var(--text3);font-size:10px">/ x${u.najlSeria||0}</span></div>
         </div>`;
       }).join('');
 
-      const footer = `<div style="margin-top:10px;font-size:10px;letter-spacing:1px;
-          color:${isOnline ? 'var(--zielony)' : 'var(--tekst-mute)'}">
+      const footer = `<div style="margin-top:10px;font-size:10px;letter-spacing:0.5px;
+          color:${isOnline ? 'var(--green)' : 'var(--text3)'}">
         ${isOnline
           ? '☁️ Firebase — ranking globalny, zsynchronizowany na żywo'
           : '📂 Tryb lokalny — skonfiguruj Firebase aby grać z innymi'}
       </div>`;
 
       $('rankList').innerHTML = header + rows + footer;
+    }
+
+    /* Tryby gry — każdy tryb ma własny rekord i serię */
+    const GAME_MODES = ['classic', 'reverse', 'time'];
+    const MODE_LABELS = { classic: 'Klasyk', reverse: 'Odwrotny', time: 'Na czas' };
+
+    // Mapuje aktualny tryb na klucz statystyk (region używa rankingu klasyk)
+    function statsKey(mode) {
+      return mode === 'region' ? 'classic' : mode;
+    }
+    function emptyStats() {
+      return { rekord: 0, pytania: 0, trafione: 0, najlSeria: 0, ts: 0 };
     }
 
     const state = {
@@ -2567,18 +1106,33 @@
       perPowiat: {},
       timer: null,
       timeLeft: 0,
+      answering: false,
+      // Statystyki per tryb (pełna historia)
+      modeStats: {
+        classic: emptyStats(),
+        reverse: emptyStats(),
+        time:    emptyStats(),
+      },
     };
 
     function loadState() {
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-        Object.assign(state, {
-          najlSeria: saved.najlSeria || 0,
-          rekord: saved.rekord || 0,
-          pytania: saved.pytania || 0,
-          trafione: saved.trafione || 0,
-          perPowiat: saved.perPowiat || {},
-        });
+        // perPowiat (statystyki adaptive learning) — przechowywane na stałe
+        state.perPowiat = saved.perPowiat || {};
+        // modeStats — przechowywane na stałe per tryb
+        if (saved.modeStats) {
+          for (const m of GAME_MODES) {
+            state.modeStats[m] = { ...emptyStats(), ...(saved.modeStats[m] || {}) };
+          }
+        }
+        // Bieżąca runda zawsze startuje od zera
+        state.punkty    = 0;
+        state.seria     = 0;
+        state.najlSeria = 0;
+        state.pytania   = 0;
+        state.trafione  = 0;
+        state.rekord    = state.modeStats[statsKey(state.mode)].rekord || 0;
       } catch (e) { console.warn('Nie udało się wczytać postępu:', e); }
     }
 
@@ -2590,9 +1144,10 @@
           pytania: state.pytania,
           trafione: state.trafione,
           perPowiat: state.perPowiat,
+          modeStats: state.modeStats,
         }));
       } catch (e) { }
-      saveRanking().catch(() => { }); // async — nie blokuj UI
+      saveRanking().catch(() => {});
     }
 
     /* ============================================================
@@ -2686,7 +1241,29 @@
        ============================================================ */
     const $ = id => document.getElementById(id);
 
+
+    function updateCombo() {
+      const dots  = $('comboDots');
+      const label = $('comboLabel');
+      if (!dots || !label) return;
+      const s = state.seria;
+      let html = '';
+      for (let i = 0; i < 10; i++) {
+        let c = 'combo-dot';
+        if (i < s) { c += ' lit'; if (s >= 5) c += ' streak5'; else if (s >= 3) c += ' streak3'; }
+        html += '<div class="' + c + '"></div>';
+      }
+      dots.innerHTML = html;
+
+      if (s >= 10)     { label.textContent = '💥 x' + s + ' +15'; label.className = 'combo-label fire'; }
+      else if (s >= 5) { label.textContent = '🔥 x' + s + ' +10'; label.className = 'combo-label fire'; }
+      else if (s >= 3) { label.textContent = '⚡ x' + s + ' +5';  label.className = 'combo-label hot'; }
+      else if (s > 0)  { label.textContent = 'x' + s;             label.className = 'combo-label'; }
+      else             { label.textContent = 'SERIA';              label.className = 'combo-label'; }
+    }
+
     function updateHud() {
+      updateCombo();
       $('hudNick').textContent = getCurrentNick() || '—';
       $('hudPunkty').textContent = state.punkty;
       $('hudSeria').textContent = state.seria;
@@ -2717,6 +1294,15 @@
       setTimeout(() => el.classList.remove('show'), 1000);
     }
 
+    // Specjalny flash dla kamieni milowych serii — większy, inny kolor
+    function flashStreak(text, type) {
+      const el = $('flash');
+      el.textContent = text;
+      el.className = 'flash show streak-' + type;
+      void el.offsetWidth;
+      setTimeout(() => el.classList.remove('show'), 1400);
+    }
+
     function showFeedback(html, kind = 'correct') {
       const fb = $('feedback');
       fb.className = 'feedback show ' + kind;
@@ -2731,6 +1317,7 @@
        PYTANIE
        ============================================================ */
     function nextQuestion() {
+      state.answering = false; // reset guard — pozwala na nową odpowiedź
       state.current = pickRandom();
 
       // Reset podpowiedzi
@@ -2773,11 +1360,24 @@
       else state.perPowiat[kod].bad++;
     }
 
+    /* Synchronizuje state.modeStats[currentMode] z licznikami z bieżącej rundy.
+       Wywoływane po każdej odpowiedzi/skipie. */
+    function updateModeStats(deltaPytania, deltaTrafione) {
+      const k = statsKey(state.mode);
+      const s = state.modeStats[k];
+      s.pytania  = (s.pytania  || 0) + (deltaPytania  || 0);
+      s.trafione = (s.trafione || 0) + (deltaTrafione || 0);
+      s.rekord    = Math.max(s.rekord    || 0, state.punkty);
+      s.najlSeria = Math.max(s.najlSeria || 0, state.seria);
+      s.ts = Date.now();
+    }
+
     function submitAnswer() {
-      if (!state.current) return;
+      if (!state.current || state.answering) return;
       const inp = $('guessInput');
       const val = inp.value.trim();
       if (!val) return;
+      state.answering = true;
 
       let correct = false, kind = null;
 
@@ -2802,14 +1402,30 @@
         state.trafione++;
         state.seria++;
         if (state.seria > state.najlSeria) state.najlSeria = state.seria;
-        const gain = 25 + (kind === 'fuzzy' ? -5 : 0);
+
+        // Punktacja z mnożnikiem serii
+        // seria 1-2: +0  |  3-4: +10  |  5-7: +20  |  8-9: +30  |  10+: +50
+        const streakBonus = state.seria >= 10 ? 50
+                          : state.seria >= 8  ? 30
+                          : state.seria >= 5  ? 20
+                          : state.seria >= 3  ? 10
+                          : 0;
+        const base = kind === 'fuzzy' ? 20 : 25;
+        const gain = base + streakBonus;
         state.punkty += gain;
         if (state.punkty > state.rekord) state.rekord = state.punkty;
-        flash('+' + gain, false);
-        showCorrectFeedback(state.current, gain, kind === 'fuzzy');
+
+        // Specjalny flash przy kamieniach milowych serii
+        if (state.seria === 3)       flashStreak('⚡ SERIA x3 +10', 'streak');
+        else if (state.seria === 5)  flashStreak('🔥 SERIA x5 +20', 'fire');
+        else if (state.seria === 8)  flashStreak('💥 SERIA x8 +30', 'fire');
+        else if (state.seria === 10) flashStreak('🏆 SERIA x10 +50!', 'fire');
+        else flash('+' + gain + (streakBonus ? ' (+' + streakBonus + ')' : ''), false);
+
+        showCorrectFeedback(state.current, gain, kind === 'fuzzy', streakBonus);
         flyToOnMap(state.current);
-        // Tryb na czas: start timera przy pierwszej odpowiedzi
         if (state.mode === 'time' && !state.timer) startTimeTick();
+        updateModeStats(1, 1);
       } else {
         recordResult(state.current.kod, false);
         state.seria = 0;
@@ -2817,6 +1433,7 @@
         showWrongFeedback(state.current, val);
         flyToOnMap(state.current, true);
         if (state.mode === 'time' && !state.timer) startTimeTick();
+        updateModeStats(1, 0);
       }
 
       saveState();
@@ -2833,6 +1450,7 @@
       hideSuggestions();
       showWrongFeedback(state.current, null, true);
       flyToOnMap(state.current, true);
+      updateModeStats(1, 0);
       saveState();
       updateHud();
 
@@ -2841,14 +1459,17 @@
       $('btnDalej').style.display = 'block';
     }
 
-    function showCorrectFeedback(p, gain, fuzzy) {
+    function showCorrectFeedback(p, gain, fuzzy, streakBonus = 0) {
       const wikiUrl = `https://pl.wikipedia.org/wiki/${encodeURIComponent(p.wiki)}`;
       const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+      const streakLine = streakBonus > 0
+        ? `<span style="color:var(--orange);font-size:12px;margin-left:6px">+${streakBonus} seria x${state.seria}</span>`
+        : '';
       showFeedback(`
         <div class="feedback-head">✓ Brawo${fuzzy ? ' (z literówką)' : ''}!</div>
         <div class="feedback-body">
           <strong>${p.kod}</strong> = <strong>${p.nazwa}</strong> — woj. ${p.woj}.
-          Zdobyte: <strong>+${gain} pkt</strong>.
+          Zdobyte: <strong>+${gain} pkt</strong>${streakLine}.
         </div>
         <div class="feedback-meta">
           <span class="chip">Typ: ${p.typ === 'miasto' ? 'miasto na prawach powiatu' : 'powiat ziemski'}</span>
@@ -2864,9 +1485,9 @@
         <div class="feedback-head">${skipped ? '↷ Pominięte' : '✗ Błąd'}</div>
         <div class="feedback-body">
           ${state.mode === 'reverse'
-          ? `Prawidłowy kod dla <strong>${p.nazwa}</strong> to <strong>${p.kod}</strong>.`
-          : `Kod <strong>${p.kod}</strong> oznacza <strong>${p.nazwa}</strong> (woj. ${p.woj}).`
-        }
+            ? `Prawidłowy kod dla <strong>${p.nazwa}</strong> to <strong>${p.kod}</strong>.`
+            : `Kod <strong>${p.kod}</strong> oznacza <strong>${p.nazwa}</strong> (woj. ${p.woj}).`
+          }
           ${given ? `<br><span style="color:var(--tekst-mute)">Twoja odpowiedź: "${given}"</span>` : ''}
         </div>
         <div class="feedback-meta">
@@ -3028,8 +1649,8 @@
       // Reset stanu — timer NIE startuje od razu
       if (state.timer) { clearInterval(state.timer); state.timer = null; }
       state.timeLeft = TIME_TOTAL;
-      state.punkty = 0;
-      state.seria = 0;
+      state.punkty   = 0;
+      state.seria    = 0;
       // Pokaż bar ale z myślnikiem (czeka na pierwszą odpowiedź)
       const bar = $('timeBar');
       bar.classList.add('active');
@@ -3159,7 +1780,15 @@
     function setMode(mode) {
       if (state.timer) { clearInterval(state.timer); state.timer = null; }
       stopTimeModeUI();
+      // Reset bieżącej rundy — punkty per tryb są oddzielne
+      state.punkty = 0;
+      state.seria = 0;
+      state.najlSeria = 0;
+      state.pytania = 0;
+      state.trafione = 0;
       state.mode = mode;
+      // Załaduj rekord dla wybranego trybu
+      state.rekord = state.modeStats[statsKey(mode)].rekord || 0;
       document.querySelectorAll('.mode-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.mode === mode);
       });
@@ -3173,6 +1802,7 @@
         state.regionWoj = null;
         nextQuestion();
       }
+      updateHud();
     }
 
     /* ============================================================
@@ -3234,7 +1864,13 @@
       /* ---- Ranking ---- */
       $('btnRanking').addEventListener('click', async () => {
         $('rankingModal').classList.add('open');
-        await buildRankingModal();
+        // Domyślnie pokaż ranking dla bieżącego trybu
+        await buildRankingModal(statsKey(state.mode));
+      });
+
+      // Zakładki rankingu
+      document.querySelectorAll('.rank-tab').forEach(tab => {
+        tab.addEventListener('click', () => buildRankingModal(tab.dataset.tab));
       });
 
       /* ---- Reszta obsługi ---- */
@@ -3265,8 +1901,7 @@
             hideSuggestions();
           }
         } else if (e.key === 'Escape') {
-          if (open) hideSuggestions();
-          else skipQuestion();
+          hideSuggestions(); // never skipQuestion on Escape — accidents reset seria
         }
       });
 
@@ -3279,9 +1914,15 @@
         if (!e.target.closest('.input-wrap')) hideSuggestions();
       });
 
-      $('btnSubmit').addEventListener('click', submitAnswer);
-      $('btnSkip').addEventListener('click', skipQuestion);
-      $('btnDalej').addEventListener('click', nextQuestion);
+      // Używamy touchend na mobile żeby uniknąć opóźnienia 300ms i ghost clicks
+      function addTouchHandler(el, fn) {
+        let touched = false;
+        el.addEventListener('touchend', e => { e.preventDefault(); touched = true; fn(); });
+        el.addEventListener('click', () => { if (!touched) fn(); touched = false; });
+      }
+      addTouchHandler($('btnSubmit'), submitAnswer);
+      addTouchHandler($('btnSkip'), skipQuestion);
+      addTouchHandler($('btnDalej'), nextQuestion);
 
       // Spacja = DALEJ (gdy przycisk DALEJ jest widoczny)
       document.addEventListener('keydown', e => {
@@ -3323,41 +1964,5 @@
       });
     });
   </script>
-  <!-- Modal wyboru nicku — blokuje grę do czasu wyboru -->
-  <div class="modal-bg open" id="nickModal" style="z-index:1100">
-    <div class="modal" style="max-width:420px">
-      <div class="modal-head">
-        <span>Podaj swój nick</span>
-      </div>
-      <div class="modal-body">
-        <p>Wprowadź unikalną nazwę gracza. Będzie widoczna w rankingu.</p>
-        <p id="nickStorageInfo" style="font-size:11px;margin-top:4px;color:var(--tekst-mute)">📂 Tryb lokalny</p>
-        <div class="nick-input-wrap">
-          <input type="text" id="nickInput" maxlength="16" autocomplete="off" spellcheck="false"
-            placeholder="TWÓJ NICK">
-        </div>
-        <div class="nick-error" id="nickError"></div>
-        <button class="btn" id="btnNickOk" style="width:100%">Zagraj →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal rankingu -->
-  <div class="modal-bg" id="rankingModal">
-    <div class="modal">
-      <div class="modal-head">
-        <span>🏆 Ranking graczy</span>
-        <button class="modal-close" data-close>×</button>
-      </div>
-      <div class="modal-body">
-        <div class="rank-list" id="rankList"></div>
-        <p style="margin-top:16px;font-size:11px;color:var(--tekst-mute)">
-          Ranking jest lokalny — przechowywany w tej przeglądarce na tym urządzeniu.
-        </p>
-      </div>
-    </div>
-  </div>
-
 </body>
-
 </html>
