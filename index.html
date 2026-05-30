@@ -2336,8 +2336,46 @@ a{color:inherit}
 .scroll-area.mode-quiz .q-title{ font-size:20px; line-height:1.05; }
 .scroll-area.mode-quiz .plate-wrap{ padding:9px 10px; }
 .scroll-area.mode-quiz .q-prompt{ display:none; }
+/* In the reverse quiz ("Jaki to kod?") the prompt holds the powiat name — keep it visible. */
+.scroll-area.mode-quiz.is-reverse .q-prompt{ display:block; }
 .scroll-area.mode-quiz .q-options{ gap:7px; }
 .scroll-area.mode-quiz .q-option{ min-height:48px; padding:10px 8px; font-size:14px; }
+
+/* ── Reverse quiz ("Jaki to kod?"): the powiat NAME is the question, so make it
+   the hero. The plate would only show a meaningless "??? ?????" placeholder, so
+   drop it and give the name a proper name-card with large, wrap-friendly type. */
+.scroll-area.mode-quiz.is-reverse .plate-wrap{ display:none; }
+.scroll-area.mode-quiz.is-reverse .q-prompt{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:7px;
+  padding:18px 16px;
+  background:var(--surface-2, rgba(255,255,255,.03));
+  border:1px solid var(--border-2, rgba(255,255,255,.07));
+  border-radius:var(--r-lg, 16px);
+}
+.q-prompt-label{
+  font-size:11px;
+  letter-spacing:1.4px;
+  text-transform:uppercase;
+  font-weight:800;
+  color:var(--text-3);
+  white-space:nowrap;
+}
+.q-name-hero{
+  font-size:clamp(28px, 7.6vw, 40px);
+  font-weight:800;
+  line-height:1.04;
+  letter-spacing:-.6px;
+  color:var(--yellow);
+  text-align:center;
+  text-wrap:balance;
+}
+
+/* Keep the map present but clearly secondary to the question in quiz mode. */
+.scroll-area.mode-quiz .poland-map-wrap{ flex:0 1 auto; }
+.scroll-area.mode-quiz .poland-map{ height:clamp(190px, 28vh, 280px); }
 
 /* ═══════════════════════════════════════════════════════════
    QUIZ TYGODNIA (Quiz of the Week) — full-screen overlay

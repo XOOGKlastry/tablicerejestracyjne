@@ -539,7 +539,7 @@ function nextQuestion(){
     if (effectiveMode() === 'quiz'){
       $('qPrompt').textContent = 'Wybierz odpowiedź:';
     } else {
-      $('qPrompt').innerHTML = `Wybierz kod dla: <b style="color:var(--yellow)">${state.current.nazwa}</b>`;
+      $('qPrompt').innerHTML = `<span class="q-prompt-label">Wybierz kod dla</span><span class="q-name-hero">${state.current.nazwa}</span>`;
     }
     $('actionsGame').style.display = 'none';
     buildQuizOptions();
