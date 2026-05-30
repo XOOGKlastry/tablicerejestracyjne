@@ -258,6 +258,16 @@ function flash(text, kind='good'){
   setTimeout(() => el.classList.remove('show'), 900);
 }
 
+/* Keep the scroll area pinned to the top so answering never makes the screen
+   "jump down". The layout is sized so the whole question fits on screen. */
+function keepPinnedTop(){
+  const sa = $('scrollArea');
+  if (!sa) return;
+  // Cancel any momentum / smooth animation, then snap to top instantly.
+  sa.scrollTo({ top: 0, behavior: 'auto' });
+  requestAnimationFrame(() => sa.scrollTo({ top: 0, behavior: 'auto' }));
+}
+
 /* ─── POLAND MAP ─── */
 function loadPolandMap() {
   window.PolandMap.load($('polandMap'));
@@ -455,12 +465,9 @@ function pickQuizOption(idx){
   }
   saveState();
   updateHud();
-
-  setTimeout(()=>{
-    const sa = $('scrollArea');
-    const card = document.querySelector('.map-card');
-    if (card) sa.scrollTo({ top: card.offsetTop - 60, behavior:'smooth' });
-  }, 120);
+  // Keep the question card pinned at the top — never scroll the screen down
+  // after answering (the layout is sized to fit; see CSS "MAP FIT").
+  keepPinnedTop();
 }
 
 /* ─── QUESTION FLOW ─── */
@@ -630,15 +637,9 @@ function submitAnswer(){
 
   saveState();
   updateHud();
-
-  // Scroll so map card is visible after answer
-  setTimeout(()=>{
-    const sa = $('scrollArea');
-    const card = document.querySelector('.map-card');
-    if (card){
-      sa.scrollTo({ top: card.offsetTop - 60, behavior:'smooth' });
-    }
-  }, 120);
+  // Everything fits on screen — keep it pinned at the top instead of scrolling
+  // the map into view (which previously pushed the screen down).
+  keepPinnedTop();
 }
 
 function skipQuestion(){
@@ -659,11 +660,7 @@ function skipQuestion(){
 
   $('actionsGame').style.display = 'none';
   $('btnNext').classList.add('show');
-  setTimeout(()=>{
-    const sa = $('scrollArea');
-    const card = document.querySelector('.map-card');
-    if (card) sa.scrollTo({ top: card.offsetTop - 60, behavior:'smooth' });
-  }, 120);
+  keepPinnedTop();
 }
 
 /* ─── HINTS ─── */
@@ -967,6 +964,7 @@ function buildModeGrid(){
       });
     });
   }
+  if (window.WeeklyQuiz && window.WeeklyQuiz.refreshLauncher) window.WeeklyQuiz.refreshLauncher();
 }
 
 /* ─── REGION SHEET ─── */
@@ -1091,6 +1089,7 @@ function tryRegisterNick(){
   applyModeUI();
   if (state.userMode === 'czas') startTimeMode();
   else nextQuestion();
+  openWeeklyOnEntry();
 }
 function showNickError(msg){
   $('nickError').textContent = msg;
@@ -1100,7 +1099,6 @@ function showNickError(msg){
 
 /* ─── BOTTOM NAV ─── */
 function selectTab(tab){
-  // If the map screen is open and we're navigating away, close it first.
   const mapScreen = $('naukaMapScreen');
   if (mapScreen && mapScreen.classList.contains('open') && tab !== 'nauka'){
     if (window.NaukaMap) window.NaukaMap.close();
@@ -1113,6 +1111,14 @@ function selectTab(tab){
   }
   if (tab === 'stats'){ buildStatsSheet(); openSheet('statsSheet'); }
   if (tab === 'ranking'){ buildRankingSheet(); openSheet('rankingSheet'); }
+}
+
+/* Open the Quiz Tygodnia overlay as the default landing screen on entry.
+   Deferred so weekly.js has wired its buttons (both run on DOMContentLoaded). */
+function openWeeklyOnEntry(){
+  setTimeout(() => {
+    if (window.WeeklyQuiz && window.WeeklyQuiz.open) window.WeeklyQuiz.open();
+  }, 0);
 }
 
 /* ─── INIT ─── */
@@ -1225,6 +1231,7 @@ function init(){
     applyModeUI();
     if (state.userMode === 'czas') startTimeMode();
     else nextQuestion();
+    openWeeklyOnEntry();
   } else {
     setTimeout(()=> $('nickInput').focus(), 250);
   }
