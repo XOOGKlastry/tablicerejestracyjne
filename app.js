@@ -899,37 +899,31 @@ const GUESS_ICONS = {
 };
 
 function refreshGuessHeader(){
-  const btn = $('btnGuess');
-  if (!btn) return;
-  const g = state.guess;
-  const icoEl = btn.querySelector('.guess-ico');
-  const labelEl = btn.querySelector('.guess-label');
-  if (icoEl) icoEl.innerHTML = GUESS_ICONS[g] || GUESS_ICONS.mix;
-  if (labelEl) labelEl.textContent = GUESS_LABELS[g] || 'Mix';
-  btn.classList.toggle('is-mix', g === 'mix');
+  // Header subtitle: "Quiz · Mix" etc.
+  const sub = $('headerSub');
+  if (sub) sub.textContent = (USER_MODE_LABELS[state.userMode] || 'Quiz') + ' · ' + (GUESS_LABELS[state.guess] || 'Mix');
+  // Direction segment in modes sheet (if rendered)
+  const seg = $('guessSeg');
+  if (seg) seg.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.guess === state.guess));
+  const desc = $('guessSegDesc');
+  if (desc) desc.innerHTML = GUESS_DESCS[state.guess] || '';
 }
 
-function buildGuessSheet(){
-  const opts = ['powiat','kod','mix'];
-  const html = opts.map(g => {
-    const active = state.guess === g ? ' active' : '';
-    return `<button class="guess-option${active}" data-guess="${g}">
-      <div class="guess-option-ico">${GUESS_ICONS[g]}</div>
-      <div class="guess-option-text">
-        <div class="guess-option-tit">${GUESS_LABELS[g]}</div>
-        <div class="guess-option-desc">${GUESS_DESCS[g]}</div>
-      </div>
-      <svg class="guess-option-check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-    </button>`;
+function buildGuessSeg(){
+  const seg = $('guessSeg');
+  if (!seg) return;
+  seg.innerHTML = ['powiat','kod','mix'].map(g => {
+    const active = state.guess === g ? ' class="active" data-guess="'+g+'"' : ' data-guess="'+g+'"';
+    return `<button${active}>${GUESS_ICONS[g]}${GUESS_LABELS[g]}</button>`;
   }).join('');
-  $('guessGrid').innerHTML = html;
-  $('guessGrid').querySelectorAll('.guess-option').forEach(b => {
+  seg.querySelectorAll('button').forEach(b => {
     b.addEventListener('click', () => {
-      const g = b.dataset.guess;
-      closeSheet('guessSheet');
-      setGuess(g);
+      if (b.dataset.guess === state.guess) return;
+      setGuess(b.dataset.guess);   // updates game in the background
+      refreshGuessHeader();         // re-highlight without closing the sheet
     });
   });
+  refreshGuessHeader();
 }
 
 /* ─── MODE QUICK PICKER (3 stacked cards) ─── */
@@ -971,6 +965,7 @@ function buildModeGrid(){
       });
     });
   }
+  buildGuessSeg();
 }
 
 /* ─── REGION SHEET ─── */
@@ -1245,18 +1240,8 @@ function init(){
     pickQuizOption(idx);
   });
 
-  // Top-right shortcuts
-  $('btnRecord').addEventListener('click', () => selectTab('weekly'));
-  $('btnProfile').addEventListener('click', () => selectTab('stats'));
-
-  // Header guess picker
-  const gBtn = $('btnGuess');
-  if (gBtn){
-    gBtn.addEventListener('click', () => {
-      buildGuessSheet();
-      openSheet('guessSheet');
-    });
-  }
+  // Header: single mode button opens the modes sheet
+  $('btnMode').addEventListener('click', () => selectTab('modes'));
 
   // Reset
   $('btnReset').addEventListener('click', () => {

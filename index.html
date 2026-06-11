@@ -97,14 +97,36 @@ a{color:inherit}
 .header-icon-btn:active{transform:scale(.94)}
 .header-icon-btn svg{width:18px;height:18px}
 
-.header-title{
-  flex:1;
-  text-align:center;
-  font-weight:800;
-  font-size:22px;
-  color:var(--yellow);
-  letter-spacing:-.2px;
+.header-brand{
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;
+  line-height:1;gap:3px;
 }
+.header-title{
+  font-weight:800;
+  font-size:clamp(18px,2.6vh,21px);
+  color:var(--text);
+  letter-spacing:-.3px;
+}
+.header-title em{font-style:normal;color:var(--yellow)}
+.header-sub{
+  font-size:10px;font-weight:700;letter-spacing:1.4px;
+  color:var(--text-3);text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.header-mode{
+  display:flex;align-items:center;gap:6px;
+  padding:9px 11px 9px 12px;
+  background:var(--yellow-soft);
+  border:1px solid var(--yellow-line);
+  border-radius:12px;
+  color:var(--yellow);
+  font-family:inherit;font-weight:800;font-size:12.5px;
+  flex-shrink:0;transition:.15s;
+}
+.header-mode:active{transform:scale(.95)}
+.header-mode svg{width:15px;height:15px}
+.header-mode .chev{width:12px;height:12px;color:var(--text-3);margin-left:-2px}
 
 /* ─── HEADER GUESS PICKER (replaces plain title) ─── */
 .header-guess{
@@ -1767,6 +1789,28 @@ a{color:inherit}
 .scroll-area.mode-quiz #hintReveal{display:none}
 .scroll-area:not(.mode-quiz) .q-options{display:none}
 
+/* ─── GUESS DIRECTION SEGMENT (inside modes sheet) ─── */
+.guess-seg{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:5px;
+  background:var(--surface-2);
+  padding:5px;border-radius:14px;
+}
+.guess-seg button{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:10px 4px;
+  border:none;border-radius:10px;
+  background:transparent;
+  color:var(--text-2);
+  font-family:inherit;font-weight:700;font-size:12.5px;
+  cursor:pointer;transition:.15s;
+}
+.guess-seg button svg{width:14px;height:14px}
+.guess-seg button.active{
+  background:var(--yellow);
+  color:#1a1503;
+  box-shadow:0 2px 10px rgba(245,195,58,.35);
+}
+
 /* ─── NAUKA: plate browser ─── */
 #naukaList .all-section-body{padding:6px 10px 10px}
 .nauka-row{
@@ -1865,29 +1909,23 @@ a{color:inherit}
 
   <!-- HEADER -->
   <header class="header">
-    <button class="header-icon-btn" id="btnRecord" aria-label="Rekord">
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M5 16L3 4l5.5 4L12 4l3.5 4L21 4l-2 12H5zm0 2v2c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-2H5z"/>
-      </svg>
-    </button>
-    <button class="header-guess" id="btnGuess" aria-label="Zmień kierunek zgadywania">
-      <span class="guess-ico"></span>
-      <div class="guess-title-wrap">
-        <span class="guess-title">WYBIERZ TRYB  </span>
-        <span class="guess-label">Mix</span>
-      </div>
-      <svg class="guess-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-    </button>
+    <div class="header-brand">
+      <span class="header-title">Tablice <em>PL</em></span>
+      <small class="header-sub" id="headerSub">Quiz · Mix</small>
+    </div>
     <button class="header-streak" id="hudStreakCell" aria-label="Seria">
       <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/>
       </svg>
       <span id="hudStreak">0</span>
     </button>
-    <button class="header-avatar" id="btnProfile" aria-label="Profil">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    <button class="header-mode" id="btnMode" aria-label="Wybierz tryb gry">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
       </svg>
+      <span>Tryb</span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
   </header>
 
@@ -2174,6 +2212,9 @@ a{color:inherit}
       <div class="sheet-body">
         <p>Wybierz tryb gry. Każdy ma własny rekord.</p>
         <div class="mode-quick" id="modeQuick"></div>
+        <h3 style="margin-top:16px">Kierunek zgadywania</h3>
+        <div class="guess-seg" id="guessSeg"></div>
+        <p style="margin-top:6px;font-size:11.5px" id="guessSegDesc"></p>
         <h3 style="margin-top:18px">Tryb specjalny</h3>
         <button class="btn-primary" id="btnAllStart" style="display:flex;align-items:center;justify-content:center;gap:10px">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -2281,22 +2322,6 @@ a{color:inherit}
     </div>
   </div>
 
-  <!-- ─── GUESS PICKER SHEET ─── -->
-  <div class="sheet-bg" id="guessSheet">
-    <div class="sheet">
-      <div class="sheet-handle"></div>
-      <div class="sheet-head">
-        <div class="sheet-title">Co zgadujesz?</div>
-        <button class="sheet-close" data-close>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
-        </button>
-      </div>
-      <div class="sheet-body">
-        <p>Wybierz, czy zgadujesz <b>powiat</b> z kodu, <b>tablicę</b> z powiatu, czy losowo.</p>
-        <div class="guess-grid" id="guessGrid"></div>
-      </div>
-    </div>
-  </div>
 
   <!-- ═══════════════════════════════════════════════════════
        WEEKLY CHALLENGE SCREEN (overlay)
