@@ -1767,6 +1767,75 @@ a{color:inherit}
 .scroll-area.mode-quiz #hintReveal{display:none}
 .scroll-area:not(.mode-quiz) .q-options{display:none}
 
+/* ─── NAUKA: plate browser ─── */
+#naukaList .all-section-body{padding:6px 10px 10px}
+.nauka-row{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 8px 6px 6px;
+  background:var(--surface-2);
+  border:1px solid transparent;
+  border-radius:11px;
+  text-decoration:none;color:var(--text);
+  transition:.12s;
+}
+.nauka-row:active{transform:scale(.99)}
+.nauka-row:hover{border-color:var(--yellow-line)}
+.mini-plate2{
+  position:relative;width:92px;flex-shrink:0;aspect-ratio:520/115;
+  background:linear-gradient(180deg,#fcfcf8 0%,#efece2 100%);
+  border:1.5px solid #0a0b0e;border-radius:5px;
+  display:flex;align-items:center;padding:0 4px 0 17px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.4);overflow:hidden;
+}
+.mini-plate2 .eu{
+  position:absolute;left:0;top:0;bottom:0;width:15px;
+  background:var(--eu-blue);display:flex;align-items:center;justify-content:center;
+}
+.mini-plate2 .eu span{color:#fff;font-weight:800;font-size:6.5px;letter-spacing:.3px}
+.mini-plate2 .code{
+  font-family:'Oxanium','Inter',sans-serif;font-weight:700;font-size:15px;
+  letter-spacing:.5px;color:#0a0b0e;width:100%;text-align:center;
+}
+.nauka-row .n-name{flex:1;min-width:0;font-size:13px;font-weight:600;line-height:1.25}
+.nauka-row .n-name small{display:block;color:var(--text-3);font-size:10px;font-weight:500;margin-top:1px;text-transform:capitalize}
+.nauka-typ{
+  flex-shrink:0;padding:3px 8px;border-radius:100px;
+  font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+}
+.nauka-typ.miasto{background:var(--yellow-soft);color:var(--yellow);border:1px solid var(--yellow-line)}
+.nauka-typ.ziemski{background:var(--surface-3);color:var(--text-3);border:1px solid var(--border-2)}
+.nauka-empty{text-align:center;color:var(--text-3);font-size:13px;padding:18px 0}
+
+/* ─── WEEKLY CHALLENGE ─── */
+.wk-body{
+  flex:1;overflow-y:auto;
+  padding:14px 16px calc(18px + var(--safe-b));
+  display:flex;flex-direction:column;gap:12px;
+}
+#wkGame{display:flex;flex-direction:column;gap:12px}
+.wk-progress{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.wk-counter{font-size:12px;font-weight:600;color:var(--text-2)}
+.wk-counter b{color:var(--yellow);font-weight:800;font-family:'JetBrains Mono'}
+.wk-dots{display:flex;gap:5px}
+.wk-dot{width:9px;height:9px;border-radius:50%;background:var(--border-2);transition:.2s}
+.wk-dot.cur{background:var(--yellow);box-shadow:0 0 8px rgba(245,195,58,.5)}
+.wk-dot.ok{background:var(--green)}
+.wk-dot.bad{background:var(--red)}
+.wk-options .q-option{min-height:54px}
+.wk-grid{
+  display:flex;justify-content:center;gap:3px;
+  font-size:24px;line-height:1;letter-spacing:1px;
+  user-select:all;
+}
+.wk-note{
+  font-size:11.5px;color:var(--text-3);text-align:center;
+  line-height:1.5;margin-top:10px;
+}
+#weeklyScreen .plate-wrap{flex-shrink:0}
+#weeklyScreen .plate{max-width:340px}
+
 /* ─── SHORT SCREENS: squeeze further so all stages still fit without scrolling ─── */
 @media (max-height:680px){
   .q-label{display:none}
@@ -1985,7 +2054,7 @@ a{color:inherit}
       </div>
       <span class="nav-item-label">Statystyki</span>
     </button>
-    <button class="nav-item" data-tab="ranking">
+    <button class="nav-item" data-tab="weekly">
       <div class="nav-item-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
@@ -1994,7 +2063,7 @@ a{color:inherit}
           <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
         </svg>
       </div>
-      <span class="nav-item-label">Ranking</span>
+      <span class="nav-item-label">Wyzwanie</span>
     </button>
   </nav>
 
@@ -2113,6 +2182,13 @@ a{color:inherit}
           Zgadnij wszystkie tablice
         </button>
         <p style="margin-top:6px;font-size:11.5px">Pełna lista wszystkich kodów rejestracyjnych. Wpisz każdy, alfabetycznie. Timer liczy bez końca, postęp zapisywany lokalnie.</p>
+        <button class="btn-secondary" id="btnWeeklyStart" style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+            <path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+          </svg>
+          Wyzwanie tygodnia · 10 pytań
+        </button>
       </div>
     </div>
   </div>
@@ -2127,32 +2203,55 @@ a{color:inherit}
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
         </button>
       </div>
-      <div class="sheet-body">
-        <h3>Tryby gry</h3>
-        <p><b>Quiz:</b> 4 odpowiedzi do wyboru. Najszybszy tryb.</p>
-        <p><b>Wpisz:</b> wpisujesz odpowiedź z głowy. Podpowiedzi (1./2./3. litera).</p>
-        <p><b>Na czas:</b> 60 sek od pierwszej odpowiedzi. Ile zdążysz?</p>
-        <p><b>Zgadnij wszystkie:</b> pełna lista 396 tablic, jedna kolumna z polami.</p>
+      <div class="sheet-body" id="naukaBody">
+        <div class="input-wrap" style="margin-top:4px">
+          <span class="ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
+          <input id="naukaSearch" type="text" autocomplete="off" spellcheck="false" placeholder="Szukaj: kod lub miasto…">
+        </div>
+        <p style="margin:8px 0 4px;font-size:11.5px">Pełna lista kodów rejestracyjnych wg województw. Kliknij wiersz, aby otworzyć Wikipedię powiatu.</p>
+        <div id="naukaList"></div>
+        <div class="all-section" id="naukaHowto" style="margin-top:10px">
+          <div class="all-section-head">
+            <div class="all-section-letter">?</div>
+            <div class="all-section-info">
+              <div class="all-section-name">Jak grać i punktacja</div>
+              <div class="all-section-count">Tryby, serie, podpowiedzi</div>
+            </div>
+            <svg class="all-section-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="all-section-body" style="padding:4px 14px 12px;display:none">
+            <h3>Tryby gry</h3>
+            <p><b>Quiz:</b> 4 odpowiedzi do wyboru. Najszybszy tryb.</p>
+            <p><b>Wpisz:</b> wpisujesz odpowiedź z głowy. Podpowiedzi (1./2./3. litera).</p>
+            <p><b>Na czas:</b> 60 sek od pierwszej odpowiedzi. Ile zdążysz?</p>
+            <p><b>Zgadnij wszystkie:</b> pełna lista 396 tablic, jedna kolumna z polami.</p>
+            <p><b>Wyzwanie tygodnia:</b> 10 pytań, te same dla wszystkich, nowe w każdy poniedziałek.</p>
 
-        <h3>Kierunek (ikonka „Tablice")</h3>
-        <p><b>Powiat:</b> widzisz kod → podajesz powiat.</p>
-        <p><b>Tablica:</b> widzisz powiat → podajesz kod.</p>
-        <p><b>Mix:</b> naprzemiennie obie strony.</p>
+            <h3>Kierunek (ikonka „Tablice")</h3>
+            <p><b>Powiat:</b> widzisz kod → podajesz powiat.</p>
+            <p><b>Tablica:</b> widzisz powiat → podajesz kod.</p>
+            <p><b>Mix:</b> naprzemiennie obie strony.</p>
 
-        <h3>Punktacja</h3>
-        <p>Bazowo <b>+25 pkt</b> za poprawną odpowiedź (z literówką: +20). Bonus za serię:</p>
-        <p style="line-height:1.9">
-          ×3 → <b style="color:var(--orange)">+10 ⚡</b><br>
-          ×5 → <b style="color:var(--orange)">+20 🔥</b><br>
-          ×8 → <b style="color:var(--orange)">+30 💥</b><br>
-          ×10 → <b style="color:var(--green)">+50 🏆</b>
-        </p>
+            <h3>Punktacja</h3>
+            <p>Bazowo <b>+25 pkt</b> za poprawną odpowiedź (z literówką: +20). Bonus za serię:</p>
+            <p style="line-height:1.9">
+              ×3 → <b style="color:var(--orange)">+10 ⚡</b><br>
+              ×5 → <b style="color:var(--orange)">+20 🔥</b><br>
+              ×8 → <b style="color:var(--orange)">+30 💥</b><br>
+              ×10 → <b style="color:var(--green)">+50 🏆</b>
+            </p>
 
-        <h3>Podpowiedzi</h3>
-        <p>Odkryj kolejne litery nazwy za <b>−5 / −10 / −15 pkt</b>.</p>
+            <h3>Podpowiedzi</h3>
+            <p>Odkryj kolejne litery nazwy za <b>−5 / −10 / −15 pkt</b>.</p>
 
-        <h3>Adaptive learning</h3>
-        <p>Powiaty które mylisz pojawiają się <b>częściej</b>.</p>
+            <h3>Adaptive learning</h3>
+            <p>Powiaty które mylisz pojawiają się <b>częściej</b>.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2170,6 +2269,8 @@ a{color:inherit}
       <div class="sheet-body" id="statsBody">
         <h3>Bieżąca sesja</h3>
         <div class="session-stats" id="sessionStats"></div>
+        <h3>Rekordy</h3>
+        <div id="recordsList"></div>
         <h3>Wg województw</h3>
         <div id="wojStatsList"></div>
         <h3>Najczęściej mylone</h3>
@@ -2197,17 +2298,85 @@ a{color:inherit}
     </div>
   </div>
 
-  <!-- ─── RANKING SHEET (offline = personal records) ─── -->
-  <div class="sheet-bg" id="rankingSheet">
-    <div class="sheet">
-      <div class="sheet-handle"></div>
-      <div class="sheet-head">
-        <div class="sheet-title">Twoje rekordy</div>
-        <button class="sheet-close" data-close>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
-        </button>
+  <!-- ═══════════════════════════════════════════════════════
+       WEEKLY CHALLENGE SCREEN (overlay)
+       ═══════════════════════════════════════════════════════ -->
+  <div class="all-screen" id="weeklyScreen">
+    <header class="all-header">
+      <div class="all-header-title">
+        <div class="ttl-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+            <path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+          </svg>
+        </div>
+        <div class="ttl-text">
+          <span>Wyzwanie tygodnia</span>
+          <small id="wkSub">Tydzień —</small>
+        </div>
       </div>
-      <div class="sheet-body" id="rankingBody"></div>
+      <button class="all-exit" id="btnWeeklyExit" aria-label="Wyjdź">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+      </button>
+    </header>
+    <div class="wk-body">
+      <div id="wkGame" style="display:none">
+        <div class="wk-progress">
+          <span class="wk-counter">Pytanie <b id="wkQNum">1</b>/10</span>
+          <div class="wk-dots" id="wkDots"></div>
+        </div>
+        <div class="plate-wrap">
+          <div class="plate" id="wkPlate">
+            <div class="plate-eu">
+              <svg viewBox="0 0 120 120">
+                <g transform="translate(60,60)">
+                  <use href="#star" y="-40"/><use href="#star" y="-40" transform="rotate(30)"/>
+                  <use href="#star" y="-40" transform="rotate(60)"/><use href="#star" y="-40" transform="rotate(90)"/>
+                  <use href="#star" y="-40" transform="rotate(120)"/><use href="#star" y="-40" transform="rotate(150)"/>
+                  <use href="#star" y="-40" transform="rotate(180)"/><use href="#star" y="-40" transform="rotate(210)"/>
+                  <use href="#star" y="-40" transform="rotate(240)"/><use href="#star" y="-40" transform="rotate(270)"/>
+                  <use href="#star" y="-40" transform="rotate(300)"/><use href="#star" y="-40" transform="rotate(330)"/>
+                </g>
+              </svg>
+              <span class="pl">PL</span>
+            </div>
+            <div class="plate-text">
+              <span class="plate-prefix" id="wkPlatePrefix">CGD</span>
+              <span class="plate-rest" id="wkPlateRest">12345</span>
+            </div>
+          </div>
+        </div>
+        <div class="q-prompt" id="wkPrompt" style="margin-top:0"></div>
+        <div class="q-options wk-options" id="wkOptions">
+          <button class="q-option" data-opt="0"><span class="letter">A</span><span class="text">—</span></button>
+          <button class="q-option" data-opt="1"><span class="letter">B</span><span class="text">—</span></button>
+          <button class="q-option" data-opt="2"><span class="letter">C</span><span class="text">—</span></button>
+          <button class="q-option" data-opt="3"><span class="letter">D</span><span class="text">—</span></button>
+        </div>
+      </div>
+      <div id="wkSummary" style="display:none">
+        <div class="summary-hero">
+          <div class="summary-trophy">🏆</div>
+          <div class="summary-score"><span id="wkScore">0</span><span class="unit">/10</span></div>
+          <div class="summary-meta" id="wkMeta">Tydzień —</div>
+        </div>
+        <div class="wk-grid" id="wkGrid"></div>
+        <div class="actions-stack" style="margin-top:14px">
+          <button class="btn-primary" id="btnWkShare">
+            <span style="display:inline-flex;align-items:center;gap:8px;justify-content:center">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              Udostępnij wynik
+            </span>
+          </button>
+          <button class="btn-secondary" id="btnWkTrain">Zagraj treningowo</button>
+        </div>
+        <p class="wk-note">Te same 10 pytań dla wszystkich graczy. Nowe wyzwanie w każdy poniedziałek. Liczy się pierwsze podejście.</p>
+      </div>
     </div>
   </div>
 

@@ -993,6 +993,7 @@ function openRegionSheet(){
 
 /* ─── STATS SHEET ─── */
 function buildStatsSheet(){
+  renderRecords();
   const sess = $('sessionStats');
   sess.innerHTML = `
     <div class="session-stat"><div class="l">Pytania</div><div class="v">${state.pytania}</div></div>
@@ -1042,9 +1043,15 @@ function buildStatsSheet(){
   }
 }
 
-/* ─── RANKING SHEET (personal records per mode) ─── */
-function buildRankingSheet(){
-  const body = $('rankingBody');
+/* ─── RECORDS (inside Statystyki) ─── */
+function renderRecords(){
+  const el = $('recordsList');
+  if (!el) return;
+  let q = 0, t = 0;
+  for (const m of GAME_MODES){
+    q += state.modeStats[m].pytania || 0;
+    t += state.modeStats[m].trafione || 0;
+  }
   const rows = GAME_MODES.map(m => {
     const s = state.modeStats[m] || emptyStats();
     return `<div class="session-mode-line">
@@ -1052,31 +1059,86 @@ function buildRankingSheet(){
       <span>${s.rekord || 0} pkt · seria ×${s.najlSeria || 0}</span>
     </div>`;
   }).join('');
-  body.innerHTML = `
-    <h3>Najlepsze wyniki</h3>
-    ${rows}
-    <h3>Łącznie</h3>
-    ${(() => {
-      let q = 0, t = 0;
-      for (const m of GAME_MODES){
-        q += state.modeStats[m].pytania || 0;
-        t += state.modeStats[m].trafione || 0;
-      }
-      return `<div class="session-stats">
-        <div class="session-stat"><div class="l">Pytania</div><div class="v">${q}</div></div>
-        <div class="session-stat"><div class="l">Trafione</div><div class="v">${t}</div></div>
-        <div class="session-stat"><div class="l">Trafność</div><div class="v">${q > 0 ? Math.round(t/q*100) + '%' : '—'}</div></div>
-      </div>`;
-    })()}
-    <h3>Tryb online</h3>
-    <div class="soon">
-      <div class="soon-ico">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+  const wkSaved = weeklyLoad();
+  const wkRow = wkSaved && wkSaved.done
+    ? `<div class="session-mode-line"><span>Wyzwanie (${wkSaved.weekKey.replace('-W',' · tydz. ')})</span><span>${wkSaved.score}/10</span></div>`
+    : '';
+  el.innerHTML = rows + wkRow + `
+    <div class="session-stats" style="margin-top:8px">
+      <div class="session-stat"><div class="l">Pytania</div><div class="v">${q}</div></div>
+      <div class="session-stat"><div class="l">Trafione</div><div class="v">${t}</div></div>
+      <div class="session-stat"><div class="l">Trafność</div><div class="v">${q > 0 ? Math.round(t/q*100) + '%' : '—'}</div></div>
+    </div>`;
+}
+
+/* ─── NAUKA: plate browser with search ─── */
+let naukaBuilt = false;
+function buildNaukaSheet(){
+  if (naukaBuilt) return;
+  naukaBuilt = true;
+
+  const list = $('naukaList');
+  const wojs = [...new Set(POWIATY.map(p => p.woj))].sort((a,b)=> a.localeCompare(b,'pl'));
+
+  list.innerHTML = wojs.map(w => {
+    const items = POWIATY.filter(p => p.woj === w).sort((a,b)=> a.kod.localeCompare(b.kod,'pl'));
+    const letter = (items[0] && items[0].kod[0]) || '?';
+    const rows = items.map(p => {
+      const name = p.nazwa.replace(/\s*\([^)]*\)/g,'').trim();
+      const wiki = encodeURIComponent((p.wiki || name).replace(/ /g,'_'));
+      return `<a class="nauka-row" data-kod="${p.kod}" data-name="${normalize(p.nazwa)}"
+                 href="https://pl.wikipedia.org/wiki/${wiki}" target="_blank" rel="noopener">
+        <div class="mini-plate2"><div class="eu"><span>PL</span></div><div class="code">${p.kod}</div></div>
+        <div class="n-name">${name}<small>${p.woj}</small></div>
+        <span class="nauka-typ ${p.typ}">${p.typ === 'miasto' ? 'Miasto' : 'Ziemski'}</span>
+      </a>`;
+    }).join('');
+    return `<div class="all-section nauka-section" data-woj="${w}">
+      <div class="all-section-head">
+        <div class="all-section-letter">${letter}</div>
+        <div class="all-section-info">
+          <div class="all-section-name" style="text-transform:capitalize">${w}</div>
+          <div class="all-section-count">${items.length} kodów</div>
+        </div>
+        <svg class="all-section-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <h4>Globalny ranking — wkrótce</h4>
-      <p>Na razie rekordy zapisują się lokalnie na tym urządzeniu.</p>
-    </div>
-  `;
+      <div class="all-section-body">${rows}</div>
+    </div>`;
+  }).join('') + `<div class="nauka-empty" id="naukaEmpty" style="display:none">Brak wyników.</div>`;
+
+  // Accordion toggles (sections + "Jak grać")
+  $('naukaBody').querySelectorAll('.all-section-head').forEach(h => {
+    h.addEventListener('click', () => {
+      const sec = h.parentElement;
+      sec.classList.toggle('open');
+      // "Jak grać" uses inline display:none on body — sync it
+      const body = sec.querySelector('.all-section-body');
+      if (body && body.style.display !== '') body.style.display = sec.classList.contains('open') ? 'flex' : 'none';
+    });
+  });
+
+  // Search filter
+  const search = $('naukaSearch');
+  search.addEventListener('input', () => {
+    const q = normalize(search.value);
+    const qU = search.value.trim().toUpperCase();
+    let any = false;
+    list.querySelectorAll('.nauka-section').forEach(sec => {
+      let visible = 0;
+      sec.querySelectorAll('.nauka-row').forEach(row => {
+        const hit = !q
+          || row.dataset.kod.startsWith(qU)
+          || row.dataset.name.includes(q);
+        row.style.display = hit ? '' : 'none';
+        if (hit) visible++;
+      });
+      sec.style.display = visible ? '' : 'none';
+      sec.classList.toggle('open', !!q && visible > 0);
+      if (visible) any = true;
+    });
+    const empty = $('naukaEmpty');
+    if (empty) empty.style.display = any ? 'none' : 'block';
+  });
 }
 
 /* ─── SHEET HELPERS ─── */
@@ -1106,9 +1168,9 @@ function showNickError(msg){
 function selectTab(tab){
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
   if (tab === 'modes'){ buildModeGrid(); openSheet('modesSheet'); }
-  if (tab === 'nauka'){ openSheet('naukaSheet'); }
+  if (tab === 'nauka'){ buildNaukaSheet(); openSheet('naukaSheet'); }
   if (tab === 'stats'){ buildStatsSheet(); openSheet('statsSheet'); }
-  if (tab === 'ranking'){ buildRankingSheet(); openSheet('rankingSheet'); }
+  if (tab === 'weekly'){ openWeekly(); }
 }
 
 /* ─── INIT ─── */
@@ -1184,7 +1246,7 @@ function init(){
   });
 
   // Top-right shortcuts
-  $('btnRecord').addEventListener('click', () => selectTab('ranking'));
+  $('btnRecord').addEventListener('click', () => selectTab('weekly'));
   $('btnProfile').addEventListener('click', () => selectTab('stats'));
 
   // Header guess picker
@@ -1519,3 +1581,242 @@ if (!_origInit){
   window.__origInitGuard = true;
   document.addEventListener('DOMContentLoaded', initAllMode);
 }
+
+/* ============================================================
+   WEEKLY CHALLENGE (Wyzwanie tygodnia)
+   - 10 deterministic questions per ISO week (same for everyone)
+   - First completed run is the official result; later runs = training
+   ============================================================ */
+const WEEKLY_STORAGE = 'tabliceApp_weekly_v1';
+const WK_N = 10;
+const wk = {
+  qs: [], idx: 0, marks: [],
+  practice: false, locked: false,
+  weekKey: '', label: '',
+};
+
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function isoWeekInfo(d = new Date()){
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - dayNum + 3);
+  const firstThu = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const fDayNum = (firstThu.getUTCDay() + 6) % 7;
+  firstThu.setUTCDate(firstThu.getUTCDate() - fDayNum + 3);
+  const week = 1 + Math.round((date - firstThu) / (7 * 864e5));
+  return { week, year: date.getUTCFullYear() };
+}
+function seededShuffle(arr, rng){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function wkClean(n){ return (n || '').replace(/\s*\([^)]*\)/g, '').trim(); }
+
+function weeklyLoad(){
+  try{ return JSON.parse(localStorage.getItem(WEEKLY_STORAGE) || 'null'); }
+  catch(e){ return null; }
+}
+function weeklySave(obj){
+  try{ localStorage.setItem(WEEKLY_STORAGE, JSON.stringify(obj)); } catch(e){}
+}
+
+function buildWeeklySet(){
+  const { week, year } = isoWeekInfo();
+  wk.weekKey = year + '-W' + String(week).padStart(2, '0');
+  wk.label = 'Tydzień ' + week + '/' + year;
+  const rng = mulberry32(year * 1000 + week * 7919);
+
+  const picks = seededShuffle(POWIATY, rng).slice(0, WK_N);
+  wk.qs = picks.map((p, i) => {
+    const reverse = i % 2 === 1; // even: kod→powiat, odd: powiat→kod
+    let opts;
+    if (!reverse){
+      const correct = wkClean(p.nazwa);
+      const seen = new Set([normalize(correct)]);
+      let pool = POWIATY.filter(x => {
+        const n = normalize(wkClean(x.nazwa));
+        if (seen.has(n)) return false;
+        return normalize(x.nazwa)[0] === normalize(p.nazwa)[0];
+      });
+      if (pool.length < 3){
+        pool = pool.concat(POWIATY.filter(x => !seen.has(normalize(wkClean(x.nazwa))) && pool.indexOf(x) === -1));
+      }
+      const dis = [];
+      for (const d of seededShuffle(pool, rng)){
+        const n = normalize(wkClean(d.nazwa));
+        if (seen.has(n)) continue;
+        seen.add(n);
+        dis.push({ label: wkClean(d.nazwa), correct: false });
+        if (dis.length === 3) break;
+      }
+      opts = seededShuffle([{ label: correct, correct: true }, ...dis], rng);
+    } else {
+      const targetSet = new Set(p.kod.split(''));
+      const scored = [];
+      const seen = new Set([p.kod]);
+      for (const x of POWIATY){
+        if (seen.has(x.kod)) continue;
+        seen.add(x.kod);
+        let shared = 0;
+        for (const ch of x.kod) if (targetSet.has(ch)) shared++;
+        scored.push({ kod: x.kod, score: shared * 10 - Math.abs(x.kod.length - p.kod.length) * 2 });
+      }
+      scored.sort((a, b) => b.score - a.score || a.kod.localeCompare(b.kod));
+      const dis = seededShuffle(scored.slice(0, 12), rng).slice(0, 3)
+        .map(x => ({ label: x.kod, correct: false }));
+      opts = seededShuffle([{ label: p.kod, correct: true }, ...dis], rng);
+    }
+    return { p, reverse, opts };
+  });
+}
+
+function wkRenderDots(){
+  $('wkDots').innerHTML = wk.qs.map((_, i) => {
+    const m = wk.marks[i];
+    const cls = m === true ? ' ok' : m === false ? ' bad' : i === wk.idx ? ' cur' : '';
+    return `<span class="wk-dot${cls}"></span>`;
+  }).join('');
+}
+
+function wkRenderQuestion(){
+  const q = wk.qs[wk.idx];
+  $('wkQNum').textContent = wk.idx + 1;
+  wkRenderDots();
+
+  const prefix = $('wkPlatePrefix'), rest = $('wkPlateRest');
+  if (q.reverse){
+    prefix.textContent = '???'; rest.textContent = '?????';
+    $('wkPrompt').innerHTML = `Wybierz kod dla: <b style="color:var(--yellow)">${wkClean(q.p.nazwa)}</b>`;
+  } else {
+    prefix.textContent = q.p.kod; rest.textContent = '12345';
+    $('wkPrompt').textContent = 'Jaki to powiat?';
+  }
+  const plate = $('wkPlate');
+  plate.classList.remove('rolling'); void plate.offsetWidth; plate.classList.add('rolling');
+
+  $('wkOptions').querySelectorAll('.q-option').forEach((b, i) => {
+    b.classList.remove('good', 'bad', 'dim');
+    b.classList.toggle('kod-style', q.reverse);
+    b.disabled = false;
+    const t = b.querySelector('.text');
+    if (t) t.textContent = q.opts[i] ? q.opts[i].label : '—';
+  });
+}
+
+function wkPick(idx){
+  if (wk.locked) return;
+  const q = wk.qs[wk.idx];
+  const opt = q.opts[idx];
+  if (!opt) return;
+  wk.locked = true;
+  const correctIdx = q.opts.findIndex(o => o.correct);
+  const good = !!opt.correct;
+  wk.marks[wk.idx] = good;
+
+  $('wkOptions').querySelectorAll('.q-option').forEach((b, i) => {
+    b.disabled = true;
+    if (i === idx) b.classList.add(good ? 'good' : 'bad');
+    else if (i === correctIdx && !good) b.classList.add('good');
+    else b.classList.add('dim');
+  });
+  wkRenderDots();
+
+  setTimeout(() => {
+    wk.locked = false;
+    wk.idx++;
+    if (wk.idx >= wk.qs.length) wkFinish();
+    else wkRenderQuestion();
+  }, good ? 650 : 1100);
+}
+
+function wkFinish(){
+  const score = wk.marks.filter(Boolean).length;
+  if (!wk.practice){
+    weeklySave({ weekKey: wk.weekKey, score, marks: wk.marks, done: true });
+  }
+  wkShowSummary(wk.weekKey, score, wk.marks, wk.practice);
+}
+
+function wkShowSummary(weekKey, score, marks, practice){
+  $('wkGame').style.display = 'none';
+  $('wkSummary').style.display = 'block';
+  $('wkScore').textContent = score;
+  $('wkMeta').innerHTML = (practice ? 'Trening · ' : '') + '<strong>' + wk.label + '</strong>';
+  $('wkGrid').textContent = marks.map(m => m ? '🟩' : '🟥').join('');
+  const trophy = $('wkSummary').querySelector('.summary-trophy');
+  if (trophy) trophy.textContent = score === 10 ? '🏆' : score >= 7 ? '🥇' : score >= 4 ? '💪' : '📚';
+}
+
+function wkStart(practice){
+  buildWeeklySet();
+  wk.idx = 0;
+  wk.marks = new Array(WK_N).fill(null);
+  wk.practice = !!practice;
+  wk.locked = false;
+  $('wkSummary').style.display = 'none';
+  $('wkGame').style.display = 'flex';
+  $('wkSub').textContent = wk.label + (practice ? ' · trening' : '');
+  wkRenderQuestion();
+}
+
+function openWeekly(){
+  buildWeeklySet();
+  $('wkSub').textContent = wk.label;
+  const saved = weeklyLoad();
+  $('weeklyScreen').classList.add('open');
+  if (saved && saved.done && saved.weekKey === wk.weekKey){
+    // Official result already exists this week → show it
+    wkShowSummary(saved.weekKey, saved.score, saved.marks || [], false);
+  } else {
+    wkStart(false);
+  }
+}
+
+function closeWeekly(){
+  $('weeklyScreen').classList.remove('open');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === 'modes'));
+}
+
+async function shareWeeklyResult(){
+  const saved = weeklyLoad();
+  const marks = (saved && saved.weekKey === wk.weekKey && saved.marks) ? saved.marks : wk.marks;
+  const score = (saved && saved.weekKey === wk.weekKey && saved.done) ? saved.score : wk.marks.filter(Boolean).length;
+  const grid = (marks || []).map(m => m ? '🟩' : '🟥').join('');
+  const text = `Tablice PL — ${wk.label}\n${score}/10\n${grid}`;
+  try{
+    if (navigator.share){
+      await navigator.share({ title: 'Tablice PL — Wyzwanie tygodnia', text });
+    } else if (navigator.clipboard){
+      await navigator.clipboard.writeText(text);
+      flash('Skopiowano!', 'good');
+    }
+  } catch(e){}
+}
+
+function initWeekly(){
+  $('btnWeeklyExit').addEventListener('click', closeWeekly);
+  $('btnWkShare').addEventListener('click', shareWeeklyResult);
+  $('btnWkTrain').addEventListener('click', () => wkStart(true));
+  const startBtn = $('btnWeeklyStart');
+  if (startBtn) startBtn.addEventListener('click', () => {
+    closeSheet('modesSheet');
+    selectTab('weekly');
+  });
+  $('wkOptions').addEventListener('click', e => {
+    const b = e.target.closest('.q-option');
+    if (!b) return;
+    wkPick(parseInt(b.dataset.opt, 10));
+  });
+}
+document.addEventListener('DOMContentLoaded', initWeekly);
